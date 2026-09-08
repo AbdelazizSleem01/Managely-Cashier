@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>السايد بار - كاشير</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
+    <link href="../styles/output.css" rel="stylesheet">
+    <link href="../styles/home.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        #sidebar {
+            overflow-y: auto;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb {
+            background: #6929ff69;
+            border-radius: 3px;
+            transition: background 0.3s ease;
+        }
+
+        #sidebar::-webkit-scrollbar-thumb:hover {
+            background: #000000;
+            cursor: pointer;
+        }
+        .fa-arrows-rotate{
+            margin-left: 5px;
+        }
+    </style>
+</head>
+
+<body data-page="side-bar">
+    <!-- Sidebar Toggle Button -->
+    <button id="sidebar-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar Navigation -->
+    <nav id="sidebar">
+        <div class="p-4">
+            <div class="title text-2xl font-bold text-white mb-5 mt-4 text-center">
+                نظام الكاشير
+                <i class="fas fa-shop"></i>
+            </div>
+            <ul class="space-y-2">
+                <li>
+                    <a href="index.html" data-page="home"
+                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-home"></i> الرئيسية
+                    </a>
+                </li>
+                <li>
+                    <a href="products.html" data-page="products"
+                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-box"></i> المنتجات
+                    </a>
+                </li>
+                <li>
+                    <a href="categories.html" data-page="categories"
+                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-tags"></i> الفئات
+                    </a>
+                </li>
+                <li>
+                    <a href="sales-invoice.html" data-page="invoice-page"
+                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-file-invoice"></i> فاتورة البيع
+                    </a>
+                </li>
+                <li>
+                    <a href="returns.html" data-page="returns"
+                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-arrows-rotate"></i>مـرتجع
+                    </a>
+                </li>
+                <li>
+                    <a href="sales.html" data-page="sales"
+                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-chart-line"></i> سجل المبيعات
+                    </a>
+                </li>
+                <li>
+                    <a href="customers.html" data-page="customers"
+                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-users"></i> العمــلاء
+                    </a>
+                </li>
+                <li>
+                    <a href="settings.html" data-page="settings"
+                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-cog"></i> الإعدادات
+                    </a>
+                </li>
+                <li>
+                    <a href="statistics.html" data-page="statistics"
+                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-chart-bar"></i> الإحصائيـــات
+                    </a>
+                </li>
+                <li>
+                    <a href="purchase-invoices.html" data-page="purchase-invoices"
+                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-file-invoice"></i> المشتـريات
+                    </a>
+                </li>
+                <li>
+                    <a href="employees.html" data-page="employees"
+                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-user-tie"></i> الموظفين
+                    </a>
+                </li>
+                <li>
+                    <a href="ProductsPurchaseInvoices.html" data-page="ProductsPurchaseInvoices"
+                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-file-invoice-dollar"></i> فواتير شراء المنتجات
+                    </a>
+                </li>
+                <li>
+                    <a href="suppliers.html" data-page="suppliers"
+                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-truck"></i> الموردين
+                    </a>
+                </li>
+                <li>
+                    <a href="treasury.html" data-page="treasury"
+                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-wallet"></i> الخزنة
+                    </a>
+                </li>
+                <li>
+                    <a href="printer-settings.html" data-page="printer-settings"
+                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                        <i class="fas fa-print"></i> إعدادات الطابعة
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </nav>
+
+    <script type="module" src="../js/home.js"></script>
+    <script type="module" src="../js/shared.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-page="categories">
+
+<head>
+    <meta charset="UTF-8">
+    <title>الفئات - كاشير</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/output.css">
+    <link rel="stylesheet" href="../styles/home.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body class="bg-gray-50 min-h-screen" data-page="categories">
+    <div id="sidebar-container"></div>
+
+
+    <div class="main-content">
+        <div class="mx-auto px-4 py-8  container">
+            <h1 class="font-bold text-center mb-8 page-title">إدارة الفئات</h1>
+            <div class="card bg-white shadow-xl p-6 mb-8">
+                <h2 class="text-2xl font-semibold mb-4 text-gray-800">إضافة فئة جديدة</h2>
+                <div class="form-control mb-4">
+                    <label class="label">
+                        <span class="label-text text-gray-700 font-semibold">اسم الفئة <span class="required-star">*</span></span>
+                    </label>
+                    <input id="categoryName" class="input input-primary text-black w-full bg-transparent"
+                        placeholder="اسم الفئة">
+                </div>
+                <button class="btn btn-primary" onclick="addCategory()">إضافة</button>
+            </div>
+            <div id="categories" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4"></div>
+        </div>
+    </div>
+    <div class="text-center mt-6">
+        <a href="index.html" class="btn btn-primary text-white ">
+            <p class="text-white">العودة للرئيسية</p>
+            <i class="fas fa-home ml-2 text-white"></i>
+        </a>
+    </div>
+
+    <div id="footer-container"></div>
+    
+    <script type="module" src="../js/calculator.js"></script>
+    <script type="module" src="../js/shared.js"></script>
+    <script type="module" src="../js/categories.js"></script>
+    <script type="module">
+        import { addCategory, deleteCategory, editCategory } from '../js/categories.js';
+        window.addCategory = addCategory;
+        window.deleteCategory = deleteCategory;
+        window.editCategory = editCategory;
+    </script>
+</body>
+
+</html>

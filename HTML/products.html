@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-page="products">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>إدارة المنتجات</title>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" />
+  <link rel="stylesheet" href="../styles/output.css" />
+  <link rel="stylesheet" href="../styles/home.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap");
+
+    body {
+      font-family: "Tajawal", sans-serif;
+      padding-bottom: 35px;
+    }
+
+    .main-content {
+      padding: 0 20px;
+    }
+
+    .barcode {
+      width: 100%;
+      max-width: 240px;
+      height: auto;
+      display: block;
+      margin: 0 auto;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      background-color: #f9f9f9;
+    }
+
+    #barcodePreview {
+      margin-top: 10px;
+      border-radius: 5px;
+      width: 240px;
+    }
+
+    .my-3 {
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .page-title {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .card {
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+    }
+
+    .input,
+    .select,
+    .textarea {
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .input:focus,
+    .select:focus,
+    .textarea:focus {
+      transform: scale(1.02);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .btn {
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    #reader {
+      width: 100%;
+      max-width: 300px;
+      margin: 10px auto;
+      display: none;
+    }
+
+    .mb-12 {
+      margin-bottom: 12px;
+    }
+
+    /* تحسينات للجدول */
+    .table th {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .table tr:hover {
+      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    }
+
+    /* تحسينات للإحصائيات */
+    .stats-card {
+      transition: all 0.3s ease;
+      border-radius: 16px;
+      color: #424242;
+    }
+
+    .stats-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    /* تحسينات لأزرار الفلترة */
+    .select,
+    .input {
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .select:focus,
+    .input:focus {
+      transform: scale(1.02);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    /* تحسينات للأزرار */
+    .btn {
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-circle {
+      border-radius: 50%;
+      width: 2.5rem;
+      height: 2.5rem;
+    }
+
+    /* تحسينات للبحث */
+    #productsSearch {
+      border-radius: 25px;
+      padding-left: 2.5rem;
+      padding-right: 2.5rem;
+    }
+
+    #productsSearch:focus {
+      border-color: #4f46e5;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .bg-green-500 {
+      background-color: #00b100e3;
+    }
+
+    .bg-yellow-500 {
+      background-color: #bc8d00;
+    }
+
+    /* تنسيقات نموذج إضافة منتج لضمان وجود الكمية والباركود في سطر واحد ومساحات متناسقة */
+    .product-form-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .form-row-2col {
+      display: flex;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    .form-row-2col>div {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .form-row-qty-barcode {
+      display: flex;
+      gap: 1rem;
+      width: 100%;
+      align-items: flex-start;
+    }
+
+    .form-row-qty-barcode .qty-col {
+      width: 28%;
+      min-width: 140px;
+      flex-shrink: 0;
+    }
+
+    .form-row-qty-barcode .barcode-col {
+      flex: 1;
+      min-width: 0;
+    }
+
+    @media (max-width: 768px) {
+
+      .form-row-2col,
+      .form-row-qty-barcode {
+        flex-direction: column;
+      }
+
+      .form-row-qty-barcode .qty-col {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen pb-14" data-page="products">
+  <div id="sidebar-container"></div>
+  <div class="main-content">
+    <div class="container mx-auto px-4 py-8 min-h-screen">
+      <h1 class="font-bold text-center mb-8 page-title">إدارة المنتجات</h1>
+      <div class="card bg-white shadow-xl p-6 mb-8">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+          إضافة منتج جديد
+        </h2>
+        <div class="product-form-container mb-6">
+          <!-- السطر الأول: اسم المنتج والسعر -->
+          <div class="form-row-2col">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">اسم المنتج <span
+                  class="required-star">*</span></label>
+              <input type="text" id="productName" class="input input-bordered bg-transparent input-primary w-full"
+                placeholder="اسم المنتج" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">السعر <span
+                  class="required-star">*</span></label>
+              <input type="number" id="productPrice" class="input input-bordered bg-transparent input-primary w-full"
+                placeholder="السعر" />
+            </div>
+          </div>
+
+          <!-- السطر الثاني: سعر الشراء والفئة -->
+          <div class="form-row-2col">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">سعر الشراء</label>
+              <input type="number" id="productPurchasePrice"
+                class="input input-bordered bg-transparent input-primary w-full" placeholder="سعر الشراء" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">الفئة <span
+                  class="required-star">*</span></label>
+              <select id="productCategory" class="select select-bordered select-primary bg-transparent w-full">
+                <option value="">اختار الفئة</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- السطر الثالث: الوصف وصورة المنتج معاً -->
+          <div class="form-row-2col">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">الوصف</label>
+              <textarea id="productDescription" class="textarea textarea-primary bg-transparent w-full h-[88px]"
+                placeholder="وصف المنتج"></textarea>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">صورة المنتج (اختياري)</label>
+              <!-- صندوق الرفع الأنيق المطابق لشعار المحل -->
+              <label for="productImageInput" id="productImageUploadBox" class="product-upload-box">
+                <div class="product-upload-icon">
+                  <i class="fas fa-upload"></i>
+                </div>
+                <div class="product-upload-text">
+                  <span class="product-upload-title">اختر صورة المنتج</span>
+                  <span class="product-upload-hint">PNG, JPG, JPEG (حتى 5 ميجابايت)</span>
+                </div>
+              </label>
+
+              <!-- حاوية المعاينة بعد اختيار الصورة (مخفية افتراضياً حتى يتم اختيار صورة) -->
+              <div id="productImagePreviewContainer" class="product-preview-container" style="display: none;">
+                <!-- زر حذف الصورة على اليسار في RTL -->
+                <button type="button" id="removeProductImageBtn" onclick="removeProductImage()"
+                  class="product-preview-delete-btn" title="إزالة الصورة">
+                  <i class="fas fa-trash-can"></i>
+                </button>
+
+                <!-- زر تغيير الصورة في المنتصف -->
+                <label for="productImageInput" class="product-preview-change-btn">
+                  <span>تغيير الصورة</span>
+                  <i class="fas fa-arrows-rotate text-sm"></i>
+                </label>
+
+                <!-- صورة المنتج المصغرة على اليمين في RTL -->
+                <div class="product-preview-thumb">
+                  <img id="productImagePreview" src="" alt="صورة المنتج" />
+                </div>
+                <span id="productImageFileName" class="hidden"></span>
+              </div>
+
+              <input type="file" id="productImageInput" accept="image/*" class="hidden"
+                onchange="previewProductImage(event)" />
+            </div>
+          </div>
+
+          <!-- السطر الرابع: الكمية والباركود في سطر واحد متناسق -->
+          <div class="form-row-qty-barcode">
+            <div class="qty-col">
+              <label class="block text-sm font-medium text-gray-700 mb-1">الكمية <span
+                  class="required-star">*</span></label>
+              <input type="number" id="productQuantity" class="input input-bordered bg-transparent input-primary w-full"
+                placeholder="الكمية" />
+            </div>
+            <div class="barcode-col">
+              <label class="block text-sm font-medium text-gray-700 mb-1">الباركود (اختياري)</label>
+              <div class="flex w-full gap-2 items-center BC-div">
+                <input type="text" id="productBarcode"
+                  class="input input-bordered bg-transparent input-primary flex-1 min-w-[120px]"
+                  placeholder="الباركود (اختياري)" />
+                <button type="button" onclick="generateAndRenderBarcode()"
+                  class="btn btn-primary px-3 h-[42px] min-h-[42px] shrink-0" title="توليد باركود تلقائي">
+                  <i class="fas fa-barcode"></i>
+                  <span class="mr-1 text-xs">توليد</span>
+                </button>
+                <div class="w-36 shrink-0">
+                  <select id="scanMethod" class="select select-bordered select-primary bg-transparent w-full">
+                    <option value="camera">مسح بالكاميرا</option>
+                    <option value="scanner">مسح بالسكانر</option>
+                  </select>
+                </div>
+                <button type="button" onclick="startScanning()"
+                  class="btn btn-info px-3 h-[42px] min-h-[42px] text-white shrink-0" title="بدء المسح">
+                  <i class="fas fa-camera"></i>
+                  <span class="mr-1 text-xs">مسح</span>
+                </button>
+              </div>
+              <div id="barcodePreview"></div>
+              <div id="reader"></div>
+            </div>
+          </div>
+        </div>
+        <button onclick="addProduct()" class="btn btn-primary">
+          إضافة المنتج
+        </button>
+      </div>
+    </div>
+    <div class="card bg-white shadow-xl p-6 mb-8">
+      <div class="flex flex-row flex-wrap lg:flex-nowrap items-center justify-between gap-4 mb-6 w-full"
+        style="overflow: visible;">
+        <h2 class="text-xl lg:text-2xl font-bold text-primary whitespace-nowrap shrink-0">قائمة المنتجات</h2>
+        <div class="flex items-center gap-3 flex-1 min-w-0 justify-end flex-nowrap" style="gap: 12px;">
+          <div class="relative flex-1 max-w-xs min-w-[150px]">
+            <i
+              class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
+            <input type="text" id="productsSearch"
+              class="input input-bordered input-primary bg-transparent w-full h-[42px] pr-8 pl-8 text-sm"
+              placeholder="ابحث في المنتجات..." />
+            <button onclick="clearSearch()" id="clearSearchBtn"
+              class="btn btn-ghost btn-xs absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 hidden"
+              title="مسح البحث">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="product-filter-select-wrapper"
+            style="width: 148px; min-width: 148px; max-width: 148px; flex-shrink: 0;">
+            <select id="categoryFilter" class="select select-bordered select-primary bg-transparent text-primary w-full"
+              onchange="filterProducts()">
+              <option value="">جميع الفئات</option>
+            </select>
+          </div>
+          <div class="product-filter-select-wrapper"
+            style="width: 148px; min-width: 148px; max-width: 148px; flex-shrink: 0;">
+            <select id="stockFilter" class="select select-bordered select-primary bg-transparent text-primary w-full"
+              onchange="filterProducts()">
+              <option value="">جميع المخزون</option>
+              <option value="inStock">متوفر</option>
+              <option value="lowStock">منخفض</option>
+              <option value="outOfStock">نفذ</option>
+            </select>
+          </div>
+          <button onclick="resetFilters()"
+            class="btn btn-outline btn-error shrink-0 whitespace-nowrap h-[42px] min-h-[42px] px-3 text-xs"
+            title="إعادة تعيين الفلاتر">
+            <i class="fas fa-undo-alt ml-1"></i>
+            إعادة تعيين
+          </button>
+        </div>
+      </div>
+
+      <!-- إحصائيات سريعة -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-gradient-to-r from-primary to-primary-focus rounded-xl p-6 text-white stats-card shadow-lg">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm opacity-90 text-white mb-1">
+                إجمالي المنتجات
+              </p>
+              <p class="text-3xl text-white font-bold" id="totalProductsCount">
+                0
+              </p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-3 rounded-full fas-pro">
+              <i class="fas fa-boxes text-2xl text-white"></i>
+            </div>
+          </div>
+        </div>
+        <div class="bg-green-500 rounded-xl p-6 text-white stats-card shadow-lg">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm opacity-90 mb-1">متوفر</p>
+              <p class="text-3xl text-white font-bold" id="inStockCount">0</p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-3 rounded-full text-green-500">
+              <i class="fas fa-check-circle text-2xl  text-white"></i>
+            </div>
+          </div>
+        </div>
+        <div class="bg-yellow-500 rounded-xl p-6 text-white stats-card shadow-lg">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm opacity-90 mb-1">منخفض</p>
+              <p class="text-3xl text-white font-bold" id="lowStockCount">
+                0
+              </p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-3 rounded-full text-yellow-500">
+              <i class="fas fa-exclamation-triangle text-2xl  text-white"></i>
+            </div>
+          </div>
+        </div>
+        <div class="bg-red-500 rounded-xl p-6 text-white stats-card shadow-lg">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm opacity-90 mb-1">نفذ</p>
+              <p class="text-3xl text-white font-bold" id="outOfStockCount">
+                0
+              </p>
+            </div>
+            <div class="bg-white bg-opacity-20 p-3 rounded-full text-red-500">
+              <i class="fas fa-times-circle text-2xl  text-white"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="products" class="overflow-x-auto"></div>
+    </div>
+    <div class="mt-6 text-center">
+      <a href="index.html" class="btn btn-outline btn-primary">العودة للرئيسية</a>
+    </div>
+  </div>
+  <div id="footer-container" class="z-10"></div>
+  <script type="module" src="../js/calculator.js"></script>
+  <script type="module" src="../js/shared.js"></script>
+  <script type="module" src="../js/products.js"></script>
+</body>
+
+<div id="footer-container" class="z-10"></div>
+
+</html>
+
+
+<!-- دوال واجهة المستخدم لصفحة المنتجات -->
+<script>
+  function toggleProductStudio(forceOpen = null) {
+    const studio = document.getElementById("addProductStudio");
+    const icon = document.getElementById("toggleStudioIcon");
+    const text = document.getElementById("toggleStudioText");
+    if (!studio) return;
+
+    const isHidden = forceOpen !== null ? !forceOpen : studio.classList.contains("hidden");
+    if (isHidden) {
+      studio.classList.remove("hidden");
+      if (icon) icon.className = "fas fa-minus text-xs ml-1";
+      if (text) text.textContent = "إخفاء لوحة الإضافة";
+      studio.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      studio.classList.add("hidden");
+      if (icon) icon.className = "fas fa-plus text-xs ml-1";
+      if (text) text.textContent = "إضافة منتج جديد";
+    }
+  }
+
+  function quickFilterStock(status) {
+    const stockFilter = document.getElementById("stockFilter");
+    if (stockFilter) {
+      stockFilter.value = status;
+      if (typeof filterProducts === "function") {
+        filterProducts();
+      }
+    }
+  }
+
+  function resetAddProductForm() {
+    const ids = [
+      "productName",
+      "productPrice",
+      "productPurchasePrice",
+      "productCategory",
+      "productQuantity",
+      "productBarcode",
+      "productDescription"
+    ];
+    ids.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = "";
+    });
+    if (typeof removeProductImage === "function") {
+      removeProductImage();
+    }
+    const bp = document.getElementById("barcodePreview");
+    if (bp) bp.innerHTML = "";
+  }
+</script>
+
+<script type="module" src="../js/calculator.js"></script>
+<script type="module" src="../js/shared.js"></script>
+<script type="module" src="../js/products.js"></script>
+</body>
+
+</html>

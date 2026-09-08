@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <title>فواتير الشراء - كاشير</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
+    <link href="../styles/output.css" rel="stylesheet">
+    <link href="../styles/home.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .main-content {
+            .div {
+
+                padding: 40px 60px;
+            }
+        }
+
+        .tabs {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            margin-bottom: 1rem;
+            gap: 15px;
+
+        }
+
+        .tab {
+            cursor: pointer;
+            font-weight: bold;
+            color: #2a2a2a;
+            border-radius: 5px;
+            border: 2px solid #757575;
+            background-color: #f8fafc;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            background-color: transparent;
+            width: 250px;
+            padding: 10px 0;
+            padding-bottom: 35px;
+            margin-bottom: 20px;
+        }
+
+        .tab:hover {
+            color: #3b82f6;
+            border: 3px solid #3b82f6;
+        }
+
+        .tab.active {
+            color: #3b82f6;
+            border: 3px solid #3b82f6;
+            background-color: #ffffff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-section {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-section {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 1.25rem;
+            box-shadow: 0 4px 24px rgba(109,40,217,0.07);
+            border: 1.5px solid #ede9fe;
+        }
+
+        .table-section table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .table-section th,
+        .table-section td {
+            padding: 0.85rem 1.25rem;
+            text-align: right;
+            border-bottom: 1px solid #f3f0ff;
+            color: #4b5563;
+            white-space: nowrap;
+        }
+
+        .table-section th.action-header,
+        .table-section td.action-cell {
+            min-width: 250px;
+            padding-right: 32px !important;
+            padding-left: 20px !important;
+            text-align: center;
+        }
+
+        .table-section th {
+            background: #f8fafc;
+            font-weight: bold;
+            color: #374151;
+        }
+
+        .table-section tbody tr:hover {
+            background: #faf7ff;
+        }
+
+        .product-input-table th,
+        .product-input-table td {
+            padding: 0.5rem;
+        }
+
+        .product-input-table input {
+            width: 100%;
+        }
+
+        .main-content {
+            padding: 0 10px;
+        }
+
+        .datepicker-dark::-webkit-calendar-picker-indicator {
+            filter: invert(3);
+        }
+
+        .datepicker-dark {
+            color: #4f4f4f;
+            cursor: pointer;
+        }
+
+        .w-32 {
+            width: 130px;
+        }
+
+        .search-bar {
+            margin: 10px 0 20px 0;
+            gap: 10px;
+        }
+
+        /* ===== Custom Table Scrollbar ===== */
+        .table-scroll-box {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1.5px solid #e9d5ff;
+            scrollbar-gutter: stable;
+            scrollbar-width: thin;
+            scrollbar-color: transparent transparent;
+        }
+
+        .table-scroll-box:hover {
+            scrollbar-color: #7c3aed #f3f0ff;
+        }
+
+        .table-scroll-box::-webkit-scrollbar {
+            height: 5px;
+        }
+
+        .table-scroll-box::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 999px;
+            margin: 0 8px;
+        }
+
+        .table-scroll-box:hover::-webkit-scrollbar-track {
+            background: #f3f0ff;
+        }
+
+        .table-scroll-box::-webkit-scrollbar-thumb {
+            background: transparent;
+            border-radius: 999px;
+        }
+
+        .table-scroll-box:hover::-webkit-scrollbar-thumb {
+            background: linear-gradient(90deg, #7c3aed, #4f46e5);
+        }
+
+        .table-scroll-box:hover::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(90deg, #6d28d9, #4338ca);
+        }
+    </style>
+</head>
+
+<body data-page="purchase-invoices">
+    <div id="sidebar-container"></div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="mx-auto div" style="color: #a6a6a6;">
+            <h1 class="text-4xl font-bold text-center mb-8 page-title">فواتير الشراء</h1>
+
+            <!-- Tabs -->
+            <div class="tabs flex justify-center gap-3">
+                <button class="tab active " data-tab="create">إنشاء فاتورة شراء</button>
+                <button class="tab " data-tab="view">عرض الفواتير</button>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="create-tab" class="tab-content active">
+                <div class="form-section">
+                    <h2 class="text-2xl font-bold mb-6 text-primary">إنشاء فاتورة شراء</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Supplier Info -->
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">اسم المورد</label>
+                            <input id="supplier-name" type="text"
+                                class="input input-bordered input-primary shadow-lg text-gray-700 bg-transparent w-full"
+                                placeholder="اسم المورد">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">رقم المورد</label>
+                            <input id="supplier-id" type="text"
+                                class="input input-bordered input-primary shadow-lg text-gray-700 bg-transparent w-full"
+                                placeholder="رقم المورد">
+                        </div>
+                        <!-- Invoice Creator Info -->
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">اسم منشئ الفاتورة</label>
+                            <input id="creator-name" type="text"
+                                class="input input-bordered input-primary shadow-lg text-gray-700 bg-transparent w-full"
+                                placeholder="اسم منشئ الفاتورة">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">رقم منشئ الفاتورة</label>
+                            <input id="creator-id" type="text"
+                                class="input input-bordered input-primary shadow-lg text-gray-700 bg-transparent w-full"
+                                placeholder="رقم منشئ الفاتورة">
+                        </div>
+                        <!-- Invoice Date -->
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-2">تاريخ الفاتورة</label>
+                            <input id="invoice-date" type="date"
+                                class="input input-bordered input-primary shadow-lg text-gray-700 bg-transparent w-full datepicker-dark">
+                        </div>
+                    </div>
+
+                    <!-- Products Section -->
+                    <div class="mt-6">
+                        <h3 class="text-xl font-bold mb-4 text-primary">إضافة منتج</h3>
+                        <table class="product-input-table w-full border">
+                            <thead>
+                                <tr>
+                                    <th>اسم المنتج</th>
+                                    <th>الكمية</th>
+                                    <th>سعر الوحدة</th>
+                                    <th>المجموع</th>
+                                    <th>إضافة</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input id="product-name-input" type="text"
+                                            class="input input-bordered input-primary shadow-lg text-gray-700 bg-transparent"
+                                            placeholder="اسم المنتج"></td>
+                                    <td><input id="product-quantity-input" type="number"
+                                            class="input input-bordered input-primary shadow-lg text-gray-700 bg-transparent"
+                                            value="1" min="1"></td>
+                                    <td><input id="product-price-input" type="number"
+                                            class="input input-bordered input-primary shadow-lg text-gray-700 bg-transparent"
+                                            value="0" min="0" step="0.01"></td>
+                                    <td><input id="product-total-input" type="text"
+                                            class="input input-bordered input-primary shadow-lg text-gray-700 bg-transparent"
+                                            readonly value="0 ج.م"></td>
+                                    <td><button id="add-product-btn" class="btn btn-primary btn-sm">إضافة</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h3 class="text-xl font-bold mt-6 mb-4 text-primary">المنتجات المضافة</h3>
+                        <table class="table-section w-full">
+                            <thead>
+                                <tr>
+                                    <th>اسم المنتج</th>
+                                    <th>الكمية</th>
+                                    <th>سعر الوحدة</th>
+                                    <th>المجموع</th>
+                                    <th>إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="added-products-table">
+                                <!-- Added products will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Totals -->
+                    <div class="mt-6">
+                        <h3 class="text-xl font-bold mb-4 text-primary">المجموعات</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">المدفوع</label>
+                                <input id="paid-amount" type="number"
+                                    class="input input-bordered input-primary shadow-lg text-gray-700 bg-transparent w-full"
+                                    value="0">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">الإجمالي</label>
+                                <input id="total-amount" type="text"
+                                    class="input input-bordered input-primary shadow-lg text-gray-700 bg-transparent w-full"
+                                    readonly value="0 ج.م">
+                            </div>
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-2">المتبقي</label>
+                                <input id="remaining-amount" type="text"
+                                    class="input input-bordered input-primary shadow-lg text-gray-700 bg-transparent w-full"
+                                    readonly value="0 ج.م">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="mt-6">
+                        <label class="block text-gray-700 font-medium mb-2">ملاحظات</label>
+                        <textarea id="notes"
+                            class="textarea textarea-primary shadow-lg bg-transparent w-full text-gray-700 text-lg"
+                            rows="3" placeholder="ملاحظات إضافية..."></textarea>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="mt-6 flex justify-start gap-4">
+                        <button onclick="savePurchaseInvoice()" class="btn btn-success w-32">
+                            حفظ
+                            <i class="fa-solid fa-floppy-disk ml-2"></i>
+                        </button>
+                        <button onclick="resetForm()" class="btn btn-warning w-32">
+                            إلغاء
+                            <i class="fa-solid fa-xmark-circle ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-tab" class="tab-content bg-white rounded-lg shadow-xl ">
+                <div class="table-section">
+                    <!-- Search Bar -->
+                    <div id="invoices-search-bar" class="flex items-center gap-3 px-2 py-3 mb-2">
+                        <label class="font-semibold text-gray-600 whitespace-nowrap text-sm flex items-center gap-2">
+                            <i class="fas fa-search text-primary"></i>
+                            ابحث عن فاتورة :
+                        </label>
+                        <input id="search-invoice" type="text"
+                            class="input input-primary input-sm w-full max-w-xs bg-transparent text-gray-800"
+                            placeholder="ابحث برقم الفاتورة..." oninput="searchInvoices()">
+                    </div>
+
+                    <!-- Empty State (shown when no invoices) -->
+                    <div id="invoices-empty-state" class="flex flex-col items-center justify-center py-16 gap-4">
+                        <div style="width:80px;height:80px;border-radius:50%;background:#f5f3ff;display:flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-file-invoice" style="font-size:2.2rem;color:#7c3aed;"></i>
+                        </div>
+                        <p class="text-xl font-bold text-gray-500">لا توجد فواتير شراء بعد</p>
+                        <p class="text-sm text-gray-400">قم بإنشاء أول فاتورة شراء من تبويب "إنشاء فاتورة شراء"</p>
+                    </div>
+
+                    <!-- Table (shown when invoices exist) -->
+                    <div id="invoices-table-wrapper" class="hidden w-full">
+                        <div class="table-scroll-box">
+                        <table class="table table-zebra w-full text-right" style="min-width: 1100px;">
+                            <thead style="background:linear-gradient(135deg,#6d28d9,#4f46e5);">
+                                <tr>
+                                    <th class="text-right text-white font-semibold">رقم الفاتورة</th>
+                                    <th class="text-right text-white font-semibold">اسم المورد</th>
+                                    <th class="text-right text-white font-semibold">رقم المورد</th>
+                                    <th class="text-right text-white font-semibold">اسم منشئ الفاتورة</th>
+                                    <th class="text-right text-white font-semibold">رقم منشئ الفاتورة</th>
+                                    <th class="text-right text-white font-semibold">تاريخ الفاتورة</th>
+                                    <th class="text-right text-white font-semibold">الإجمالي</th>
+                                    <th class="text-right text-white font-semibold">المدفوع</th>
+                                    <th class="text-right text-white font-semibold">المتبقي</th>
+                                    <th class="text-center text-white font-semibold action-header">إجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoices-table-body">
+                            </tbody>
+                        </table>
+                        </div>
+                    </div>
+                    <!-- Purchase Invoices Pagination -->
+                    <div id="purchaseInvoicesPagination"></div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="footer-container" class="z-10"></div>
+
+
+    <script type="module" src="../js/calculator.js"></script>
+    <script type="module" src="../js/shared.js"></script>
+    <script type="module" src="../js/purchase-invoices.js"></script>
+</body>
+
+</html>

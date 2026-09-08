@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فاتورة بيع</title>
+    <link href="../styles/output.css" rel="stylesheet">
+    <link href="../styles/home.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                padding: 0 !important;
+                margin: 0 !important;
+                background: white !important;
+            }
+
+            .print-container {
+                box-shadow: none !important;
+                border: none !important;
+            }
+        }
+
+        .store-div {
+            margin-top: 30px;
+        }
+
+        .store-div img {
+            border: 1px solid #6419e6;
+            border-radius: 50%;
+            margin: 10px;
+        }
+
+        .hide-number-arrows::-webkit-outer-spin-button,
+        .hide-number-arrows::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .hide-number-arrows {
+            -moz-appearance: textfield;
+        }
+
+        .quntity-input {
+            text-align: center;
+            width: 80px;
+            margin: auto 10px;
+        }
+
+        /* ===== Custom Autocomplete Dropdown ===== */
+        .autocomplete-wrapper {
+            position: relative;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: calc(100% + 4px);
+            right: 0;
+            left: 0;
+            z-index: 9999;
+            background: #ffffff;
+            border: 1.5px solid #7c3aed;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(109, 40, 217, 0.18);
+            max-height: 260px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .autocomplete-dropdown.open {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background 0.15s;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item:hover,
+        .autocomplete-item.active {
+            background: #f5f3ff;
+        }
+
+        .autocomplete-item .item-name {
+            font-weight: 600;
+            color: #3b0764;
+            font-size: 14px;
+        }
+
+        .autocomplete-item .item-meta {
+            font-size: 11.5px;
+            color: #6b7280;
+        }
+
+        .autocomplete-item .item-stock-ok {
+            color: #16a34a;
+            font-weight: 600;
+        }
+
+        .autocomplete-item .item-stock-low {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        .autocomplete-empty {
+            padding: 14px;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-50" data-page="invoice-page">
+    <div id="sidebar-container"></div>
+
+    <div class="main-content min-h-screen px-4 py-8">
+        <div class="max-w-7xl mx-auto space-y-6">
+            <!-- بطاقة الفاتورة الرئيسية -->
+            <div class="print-container bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
+                <div class="bg-gradient-to-r from-indigo-800 to-indigo-700 p-6 text-white">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h1 class="text-3xl font-bold">فاتورة بيع</h1>
+                            <p class="text-blue-100 mt-1">نظام إدارة المبيعات</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="badge badge-lg badge-outline bg-white/10 border-white/20 text-white">
+                                <i class="fas fa-receipt ml-2"></i>
+                                <span id="invoiceNumber"></span>
+                            </div>
+                            <p class="mt-2 text-blue-100" id="invoiceDate"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- معلومات الفاتورة -->
+                <div class="p-6 border-b border-gray-200">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div class="space-y-2">
+                            <h3 class="text-lg font-semibold text-gray-700">معلومات العميل</h3>
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text text-gray-600">اسم العميل</span>
+                                </label>
+                                <input type="text" id="customerName" placeholder="اسم العميل (اختياري)"
+                                    class="input input-primary bg-transparent w-full ">
+                            </div>
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text text-gray-600">رقم الهاتف</span>
+                                </label>
+                                <input type="text" id="customerPhone" placeholder="رقم الهاتف (اختياري)"
+                                    class="input input-primary bg-transparent w-full ">
+                            </div>
+                        </div>
+
+                        <!-- طريقة الدفع -->
+                        <div class="space-y-2">
+                            <h3 class="text-lg font-semibold text-gray-700">طريقة الدفع</h3>
+                            <div class="form-control">
+                                <label class="label">
+                                    <span class="label-text text-gray-600">اختر طريقة الدفع</span>
+                                </label>
+                                <select id="paymentMethod" class="select select-primary bg-transparent w-full ">
+                                    <option value="cash">كاش</option>
+                                    <option value="vodafoneCash">فودافون كاش</option>
+                                    <option value="visaCard">كارد فيزا</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- معلومات المحل (اسم ولوجو) -->
+                        <div class="">
+                            <h3 class="text-lg font-semibold text-gray-700">معلومات المحل</h3>
+                            <div class="flex items-center -mr-2 space-x-2 store-div">
+                                <img id="storeLogoPreview" src="" alt="Store Logo"
+                                    class="w-16 h-16 object-contain border-primary">
+                                <span id="storeNamePreview" class="text-primary font-bold"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- إضافة المنتجات -->
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">إضافة منتجات</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 items-start">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-gray-600 font-medium">فلتر حسب الفئة</span>
+                            </label>
+                            <select id="categorySelect" onchange="filterProducts()"
+                                class="select select-bordered select-primary bg-transparent w-full h-[46px] min-h-[46px]">
+                                <option value="">الكل</option>
+                            </select>
+                        </div>
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-gray-600 font-medium">بحث عن منتج بالاسم أو الباركود</span>
+                            </label>
+                            <div class="autocomplete-wrapper">
+                                <input type="text" id="productSearch" oninput="searchProducts()" autocomplete="off"
+                                    onkeydown="handleProductSearchKeydown(event)"
+                                    class="input input-bordered input-primary bg-transparent w-full h-[46px] min-h-[46px]"
+                                    placeholder="ابحث باسم المنتج أو امسح الباركود...">
+                                <div id="productDropdown" class="autocomplete-dropdown"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text text-transparent select-none">&nbsp;</span>
+                            </label>
+                            <button type="button" id="addProductBtn" onclick="addProductToInvoice()"
+                                class="btn btn-primary w-full h-[46px] min-h-[46px] font-bold text-base flex items-center justify-center gap-2">
+                                <i class="fas fa-plus"></i>
+                                <span>إضافة</span>
+                                <kbd class="kbd kbd-sm bg-white/20 text-white border-none text-xs">Enter</kbd>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- جدول المنتجات -->
+                    <div class="overflow-x-auto">
+                        <table class="table table-zebra w-full">
+                            <thead id="itemsTableHead" class="hidden">
+                                <tr class="bg-primary text-white">
+                                    <th class="text-right">المنتج</th>
+                                    <th class="text-center">الكمية</th>
+                                    <th class="text-center">السعر</th>
+                                    <th class="text-center">الإجمالي</th>
+                                    <th class="text-center">الباركود</th>
+                                    <th class="text-center">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="itemsTableBody" class="text-gray-700">
+                                <!-- سيتم ملؤها بالمنتجات المضافة -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- الخصومات والضرائب -->
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">الخصومات والضرائب</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-2">
+                            <label class="label">
+                                <span class="label-text text-gray-600">الخصم الدائم</span>
+                            </label>
+                            <button id="defaultDiscountBtn" onclick="openDefaultDiscountSettings()"
+                                class="btn btn-primary w-full flex items-center justify-center">
+                                <i class="fas fa-cog mr-2"></i>
+                                إعدادات
+                            </button>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="label">
+                                <span class="label-text text-gray-600">الخصم الحالي (رقم)</span>
+                            </label>
+                            <div class="relative">
+                                <input type="number" id="currentDiscountAmount" min="0" step="1"
+                                    oninput="updateDiscount('amount')"
+                                    class="input input-primary bg-transparent pl-12 w-full hide-number-arrows">
+                                <span class="absolute left-3 top-3 text-gray-500">ج.م</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="label">
+                                <span class="label-text text-gray-600">الخصم الحالي (%)</span>
+                            </label>
+                            <div class="relative">
+                                <input type="number" id="currentDiscountPercentage" min="0" max="100" step="1"
+                                    oninput="updateDiscount('percentage')"
+                                    class="input input-primary bg-transparent pl-12 w-full hide-number-arrows">
+                                <span class="absolute left-3 top-3 text-gray-500">%</span>
+                            </div>
+                        </div>
+                        <div class="space-y-2 md:col-span-3">
+                            <label class="label">
+                                <span class="label-text text-gray-600">الضريبة (%)</span>
+                            </label>
+                            <div class="relative">
+                                <input type="number" id="taxRate" value="0" min="0" max="100" step="1"
+                                    oninput="calculateTotals()"
+                                    class="input input-primary bg-transparent pl-12 w-full hide-number-arrows">
+                                <span class="absolute left-3 top-3 text-gray-500">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- الإجماليات وحاسبة النقدية -->
+                <div class="p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                        <!-- حاسبة النقدية والباقي + إحصاءات الأصناف والقطع -->
+                        <div class="lg:col-span-7 bg-slate-50 p-5 rounded-2xl border border-gray-200 space-y-4">
+                            <!-- عداد الأصناف والقطع -->
+                            <div class="flex flex-wrap items-center gap-3">
+                                <div style="display:inline-flex;align-items:center;gap:6px;background:#ede9fe;border:1.5px solid #c4b5fd;color:#5b21b6;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600;">
+                                    <i class="fas fa-boxes-stacked" style="color:#7c3aed;"></i>
+                                    <span>عدد الأصناف:</span>
+                                    <span id="itemsCount" class="font-bold">0</span>
+                                </div>
+                                <div style="display:inline-flex;align-items:center;gap:6px;background:#dcfce7;border:1.5px solid #86efac;color:#15803d;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600;">
+                                    <i class="fas fa-layer-group" style="color:#16a34a;"></i>
+                                    <span>إجمالي القطع:</span>
+                                    <span id="totalUnitsCount" class="font-bold">0</span>
+                                </div>
+                            </div>
+
+                            <!-- حاسبة النقدية (المبلغ المدفوع والباقي) -->
+                            <div id="cashCalculatorSection" class="pt-2 border-t border-gray-200">
+                                <h4 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                                    <i class="fas fa-coins text-amber-500"></i>
+                                    <span>حاسبة النقدية وسرعة الصرف</span>
+                                </h4>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="label pt-0 pb-1">
+                                            <span class="label-text text-gray-600 font-semibold text-xs">المبلغ المستلم
+                                                (المدفوع)</span>
+                                        </label>
+                                        <div class="relative">
+                                            <input type="number" id="paidAmount" min="0" step="any"
+                                                oninput="calculateChange()" placeholder="0.00"
+                                                class="input input-primary bg-white text-gray-900 font-bold text-lg w-full pl-12 h-[46px] hide-number-arrows shadow-sm">
+                                            <span
+                                                class="absolute left-3 top-3 text-gray-400 font-medium text-sm">ج.م</span>
+                                        </div>
+                                        <!-- أزرار نقدية سريعة -->
+                                        <div class="flex flex-wrap gap-1.5 mt-2">
+                                            <button type="button" onclick="setExactPaid()"
+                                                class="btn btn-xs btn-outline btn-primary font-semibold">بالضبط</button>
+                                            <button type="button" onclick="addQuickCash(20)"
+                                                class="btn btn-xs btn-outline font-semibold text-gray-700 hover:text-white">+20</button>
+                                            <button type="button" onclick="addQuickCash(50)"
+                                                class="btn btn-xs btn-outline font-semibold text-gray-700 hover:text-white">+50</button>
+                                            <button type="button" onclick="addQuickCash(100)"
+                                                class="btn btn-xs btn-outline font-semibold text-gray-700 hover:text-white">+100</button>
+                                            <button type="button" onclick="addQuickCash(200)"
+                                                class="btn btn-xs btn-outline font-semibold text-gray-700 hover:text-white">+200</button>
+                                        </div>
+                                    </div>
+                                    <div
+                                        class="bg-white rounded-xl p-3 border border-gray-200 shadow-sm flex flex-col justify-between">
+                                        <div
+                                            class="flex justify-between items-center text-xs text-gray-500 font-medium">
+                                            <span>الباقي للعميل:</span>
+                                            <span id="changeStatusBadge" style="background:#f3f4f6;color:#6b7280;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:600;">في الانتظار</span>
+                                        </div>
+                                        <div class="text-2xl font-black text-gray-400 py-1" id="changeAmount">
+                                            0.00 ج.م
+                                        </div>
+                                        <div class="text-[11px] text-gray-400 flex items-center gap-1">
+                                            <i class="fas fa-info-circle text-[10px]"></i>
+                                            <span>يتم حسابه وطباعته آلياً في الفاتورة</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- إجماليات الفاتورة المالية -->
+                        <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 font-medium">الإجمالي الفرعي:</span>
+                                <span id="subtotal" class="font-bold text-gray-800 text-base">0.00 ج.م</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 font-medium">الخصم الإجمالي:</span>
+                                <span id="totalDiscount" class="font-bold text-red-500 text-base">0.00 ج.م</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-600 font-medium">الضريبة المضافة:</span>
+                                <span id="taxAmount" class="font-bold text-gray-700 text-base">0.00 ج.م</span>
+                            </div>
+                            <div class="divider my-1"></div>
+                            <div class="flex justify-between items-center pt-1">
+                                <span class="font-bold text-gray-800 text-lg">الصافي النهائي:</span>
+                                <span id="grandTotal" class="font-black text-2xl text-indigo-700">0.00 ج.م</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 border-t border-gray-200 bg-gray-50">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
+                    <i class="fas fa-pause-circle ml-2"></i>
+                    الفواتير المعلقة
+                </h3>
+                <div id="suspendedInvoicesContainer" class="space-y-2 max-h-64 overflow-y-auto">
+                    <!-- سيتم ملؤها ديناميكيًا -->
+                    <div class="text-center py-4 text-gray-500">
+                        <i class="fas fa-inbox text-2xl mb-2"></i>
+                        <p>لا توجد فواتير معلقة</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-4 mt-6 no-print">
+                <button onclick="saveInvoice()" class="btn btn-primary px-7 gap-2">
+                    <i class="fas fa-save"></i>
+                    <span>حفظ الفاتورة</span>
+                    <kbd class="kbd kbd-sm bg-white/20 text-white border-none text-xs">F1</kbd>
+                </button>
+                <button onclick="printInvoice()" class="btn btn-success px-7 gap-2 text-white">
+                    <i class="fas fa-print"></i>
+                    <span>طباعة الفاتورة</span>
+                    <kbd class="kbd kbd-sm bg-white/20 text-white border-none text-xs">F2</kbd>
+                </button>
+                <button onclick="suspendCurrentInvoice()" class="btn btn-warning px-7 gap-2 text-white">
+                    <i class="fas fa-pause"></i>
+                    <span>تعليق الفاتورة</span>
+                    <kbd class="kbd kbd-sm bg-white/20 text-white border-none text-xs">F4</kbd>
+                </button>
+                <button onclick="deleteInvoice()" class="btn btn-error px-7 gap-2 text-white">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>تفريغ الفاتورة</span>
+                    <kbd class="kbd kbd-sm bg-white/20 text-white border-none text-xs">Esc</kbd>
+                </button>
+            </div>
+
+            <div class="fixed bottom-4 left-4 z-50 hidden">
+                <div class="tooltip tooltip-right" data-tip="الماسح الضوئي نشط">
+                    <button class="btn btn-circle btn-success shadow-lg"
+                        onclick="document.getElementById('invoiceBarcodeScannerInput').focus()">
+                        <i class="fas fa-barcode"></i>
+                    </button>
+                </div>
+                <input type="text" id="invoiceBarcodeScannerInput" class="opacity-0 absolute"
+                    oninput="handleInvoiceBarcodeScan(this.value)" autofocus>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-container" class="z-10"></div>
+    <script type="module" src="../js/calculator.js"></script>
+    <script type="module" src="../js/shared.js"></script>
+    <script type="module" src="../js/sales-invoice.js"></script>
+
+</body>
+
+</html>

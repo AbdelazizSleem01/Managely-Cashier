@@ -1,0 +1,132 @@
+{
+  "name": "managely-cashier-system",
+  "productName": "Managely Cashier",
+  "version": "1.0.1",
+  "description": "Desktop Cashier & POS Management System",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "start": "electron .",
+    "dev": "nodemon --watch src/main.js --watch preload.js --ignore HTML/** --ignore js/** --ignore styles/** --exec electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win --x64",
+    "release": "electron-builder --win --publish always",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win --x64",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "author": "abdelaziz sleem",
+  "license": "ISC",
+  "keywords": [
+    "electron",
+    "pos",
+    "cashier",
+    "point-of-sale",
+    "management-system",
+    "desktop-app",
+    "invoices",
+    "accounting"
+  ],
+  "dependencies": {
+    "axios": "^1.9.0",
+    "electron-log": "^5.4.4",
+    "electron-store": "^10.0.1",
+    "electron-updater": "^6.8.9",
+    "nedb": "^1.8.0",
+    "nedb-promises": "^6.2.3",
+    "node-machine-id": "^1.1.12",
+    "os": "^0.1.2",
+    "pdfkit": "^0.17.0",
+    "uuid": "^9.0.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "electron": "^37.1.3",
+    "electron-builder": "^25.1.8",
+    "nodemon": "^3.1.14"
+  },
+  "build": {
+    "appId": "com.managely.cashier",
+    "productName": "Managely Cashier",
+    "copyright": "Copyright © 2025 Abdelaziz Sleem",
+    "asar": true,
+    "compression": "maximum",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "AbdelazizSleem01",
+        "repo": "Managely-Cashier"
+      }
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "assets"
+    },
+    "files": [
+      "src/**/*",
+      "styles/**/*",
+      "assets/**/*",
+      "HTML/**/*",
+      "js/**/*",
+      "preload.js",
+      "package.json",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/*.map",
+      "!scratch*"
+    ],
+    "extraResources": [
+      {
+        "from": "assets/",
+        "to": "assets/",
+        "filter": [
+          "**/*.{png,jpg,ico,icns}"
+        ]
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/images/Logo.ico",
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "installerIcon": "assets/images/Logo.ico",
+      "uninstallerIcon": "assets/images/Logo.ico",
+      "installerHeaderIcon": "assets/images/Logo.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Managely Cashier",
+      "deleteAppDataOnUninstall": false,
+      "differentialPackage": true
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "assets/images/Logo.icns",
+      "category": "public.app-category.business"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "assets/images/Logo.png",
+      "category": "Office"
+    }
+  }
+}

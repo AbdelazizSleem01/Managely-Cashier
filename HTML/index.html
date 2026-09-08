@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الصفحة الرئيسية - كاشير</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
+    <link href="../styles/output.css" rel="stylesheet">
+    <link href="../styles/home.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+        .shortcut-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .shortcut-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .shortcut-badge {
+            background: #3b82f6;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            
+        }
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #4f46e5;
+        }
+        .page-title {
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body data-page="home">
+    <div id="sidebar-container"></div>
+    <div class="main-content">
+        <div class="container mx-auto px-4 py-8">
+            <h1 class="text-4xl font-bold text-center mb-8 page-title">الصفحة الرئيسية</h1>
+            
+            <!-- قسم الاختصارات -->
+            <div class="mb-12">
+                <h2 class="text-2xl font-semibold text-primary mb-6 gap-2 flex items-center">
+                    <i class="fas fa-bolt ml-2"></i>اختصارات سريعة
+                </h2>
+                <div class="grid-container">
+                    <a href="./sales-invoice.html" class="shortcut-btn btn-outline btn-primary pb-6">
+                        <i class="fas fa-receipt"></i> فاتورة بيع
+                        <span class="shortcut-badge">F10</span>
+                    </a>
+                    <a href="./products.html" class="shortcut-btn btn-outline btn-success">
+                        <i class="fas fa-box"></i> إدارة المنتجات
+                        <span class="shortcut-badge">F9</span>
+                    </a>
+                    <a href="./treasury.html" class="shortcut-btn btn-outline btn-info">
+                        <i class="fas fa-wallet"></i> الخزنة
+                        <span class="shortcut-badge">F12</span>
+                    </a>
+                    <a href="./categories.html" class="shortcut-btn btn-outline btn-accent">
+                        <i class="fas fa-tags"></i> الفئات
+                        <span class="shortcut-badge">Ctrl+T</span>
+                    </a>
+                    <a href="./customers.html" class="shortcut-btn btn-outline btn-secondary">
+                        <i class="fas fa-users"></i> العملاء
+                        <span class="shortcut-badge">F4</span>
+                    </a>
+                    <a href="./settings.html" class="shortcut-btn btn-outline btn-warning">
+                        <i class="fas fa-cog"></i> الإعدادات
+                        <span class="shortcut-badge">Ctrl+S</span>
+                    </a>
+                    <a href="./suppliers.html" class="shortcut-btn btn-outline btn-error">
+                        <i class="fas fa-truck"></i> الموردين
+                        <span class="shortcut-badge">Ctrl+P</span>
+                    </a>
+                    <a href="./ProductsPurchaseInvoices.html" class="shortcut-btn btn-outline btn-success">
+                        <i class="fas fa-file-invoice"></i> فواتير الشراء
+                        <span class="shortcut-badge">F8</span>
+                    </a>
+                    <a href="./purchase-invoices.html" class="shortcut-btn btn-outline btn-info">
+                        <i class="fas fa-file-invoice-dollar"></i> المشتريات
+                        <span class="shortcut-badge">F7</span>
+                    </a>
+                    <a href="./sales.html" class="shortcut-btn btn-outline btn-primary">
+                        <i class="fas fa-shopping-cart"></i> المبيعات
+                        <span class="shortcut-badge">F6</span>
+                    </a>
+                    <a href="./statistics.html" class="shortcut-btn btn-outline btn-accent">
+                        <i class="fas fa-chart-line"></i> التقارير
+                        <span class="shortcut-badge">F5</span>
+                    </a>
+                    <a href="./returns.html" class="shortcut-btn btn-outline btn-accent">
+                        <i class="fas fa-arrows-rotate"></i> مرتجع
+                        <span class="shortcut-badge">F3</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- قسم المنتجات فقط (بدون سلة) -->
+            <div class="block gap-8 mt-12">
+                <div class="w-full">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                        <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <h2 class="text-2xl font-semibold text-primary flex items-center shrink-0 whitespace-nowrap" style="white-space: nowrap; flex-shrink: 0;">
+                                <i class="fas fa-boxes ml-2"></i>المنتجات المتاحة
+                            </h2>
+                            <div class="flex items-center gap-4 w-full md:w-auto">
+                                <input id="searchInput"
+                                    class="input input-primary w-full md:w-64 bg-white"
+                                    placeholder="ابحث عن منتج...">
+                                <div id="filter" class="flex items-center w-full md:w-64">
+                                    <select id="filterCategory" onchange="filterProducts()"
+                                        class="select select-primary text-primary bg-transparent w-full">
+                                        <option value="" disabled selected>كل المنتجات</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="products" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                        <div id="noProducts" class="no-results hidden">
+                            <i class="fas fa-box-open text-4xl mb-3 text-gray-400"></i>
+                            <p class="text-lg">لا توجد منتجات متاحة</p>
+                            <p class="text-sm text-gray-500 mt-1">قم بإضافة منتجات جديدة لعرضها هنا</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم الإحصائيات السريعة -->
+            <div class="statistics mt-12">
+                <h2 class="text-2xl font-semibold text-primary mb-6 gap-2 flex items-center">
+                    <i class="fas fa-chart-pie ml-2"></i>نظرة سريعة
+                </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="stat-card w-full">
+                        <i class="fas fa-shopping-cart stat-icon"></i>
+                        <h3 class="text-lg font-bold mb-2 text-black">المبيعات اليوم</h3>
+                        <p id="dailySales" class="text-2xl font-bold text-gray-800">0</p>
+                    </div>
+                    <div class="stat-card w-full">
+                        <i class="fas fa-money-bill-wave stat-icon"></i>
+                        <h3 class="text-lg font-bold mb-2 text-black">الإيرادات اليوم</h3>
+                        <p id="dailyRevenue" class="text-2xl font-bold text-gray-800">0.00 جنيه</p>
+                    </div>
+                    <div class="stat-card w-full">
+                        <i class="fas fa-exclamation-triangle stat-icon"></i>
+                        <h3 class="text-lg font-bold mb-2 text-black">منتجات منخفضة</h3>
+                        <p id="lowStock" class="text-2xl font-bold text-gray-800">0</p>
+                        <p class="text-sm text-gray-500 mt-1">بحاجة لإعادة تخزين</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- قسم التسويق والمميزات -->
+            <div class="mt-16 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-xl p-8 shadow-lg">
+                <h2 class="text-3xl font-bold text-center text-indigo-800 mb-8">مرحبًا بك في نظام الكاشير المتكامل!</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mb-10">
+                    <div class="bg-white p-6 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300">
+                        <i class="fas fa-bolt text-4xl text-yellow-500 mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2 text-black">سرعة وأداء</h3>
+                        <p class="text-gray-600">واجهة سهلة وسريعة لإنجاز عمليات البيع في ثوانٍ.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300">
+                        <i class="fas fa-chart-bar text-4xl text-green-500 mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2 text-black">تقارير وتقارير</h3>
+                        <p class="text-gray-600">تقارير مفصلة عن المبيعات، المخزون، والعملاء لاتخاذ أفضل القرارات.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300">
+                        <i class="fas fa-shield-alt text-4xl text-blue-500 mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2 text-black">أمان وموثوقية</h3>
+                        <p class="text-gray-600">بياناتك في أمان تام مع نظام ترخيص ونسخ احتياطي آمن.</p>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <img src="../assets/images/pay.png" alt="نظام الكاشير" class="mx-auto rounded-lg shadow-md mb-6">
+                    <p class="text-xl text-gray-700 font-semibold">ابدأ رحلتك معنا لتحقيق كفاءة أعلى وأرباح أكبر!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- حقل مخفي للسكانر (للصفحة الرئيسية فقط إذا حابب تستخدمه هنا) -->
+    <div class="fixed bottom-4 left-4 z-50 hidden">
+        <div class="tooltip tooltip-right" data-tip="فتح الماسح الضوئي">
+            <button class="btn btn-circle btn-primary shadow-lg"
+                onclick="document.getElementById('barcodeScannerInput').focus()"
+                title="فتح الماسح الضوئي" aria-label="فتح الماسح الضوئي">
+                <i class="fas fa-barcode"></i>
+            </button>
+        </div>
+        <input type="text" id="barcodeScannerInput" class="opacity-0 absolute" oninput="handleBarcodeScan(this.value)"
+            autofocus>
+    </div>
+
+    <div id="footer-container" class="z-10"></div>
+    <script type="module" src="../js/calculator.js"></script>
+    <script type="module" src="../js/shared.js"></script>
+    <script type="module" src="../js/home.js"></script>
+</body>
+</html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الإحصائيات</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" type="text/css">
+    <link href="../styles/output.css" rel="stylesheet" type="text/css">
+    <link href="../styles/home.css" rel="stylesheet" type="text/css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        /* تحسين التصميم العام */
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%);
+        }
+
+        /* تحسين العنوان */
+        .page-title {
+            background: linear-gradient(to right, #3b82f6, #9333ea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* تحسين الـ Card */
+        .card {
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* تحسين الـ Stat Cards */
+        .stat-card {
+            background: linear-gradient(145deg, #ffffff, #f3f4f6);
+            border-radius: 15px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* تحسين أشرطة التقدم */
+        .progress-container {
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            height: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            background: linear-gradient(to right, #3b82f6, #9333ea);
+            height: 100%;
+            border-radius: 9999px;
+            transition: width 1s ease-in-out;
+        }
+
+        .triangle {
+            color: red;
+
+            i {
+                background-color: rgba(255, 0, 0, 0.202);
+                padding: 10px;
+                border-radius: 20px;
+            }
+        }
+
+        span {
+            margin: 0 10px;
+        }
+
+        .Low {
+            background-color: rgba(255, 0, 0, 0.033);
+
+        }
+
+        /* تأثير تحريك عند التحميل */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* تحسين الرسم البياني */
+        #dailySalesChart {
+            max-height: 300px;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-50" data-page="statistics">
+    <div id="sidebar-container"></div>
+
+
+    <div class="main-content pr-64 lg:pr-0 transition-all duration-300">
+        <div class="container mx-auto px-4 py-8">
+            <div class="flex flex-col items-center mb-8">
+                <h1 class="text-4xl font-bold text-center mb-2 page-title">الإحصائيات</h1>
+                <p class="text-gray-500">نظرة عامة على أداء المحل وإحصائيات المبيعات</p>
+            </div>
+
+            <div class="card bg-white shadow-xl border border-gray-100 p-6 max-w-6xl mx-auto">
+                <div class="card-body p-0">
+                    <div
+                        class="flex items-center gap-4 mb-8 p-6 bg-gradient-to-r from-primary to-secondary rounded-lg shadow rounde">
+                        <div class="p-3 bg-white/20 rounded-full">
+                            <i class="fas fa-chart-bar text-white text-2xl"></i>
+                        </div>
+                        <div>
+                            <h2 class=" text-2xl font-bold text-white">
+                                إحصائيات المحل
+                            </h2>
+                            <p class="text-white/90">نظرة شاملة على أداء المحل</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-8 p-4">
+                        <!-- إحصائيات المنتجات -->
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-700 mb-4 flex items-center gap-3 border-b pb-2">
+                                <div class="p-3 mb-6 mt-4 mx-4 bg-primary/10 text-primary rounded-full ">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                                <span>إحصائيات المنتجات والعملاء</span>
+                            </h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div
+                                    class="stat-card my-2 mx-4 bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl shadow-md  border border-gray-100 hover:shadow-md transition-shadow fade-in">
+                                    <div class="flex items-center gap-3 mb-3 p-3 ">
+                                        <div class="p-3 bg-primary/10 text-primary rounded-lg">
+                                            <i class="fas fa-boxes"></i>
+                                        </div>
+                                        <h3 class="text-lg font-semibold text-gray-700 mx-2">عدد المنتجات</h3>
+                                    </div>
+                                    <p id="totalProducts" class=" text-center mb-3 font-bold text-primary text-4xl">0
+                                    </p>
+                                </div>
+
+                                <div
+                                    class="stat-card my-2 mx-4 bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl shadow-md  border border-gray-100 hover:shadow-md transition-shadow fade-in">
+                                    <div class="flex items-center gap-3 mb-3 p-3 ">
+                                        <div class="p-3 bg-primary/10 text-primary rounded-lg">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                        <h3 class="text-lg font-semibold text-gray-700 mx-2">إجمالي العملاء</h3>
+                                    </div>
+                                    <p id="totalCustomers" class=" text-center mb-3 font-bold text-primary text-4xl">0
+                                    </p>
+                                </div>
+
+                                <div
+                                    class="stat-card my-2 mx-4 bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl shadow-md  border border-gray-100 hover:shadow-md transition-shadow fade-in">
+                                    <div class="flex items-center gap-3 mb-3 p-3 ">
+                                        <div class="p-3 bg-primary/10 text-primary rounded-lg">
+                                            <i class="fas fa-user-plus"></i>
+                                        </div>
+                                        <h3 class="text-lg font-semibold text-gray-700 mx-2">العملاء الجدد</h3>
+                                    </div>
+                                    <p id="newCustomers" class="text- text-center mb-3-bold text-primary">0</p>
+                                </div>
+
+                                <div
+                                    class="stat-card my-2 mx-4 bg-gradient-to-br hidden from-gray-50 to-white p-5 rounded-xl shadow-md  border border-gray-100 hover:shadow-md transition-shadow fade-in">
+                                    <div class="flex items-center gap-3 mb-3 p-3 ">
+                                        <div class="p-3 bg-primary/10 text-primary rounded-lg">
+                                            <i class="fas fa-user-clock"></i>
+                                        </div>
+                                        <h3 class="text-lg font-semibold text-gray-700 mx-2">العملاء القدامى</h3>
+                                    </div>
+                                    <p id="oldCustomers" class="text- text-center mb-3-bold text-primary">0</p>
+                                </div>
+
+                                <div
+                                    class="stat-card my-2 mx-4 bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl shadow-md  border border-gray-100 hover:shadow-md transition-shadow fade-in">
+                                    <div class="flex items-center gap-3 mb-3 p-3 ">
+                                        <div class="p-3 bg-primary/10 text-primary rounded-lg">
+                                            <i class="fas fa-percentage"></i>
+                                        </div>
+                                        <h3 class="text-lg font-semibold text-gray-700 mx-2">نسبة العملاء الجدد</h3>
+                                    </div>
+                                    <p id="newCustomersPercentage"
+                                        class=" text-center mb-3 font-bold text-primary text-4xl">0%</p>
+                                </div>
+
+                                <div
+                                    class="stat-card my-2 mx-4 bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl shadow-md  border border-gray-100 hover:shadow-md transition-shadow fade-in">
+                                    <div class="flex items-center gap-3 mb-3 p-3 ">
+                                        <div class="p-3 bg-primary/10 text-primary rounded-lg">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </div>
+                                        <h3 class="text-lg font-semibold text-gray-700 mx-2">إجمالي الأوردرات</h3>
+                                    </div>
+                                    <p id="totalOrders" class="text-4xl f text-center mb-3 text-primary">0</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- إحصائيات المبيعات -->
+                        <div class="mt-8">
+                            <h3 class="text-xl font-bold text-gray-700 mb-4 flex items-center gap-3 border-b pb-2">
+                                <div class="p-3 mb-6 mt-4 mx-4 bg-primary/10 text-primary rounded-full ">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                                <span>إحصائيات المبيعات</span>
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div
+                                    class="stat-card my-2 mx-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-md  border border-gray-100 hover:shadow-md transition-shadow fade-in">
+                                    <div class="flex items-center gap-3 mb-3  ">
+                                        <div class="p-3 bg-primary/10 text-primary rounded-lg">
+                                            <i class="fas fa-calendar-day"></i>
+                                        </div>
+                                        <h4 class="text-lg font-semibold text-gray-700 mx-2">المبيعات اليومية</h4>
+                                    </div>
+                                    <p id="dailySales" class="text-lg text-center mb-3 font-bold text-primary">0 ج.م</p>
+                                    <p class="text-sm mt-2 text-gray-500">(آخر 30 يومًا)</p>
+                                    <p id="dailySalesChange" class="text-sm mt-1"></p>
+                                </div>
+
+                                <div
+                                    class="stat-card my-2 mx-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-md  border border-gray-100 hover:shadow-md transition-shadow fade-in">
+                                    <div class="flex items-center gap-3 mb-3  ">
+                                        <div class="p-3 bg-primary/10 text-primary rounded-lg">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </div>
+                                        <h4 class="text-lg font-semibold text-gray-700 mx-2">المبيعات الشهرية</h4>
+                                    </div>
+                                    <p id="monthlySales" class="text-lg text-center mb-3 font-bold text-primary">0 ج.م
+                                    </p>
+                                    <p id="monthlySalesChange" class="text-sm mt-1"></p>
+                                </div>
+
+                                <div
+                                    class="stat-card my-2 mx-4 p-4 bg-gradient-to-br from-gray-50 to-white rounded-xl shadow-md  border border-gray-100 hover:shadow-md transition-shadow fade-in">
+                                    <div class="flex items-center gap-3 mb-3  ">
+                                        <div class="p-3 bg-primary/10 text-primary rounded-lg">
+                                            <i class="fas fa-calendar"></i>
+                                        </div>
+                                        <h4 class="text-lg font-semibold text-gray-700 mx-2">المبيعات السنوية</h4>
+                                    </div>
+                                    <p id="yearlySales" class="text-lg font-bold text-center mb-3 text-primary">0 ج.م
+                                    </p>
+                                    <p id="yearlySalesChange" class="text-sm mt-1"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- الأوردرات حسب الفترة -->
+                        <div class="mt-8">
+                            <h3 class="text-xl font-bold text-gray-700 mb-4 flex items-center gap-3 border-b pb-2">
+                                <div class="p-3 mb-6 mt-4 mx-4 bg-primary/10 text-primary rounded-full ">
+                                    <i class="fas fa-shopping-bag"></i>
+                                </div>
+                                <span>عدد الأوردرات حسب الفترة</span>
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div
+                                    class="stat-card my-2 mx-4 bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl shadow-md  border border-gray-100 hover:shadow-md transition-shadow fade-in">
+                                    <div class="flex items-center gap-3 mb-3 p-3 ">
+                                        <div class="p-3 bg-primary/10 text-primary rounded-lg">
+                                            <i class="fas fa-sun"></i>
+                                        </div>
+                                        <h4 class="text-lg font-semibold text-gray-700 mx-2">الأوردرات اليومية</h4>
+                                    </div>
+                                    <p id="dailyOrders" class="text-2xl font-bold text-center mb-3 text-primary">0</p>
+                                    <p class="text-sm mt-2 text-gray-500">(آخر 30 يومًا)</p>
+                                </div>
+
+                                <div
+                                    class="stat-card my-2 mx-4 bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl shadow-md  border border-gray-100 hover:shadow-md transition-shadow fade-in">
+                                    <div class="flex items-center gap-3 mb-3 p-3 ">
+                                        <div class="p-3 bg-primary/10 text-primary rounded-lg">
+                                            <i class="fas fa-moon"></i>
+                                        </div>
+                                        <h4 class="text-lg font-semibold text-gray-700 mx-2">الأوردرات الشهرية</h4>
+                                    </div>
+                                    <p id="monthlyOrders" class="text-2xl font-bold text-center mb-3 text-primary">0</p>
+                                </div>
+
+                                <div
+                                    class="stat-card my-2 mx-4 bg-gradient-to-br from-gray-50 to-white p-5 rounded-xl shadow-md  border border-gray-100 hover:shadow-md transition-shadow fade-in">
+                                    <div class="flex items-center gap-3 mb-3 p-3 ">
+                                        <div class="p-3 bg-primary/10 text-primary rounded-lg">
+                                            <i class="fas fa-star"></i>
+                                        </div>
+                                        <h4 class="text-lg font-extrabold  text-gray-700 mx-2">الأوردرات السنوية</h4>
+                                    </div>
+                                    <p id="yearlyOrders" class="text-2xl font-bold text-center mb-3 text-primary">0</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- تفاصيل المبيعات اليومية (Progress Bar) -->
+                        <div class="mt-8 ">
+                            <h3 class="text-xl font-bold text-gray-700 mb-4 flex items-center gap-3 border-b pb-2">
+                                <div class="p-3 mb-6 mt-4 mx-4 bg-primary/10 text-primary rounded-full ">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <span>تفاصيل المبيعات اليومية (آخر 30 يومًا)</span>
+                            </h3>
+                            <div id="dailySalesProgress"
+                                class="space-y-4 p-4 bg-gray-50 rounded-xl border border-gray-200 fade-in">
+                                <div class="text-center py-8 text-gray-400">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <p>جاري تحميل بيانات المبيعات...</p>
+                                </div>
+                            </div>
+                            <!-- إضافة الرسم البياني -->
+                            <div class="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200 fade-in">
+                                <canvas id="dailySalesChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- المنتجات الأكثر مبيعًا -->
+                        <div class="mt-8">
+                            <h3 class="text-xl font-bold mb-4 flex  text-success items-center gap-3 border-b pb-2">
+                                <div class="p-3 mb-6 mt-4 mx-4 bg-primary/10 text-success rounded-full ">
+                                    <i class="fas fa-trophy"></i>
+                                </div>
+                                <span>أعلى المنتجات مبيعًا</span>
+                            </h3>
+                            <div id="topProducts"
+                                class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden fade-in">
+                                <div class="text-center py-8 text-gray-400">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <p>جاري تحميل بيانات المنتجات...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- المنتجات التي قاربت على النفاد -->
+                        <div class="mt-8">
+                            <h3
+                                class="triangle text-xl font-bold text-gray-700 mb-4 flex items-center gap-3 border-b pb-2">
+                                <div class="p-2 rounded-full ">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <span>المنتجات التي قاربت على النفاد (أقل من 10)</span>
+                            </h3>
+                            <div id="lowStockProducts"
+                                class="bg-gray-50 rounded-xl border border-gray-200 overflow-hidden fade-in">
+                                <div class="text-center py-8 text-gray-400">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <p>جاري تحميل بيانات المخزون...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 text-center">
+                <a href="index.html"
+                    class="btn btn-primary px-8 hover:bg-primary-focus transition duration-300 shadow-lg">
+                    <i class="fas fa-home ml-2"></i> العودة للرئيسية
+                </a>
+            </div>
+        </div>
+    </div>
+    <div id="footer-container" class="z-10"></div>
+    <script type="module" src="../js/calculator.js"></script>
+    <script type="module" src="../js/shared.js"></script>
+    <script type="module" src="../js/statistics.js"></script>
+
+</body>
+
+</html>

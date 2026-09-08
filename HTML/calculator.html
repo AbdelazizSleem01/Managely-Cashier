@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/output.css">
+    <link rel="stylesheet" href="../styles/home.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>اله حاسبة</title>
+</head>
+
+<body>
+
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <h2 class="text-2xl font-semibold mb-4">آلة حاسبة</h2>
+        <div class="calculator bg-gray-200 p-4 rounded-lg">
+            <input type="text" id="calcDisplay" class="w-full p-2 mb-4 text-left bg-white border rounded" readonly>
+            <div class="grid grid-cols-4 gap-2">
+                <button onclick="clearCalc()" class="bg-red-500 text-white p-2 rounded hover:bg-red-600">C</button>
+                <button onclick="appendToCalc('(')"
+                    class="bg-gray-500 text-white p-2 rounded hover:bg-gray-600">(</button>
+                <button onclick="appendToCalc(')')"
+                    class="bg-gray-500 text-white p-2 rounded hover:bg-gray-600">)</button>
+                <button onclick="appendToCalc('/')"
+                    class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">/</button>
+                <button onclick="appendToCalc('7')" class="bg-gray-300 p-2 rounded hover:bg-gray-400">7</button>
+                <button onclick="appendToCalc('8')" class="bg-gray-300 p-2 rounded hover:bg-gray-400">8</button>
+                <button onclick="appendToCalc('9')" class="bg-gray-300 p-2 rounded hover:bg-gray-400">9</button>
+                <button onclick="appendToCalc('*')"
+                    class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">×</button>
+                <button onclick="appendToCalc('4')" class="bg-gray-300 p-2 rounded hover:bg-gray-400">4</button>
+                <button onclick="appendToCalc('5')" class="bg-gray-300 p-2 rounded hover:bg-gray-400">5</button>
+                <button onclick="appendToCalc('6')" class="bg-gray-300 p-2 rounded hover:bg-gray-400">6</button>
+                <button onclick="appendToCalc('-')"
+                    class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">-</button>
+                <button onclick="appendToCalc('1')" class="bg-gray-300 p-2 rounded hover:bg-gray-400">1</button>
+                <button onclick="appendToCalc('2')" class="bg-gray-300 p-2 rounded hover:bg-gray-400">2</button>
+                <button onclick="appendToCalc('3')" class="bg-gray-300 p-2 rounded hover:bg-gray-400">3</button>
+                <button onclick="appendToCalc('+')"
+                    class="bg-blue-500 text-white p-2 rounded hover:bg-blue-600">+</button>
+                <button onclick="appendToCalc('0')"
+                    class="bg-gray-300 p-2 rounded col-span-2 hover:bg-gray-400">0</button>
+                <button onclick="appendToCalc('.')" class="bg-gray-300 p-2 rounded hover:bg-gray-400">.</button>
+                <button onclick="calculate()" class="bg-green-500 text-white p-2 rounded hover:bg-green-600">=</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

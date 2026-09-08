@@ -1,0 +1,17 @@
+{
+  "watch": [
+    "dist/main.js",
+    "preload.js"
+  ],
+  "ext": "js,json",
+  "exec": "electron .",
+  "ignore": [
+    "node_modules/**",
+    "HTML/**",
+    "js/**",
+    "styles/**",
+    "dist/build/**",
+    "dist/win-unpacked/**"
+  ],
+  "delay": "500"
+}

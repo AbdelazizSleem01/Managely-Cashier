@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
+    <link href="../styles/output.css" rel="stylesheet">
+    <link href="../styles/home.css" rel="stylesheet">
+    <link href="../styles/login.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        i {
+            margin-top: -10px !important;
+        }
+        .mt-4{
+            margin-top: 10px;
+        }
+        .tooltip{
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Image Section -->
+        <div class="image-section">
+            <h1>مرحباً بعودتك!</h1>
+            <p>نظام إدارة المحتوى الخاص بك ينتظرك. سجل الدخول الآن للوصول إلى لوحة التحكم والإحصائيات الخاصة بك.</p>
+            <div style="margin-top: 4rem;">
+                <i class="fas fa-lock" style="font-size: 3rem; opacity: 0.8;"></i>
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div class="form-section">
+            <div class="login-card">
+                <div class="login-header">
+                    <h2>تسجيل الدخول</h2>
+
+                    <p>الرجاء إدخال بيانات الاعتماد الخاصة بك للوصول إلى حسابك</p>
+
+                    <div class="tooltip"
+                        data-tip="اول ايميل وباسورد سيتم ادخالهم سيكونوا الاساسين فيما بعد ان كنت تحتاج لتغيريهم من صفحة الاعدادات">
+                        <i class="fas fa-info-circle mx-auto text-primary mt-8"></i>
+                    </div>
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-control">
+                        <label for="email">البريد الإلكتروني <span class="required-star">*</span></label>
+                        <div class="relative">
+                            <input class="text-gray-700" type="email" id="email" placeholder="أدخل بريدك الإلكتروني" required>
+                            <i class="fas fa-envelope input-icon "></i>
+                        </div>
+                    </div>
+
+                    <div class="form-control password-container">
+                        <label for="password">كلمة المرور <span class="required-star">*</span></label>
+                        <div class="relative">
+                            <input class="text-gray-700" type="password" id="password" placeholder="أدخل كلمة المرور" required>
+                            <i class="fas fa-lock input-icon "></i>
+                            <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+                        </div>
+                    </div>
+
+
+                    <button type="submit" class="login-btn">
+                        <i class="fas fa-sign-in-alt mr-2"></i> تسجيل الدخول
+                    </button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', async () => {
+            const passwordInput = document.getElementById('password');
+            const togglePassword = document.getElementById('togglePassword');
+
+            togglePassword.addEventListener('click', () => {
+                const type = passwordInput.type === 'password' ? 'text' : 'password';
+                passwordInput.type = type;
+                togglePassword.classList.toggle('fa-eye');
+                togglePassword.classList.toggle('fa-eye-slash');
+            });
+
+            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const emailEl = document.getElementById('email');
+                const passwordEl = document.getElementById('password');
+                const email = emailEl.value.trim();
+                const password = passwordEl.value.trim();
+
+                let hasError = false;
+                let firstInvalid = null;
+
+                if (!email) {
+                    if (typeof window.markFieldInvalid === "function") {
+                        window.markFieldInvalid(emailEl, "يرجى إدخال البريد الإلكتروني");
+                    }
+                    if (!firstInvalid) firstInvalid = emailEl;
+                    hasError = true;
+                }
+                if (!password) {
+                    if (typeof window.markFieldInvalid === "function") {
+                        window.markFieldInvalid(passwordEl, "يرجى إدخال كلمة المرور");
+                    }
+                    if (!firstInvalid) firstInvalid = passwordEl;
+                    hasError = true;
+                }
+
+                if (hasError) {
+                    if (firstInvalid) firstInvalid.focus();
+                    return;
+                }
+
+                try {
+                    await window.electronAPI.login(email, password);
+                    localStorage.setItem('isLoggedIn', 'true');
+                    Swal.fire({
+                        title: 'نجاح!',
+                        text: 'تم تسجيل الدخول بنجاح.',
+                        icon: 'success',
+                        confirmButtonColor: '#4CAF50',
+                    });
+                    window.location.href = './index.html';
+                } catch (err) {
+                    Swal.fire({
+                        title: 'خطأ!',
+                        text: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+                        icon: 'error',
+                        confirmButtonColor: '#EF4444',
+                    });
+                }
+            });
+        });
+    </script>
+    <div id="footer-container" class="z-10"></div>
+    <script type="module" src="../js/shared.js"></script>
+    <script type="module" src="../js/settings.js"></script>
+    <script type="module" src="../js/home.js"></script>
+</body>
+
+</html>

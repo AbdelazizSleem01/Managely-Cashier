@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-page="sales">
+
+<head>
+    <meta charset="UTF-8">
+    <title>المبيعات</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
+    <link rel="stylesheet" href="../styles/output.css">
+    <link rel="stylesheet" href="../styles/home.css">
+    <link rel="stylesheet" href="../styles/sales.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+</head>
+
+<body class="bg-gray-50 min-h-screen" data-page="sales">
+    <div id="sidebar-container">
+        <!-- Sidebar Toggle Button -->
+        <button id="sidebar-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Sidebar Navigation -->
+        <nav id="sidebar">
+            <div class="p-4">
+                <div class="title text-2xl font-bold text-white mb-5 mt-4 text-center">
+                    نظام الكاشير
+                    <i class="fas fa-shop"></i>
+                </div>
+                <ul class="space-y-2">
+                    <li>
+                        <a href="index.html" data-page="home"
+                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                            <i class="fas fa-home"></i> الرئيسية
+                        </a>
+                    </li>
+                    <li>
+                        <a href="products.html" data-page="products"
+                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                            <i class="fas fa-box"></i> المنتجات
+                        </a>
+                    </li>
+                    <li>
+                        <a href="categories.html" data-page="categories"
+                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                            <i class="fas fa-tags"></i> الفئات
+                        </a>
+                    </li>
+                    <li>
+                        <a href="sales-invoice.html" data-page="invoice-page"
+                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                            <i class="fas fa-file-invoice"></i> فاتورة البيع
+                        </a>
+                    </li>
+                    <li>
+                        <a href="returns.html" data-page="returns"
+                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                            <i class="fas fa-arrows-rotate"></i>مـرتجع
+                        </a>
+                    </li>
+                    <li>
+                        <a href="sales.html" data-page="sales"
+                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2 text-blue-200 font-bold">
+                            <i class="fas fa-chart-line"></i> سجل المبيعات
+                        </a>
+                    </li>
+                    <li>
+                        <a href="customers.html" data-page="customers"
+                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                            <i class="fas fa-users"></i> العمــلاء
+                        </a>
+                    </li>
+                    <li>
+                        <a href="settings.html" data-page="settings"
+                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                            <i class="fas fa-cog"></i> الإعدادات
+                        </a>
+                    </li>
+                    <li>
+                        <a href="statistics.html" data-page="statistics"
+                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                            <i class="fas fa-chart-bar"></i> الإحصائيـــات
+                        </a>
+                    </li>
+                    <li>
+                        <a href="purchase-invoices.html" data-page="purchase-invoices"
+                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                            <i class="fas fa-file-invoice"></i> المشتـريات
+                        </a>
+                    </li>
+                    <li>
+                        <a href="employees.html" data-page="employees"
+                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                            <i class="fas fa-user-tie"></i> الموظفين
+                        </a>
+                    </li>
+                    <li>
+                        <a href="ProductsPurchaseInvoices.html" data-page="ProductsPurchaseInvoices"
+                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                            <i class="fas fa-file-invoice-dollar"></i> فواتير شراء المنتجات
+                        </a>
+                    </li>
+                    <li>
+                        <a href="suppliers.html" data-page="suppliers"
+                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                            <i class="fas fa-truck"></i> الموردين
+                        </a>
+                    </li>
+                    <li>
+                        <a href="treasury.html" data-page="treasury"
+                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                            <i class="fas fa-wallet"></i> الخزنة
+                        </a>
+                    </li>
+                    <li>
+                        <a href="printer-settings.html" data-page="printer-settings"
+                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
+                            <i class="fas fa-print"></i> إعدادات الطابعة
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+
+    <div class="main-content">
+        <div class="container mx-auto">
+            <h1 class="page-title text-3xl font-bold text-center mb-8 ">سجل المبيعات</h1>
+
+            <div class="card p-6 mb-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                    <input type="text" id="searchInput" placeholder="ابحث عن فاتورة، عميل، أو منتج..."
+                        class="search-input" oninput="handleSearch()" />
+                    <button onclick="exportToExcel()" class="btn-primary">
+                        <i class="fas fa-file-excel"></i>
+                        تصدير إلى Excel
+                    </button>
+                </div>
+                
+                <div class="table-container">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>رقم الفاتورة</th>
+                                <th>التاريخ</th>
+                                <th>المنتجات</th>
+                                <th>الإجمالي</th>
+                                <th>اسم العميل</th>
+                                <th>رقم الهاتف</th>
+                                <th>إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="salesTable">
+                            <!-- Immediate synchronous rendering from cache before paint -->
+                            <script>
+                                (function() {
+                                    try {
+                                        const cachedSettings = localStorage.getItem("managely_store_settings");
+                                        if (cachedSettings) {
+                                            const s = JSON.parse(cachedSettings);
+                                            const appName = document.getElementById("appName");
+                                            const footerLogo = document.getElementById("footerLogo");
+                                            if (appName && s.storeName) appName.textContent = s.storeName;
+                                            if (footerLogo && s.logo) { footerLogo.src = s.logo; footerLogo.classList.remove("hidden"); }
+                                        }
+                                        const dt = document.getElementById("currentDateTime");
+                                        if (dt) {
+                                            dt.textContent = (new Date()).toLocaleString("ar-EG", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" });
+                                        }
+
+                                        const cached = localStorage.getItem("managely_sales_cache");
+                                        if (cached) {
+                                            const sales = JSON.parse(cached);
+                                            if (Array.isArray(sales) && sales.length > 0) {
+                                                const tbody = document.getElementById("salesTable");
+                                                if (tbody) {
+                                                    tbody.innerHTML = sales.slice(0, 10).map(s => {
+                                                        const items = Array.isArray(s.items) ? s.items : [];
+                                                        const formattedDate = new Date(s.date).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
+                                                        const itemsHtml = items.map(item => `
+                                                            <div class="product-item">
+                                                                <span class="product-name">${item.name || "منتج غير محدد"}</span>
+                                                                <span class="product-quantity">${item.quantity || 0} × ${(item.price || 0).toFixed(2)} ج</span>
+                                                            </div>
+                                                        `).join("");
+
+                                                        return `
+                                                            <tr class="hover:bg-gray-50">
+                                                                <td class="font-medium text-black">${s.invoiceNumber || "--"} ${s.hasReturn ? '<span class="text-red-500 font-bold">[مرتجع]</span>' : ''}</td>
+                                                                <td>${formattedDate}</td>
+                                                                <td class="text-right">
+                                                                    <div class="flex flex-col gap-2">
+                                                                        ${itemsHtml}
+                                                                    </div>
+                                                                </td>
+                                                                <td class="total-amount">${(s.total || 0).toFixed(2)} ج</td>
+                                                                <td>${s.customerName || "--"}</td>
+                                                                <td>${s.customerPhone || "--"}</td>
+                                                                <td>
+                                                                    <div class="flex items-center justify-center gap-2">
+                                                                        <button onclick="printSale('${s._id}')" class="btn-print" title="طباعة الفاتورة">
+                                                                            <i class="fas fa-print"></i>
+                                                                            طباعة
+                                                                        </button>
+                                                                        <button onclick="deleteSale('${s._id}')" class="btn-danger" title="حذف">
+                                                                            <i class="fas fa-trash"></i>
+                                                                            حذف
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        `;
+                                                    }).join("");
+                                                }
+                                            }
+                                        }
+                                    } catch(e) {}
+                                })();
+                            </script>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- Sales Pagination -->
+                <div id="salesPagination"></div>
+            </div>
+
+            <!-- زر العودة للرئيسية -->
+            <div class="text-center mt-6">
+                <a href="index.html" class="btn btn-outline btn-primary text-white">
+                    <p class="text-white">العودة للرئيسية</p>
+                    <i class="fas fa-arrow-left ml-2  text-white"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-container" class="z-10">
+        <footer id="globalFooter" class="fixed bottom-0 w-full bg-gray-500 text-white text-center py-4">
+            <div id="footerContent" class="flex justify-between items-center px-6">
+                <div class="flex items-center gap-4">
+                    <img id="footerLogo" class="h-10 w-10 rounded-full hidden" alt="Logo" />
+                    <span id="appName" class="font-bold text-lg text-primary"></span>
+                </div>
+                <div class="flex items-end gap-4">
+                    <i class="fas fa-calendar-alt text-primary"></i>
+                    <span id="currentDateTime" class="text-sm block"></span>
+                    <i class="fas fa-clock text-primary"></i>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Floating Calculator Button -->
+    <button id="floatingCalcButton" class="btn btn-circle btn-primary shadow-lg calc-button" onclick="openCalculatorPopup()">
+        <div class="tooltip" data-tip="آلة حاسبة">
+            <i class="fas fa-calculator text-xl"></i>
+        </div>
+    </button>
+    
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <script type="module" src="../js/calculator.js"></script>
+    <script type="module" src="../js/shared.js"></script>
+    <script type="module" src="../js/sales.js"></script>
+    <script type="module">
+        import { handleSearch, exportToExcel, deleteSale, printSale } from '../js/sales.js';
+        window.handleSearch = handleSearch;
+        window.exportToExcel = exportToExcel;
+        window.deleteSale = deleteSale;
+        window.printSale = printSale;
+    </script>
+</body>
+</html>

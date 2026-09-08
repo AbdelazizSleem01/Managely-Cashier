@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفعيل البرنامج - إدخال مفتاح الترخيص</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
+    <link href="../styles/output.css" rel="stylesheet">
+    <link href="../styles/home.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --accent-color: #f72585;
+        }
+        
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            color: #333;
+        }
+        
+        .license-container {
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        .license-icon {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+        
+        h2 {
+            color: var(--secondary-color);
+            font-weight: 700;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+        }
+        
+        .input-container {
+            position: relative;
+            margin: 25px 0;
+        }
+        
+        .license-input {
+            width: 100%;
+            padding: 15px 20px;
+            border-radius: 50px;
+            border: 2px solid #e2e8f0;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+        
+        .license-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.2);
+            outline: none;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .btn1 {
+            padding: 12px 30px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            border-radius: 15px;
+        }
+        
+        .btn-success {
+            color: white;
+            background-color: var(--primary-color);
+        }
+        
+        .btn-success:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            color: white;
+        }
+        
+        .btn-error {
+            background-color: #f1f5f9;
+            color: #64748b;
+        }
+        
+        .btn-error:hover {
+            background-color: #e2e8f0;
+            color: #475569;
+        }
+        .fas {
+            margin-left: 5px;
+            
+        }
+        
+        .footer-text {
+            margin-top: 30px;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .footer-text a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 576px) {
+            .license-container {
+                padding: 30px 20px;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="license-container">
+        <div class="license-icon">
+            <i class="fas fa-key"></i>
+        </div>
+        <h2>تفعيل البرنامج</h2>
+        <p>الرجاء إدخال مفتاح الترخيص المكون من 15 حرفًا لتتمكن من استخدام البرنامج</p>
+        
+        <div class="input-container">
+            <input type="text" id="licenseKey" class="license-input input-primary bg-transparent " placeholder="XXXXX-XXXXX-XXXXX" maxlength="29">
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn1 btn-success rounded-lg" onclick="submitLicense()">
+                <i class="fas fa-check-circle"></i> تأكيد التفعيل
+            </button>
+            <button class="btn1 btn-error rounded-lg" onclick="cancelLicense()">
+                <i class="fas fa-times-circle"></i> إلغاء
+            </button>
+        </div>
+
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        function submitLicense() {
+            const licenseKey = document.getElementById('licenseKey').value;
+            if (!licenseKey.trim()) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'خطأ',
+                    text: 'الرجاء إدخال مفتاح الترخيص',
+                    confirmButtonText: 'حسناً'
+                });
+                return;
+            }
+            ipcRenderer.send('license-submitted', licenseKey);
+        }
+
+        function cancelLicense() {
+            Swal.fire({
+                title: 'هل أنت متأكد؟',
+                text: 'سيتم إغلاق نافذة التفعيل',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#4361ee',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'نعم، إغلاق',
+                cancelButtonText: 'تراجع'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    ipcRenderer.send('license-submitted', '');
+                    window.close();
+                }
+            });
+        }
+
+    </script>
+</body>
+
+</html>

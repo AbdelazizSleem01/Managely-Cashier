@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>الخزنة</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" />
+    <link href="../styles/home.css" rel="stylesheet">
+    <link href="../styles/output.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        .main-content {
+            min-height: calc(100vh - 4rem);
+            padding: 2rem 1.5rem;
+        }
+
+        @media (min-width: 1024px) {
+            .main-content {
+                padding: 3rem 4rem;
+            }
+        }
+
+        .stat-card {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            border-bottom: 4px solid;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .table th {
+            background-color: hsl(var(--p) / 0.1);
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background-color: hsl(var(--su) / 0.9);
+            color: white;
+        }
+
+        .badge-error {
+            background-color: hsl(var(--er) / 0.9);
+            color: white;
+        }
+
+        .icon {
+            margin-left: 10px;
+        }
+
+        #warnings {
+            background-color: #ff00002c;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.323);
+            color: hsl(var(--ba) / 0.8);
+
+        }
+
+        .charAt {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background-color: #f0f0f0;
+            border: 1px solid #7e7e7e;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.323);
+            color: #000;
+
+        }
+
+        /* ===== Modern Transaction Modal ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 10, 40, 0.58);
+            backdrop-filter: blur(5px);
+            z-index: 9998;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+            padding: 20px;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-box {
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            color-scheme: light;
+            color: #1e1b4b;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 24px 64px rgba(15, 10, 40, 0.28);
+            transform: scale(0.92) translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            padding: 28px !important;
+            overflow: hidden;
+        }
+
+        .modal-overlay.open .modal-box {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+            padding-bottom: 16px;
+            border-bottom: 1.5px solid #f3f0ff;
+        }
+
+        .modal-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #1e1b4b !important;
+        }
+
+        .modal-icon-wrap {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.15rem;
+            transition: all 0.3s ease;
+        }
+
+        .modal-icon-wrap.revenue {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #059669;
+        }
+
+        .modal-icon-wrap.expense {
+            background: linear-gradient(135deg, #fee2e2, #fecaca);
+            color: #e11d48;
+        }
+
+        .modal-close {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: none;
+            background: #fef2f2;
+            color: #dc2626;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #dc2626;
+            color: white;
+        }
+
+        .field-group {
+            margin-bottom: 18px;
+        }
+
+        .field-group label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #374151 !important;
+            margin-bottom: 8px;
+        }
+
+        .field-group label i {
+            color: #7c3aed;
+            font-size: 0.85rem;
+        }
+
+        .required-star {
+            color: #dc2626;
+        }
+
+        .amount-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .modal-input {
+            width: 100%;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 11px 16px;
+            font-size: 0.95rem;
+            color: #1f2937 !important;
+            background: #fafafa !important;
+            background-color: #fafafa !important;
+            color-scheme: light;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .amount-input-wrapper .modal-input {
+            padding-left: 65px; /* space for currency badge on left in RTL */
+        }
+
+        .currency-badge {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.85rem;
+            font-weight: 700;
+            background: #ede9fe;
+            color: #6d28d9;
+            padding: 3px 10px;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        .modal-textarea {
+            resize: vertical;
+            min-height: 90px;
+            line-height: 1.5;
+        }
+
+        .modal-input:focus {
+            border-color: #7c3aed;
+            background: #ffffff !important;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1.5px solid #f3f0ff;
+        }
+
+        .btn-submit {
+            flex: 1;
+            background: linear-gradient(135deg, #6d28d9, #4f46e5) !important;
+            background-color: #6d28d9 !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-submit.revenue {
+            background: linear-gradient(135deg, #059669, #10b981) !important;
+            background-color: #059669 !important;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-submit.revenue:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5) !important;
+        }
+
+        .btn-submit.expense {
+            background: linear-gradient(135deg, #e11d48, #f43f5e) !important;
+            background-color: #e11d48 !important;
+            box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35);
+        }
+
+        .btn-submit.expense:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(225, 29, 72, 0.5) !important;
+        }
+
+        .btn-cancel {
+            background: #f3f4f6;
+            color: #6b7280;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: #e5e7eb;
+            color: #374151;
+        }
+    </style>
+</head>
+
+<body class="bg-base-100 text-base-content min-h-screen" data-page="treasury">
+    <div id="sidebar-container"></div>
+
+    <div class="main-content transition-all duration-300">
+        <div class="max-w-7xl mx-auto space-y-8">
+            <!-- Header Section -->
+            <div class="text-center mb-10">
+                <h1 class="text-4xl md:text-5xl font-bold text-primary mb-2 page-title">الخزنة</h1>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="stat-card bg-gradient-to-br from-primary/10 to-primary/5 border-primary shadow-md">
+                    <div class="card-body">
+                        <div class="flex items-center gap-3">
+                            <div class="p-3 rounded-full bg-primary/10 text-primary icon">
+                                <i class="fas fa-wallet text-2xl"></i>
+                            </div>
+                            <h2 class="card-title text-gray-700">الرصيد الحالي</h2>
+                        </div>
+                        <p id="currentBalance" class="text-3xl font-bold text-primary mt-2">0 جنيه</p>
+                    </div>
+                </div>
+
+                <div class="stat-card bg-gradient-to-br from-success/10 to-success/5 border-success shadow-md">
+                    <div class="card-body">
+                        <div class="flex items-center gap-3">
+                            <div class="p-3 rounded-full bg-success/10 text-success icon">
+                                <i class="fas fa-arrow-up text-2xl"></i>
+                            </div>
+                            <h2 class="card-title text-gray-700">إجمالي الإيرادات</h2>
+                        </div>
+                        <p id="totalRevenue" class="text-3xl font-bold text-success mt-2">0 جنيه</p>
+                    </div>
+                </div>
+
+                <div class="stat-card bg-gradient-to-br from-error/10 to-error/5 border-error shadow-md">
+                    <div class="card-body">
+                        <div class="flex items-center gap-3">
+                            <div class="p-3 rounded-full bg-error/10 text-error icon">
+                                <i class="fas fa-arrow-down text-2xl"></i>
+                            </div>
+                            <h2 class="card-title text-gray-700">إجمالي المصروفات</h2>
+                        </div>
+                        <p id="totalExpense" class="text-3xl font-bold text-error mt-2">0 جنيه</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warnings -->
+            <div id="warnings" class="space-y-3">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-4 justify-center md:justify-start mb-6">
+                <button onclick="openModal('revenue')" class="btn btn-success gap-2">
+                    <i class="fas fa-plus-circle"></i>
+                    إضافة إيراد
+                </button>
+                <button onclick="openModal('expense')" class="btn btn-error gap-2">
+                    <i class="fas fa-minus-circle"></i>
+                    إضافة مصروف
+                </button>
+                <button onclick="printReport()" class="btn btn-primary gap-2">
+                    <i class="fas fa-print"></i>
+                    طباعة التقرير المالي
+                </button>
+                <button onclick="exportToExcel()" class="btn btn-warning gap-2">
+                    <i class="fas fa-file-export"></i>
+                    تصدير التقرير المالي
+                </button>
+                <button onclick="deleteSelectedTransactions()" class="btn btn-error gap-2">
+                    <i class="fas fa-trash-alt"></i>
+                    حذف المحدد
+                </button>
+                <button onclick="clearAllTransactions()" class="btn btn-danger gap-2">
+                    <i class="fas fa-eraser"></i>
+                    تفريغ الكل
+                </button>
+            </div>
+
+            <!-- Filters Card -->
+            <div class="card bg-base-100 shadow-lg border border-base-200 mb-6">
+                <div class="card-body">
+                    <h2 class="card-title text-lg font-bold text-primary">
+                        <i class="fas fa-filter ml-2"></i>
+                        فلترة العمليات
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">التاريخ</span>
+                            </label>
+                            <input type="date" id="filterDate"
+                                class="input input-primary  w-full focus:ring-2 focus:ring-primary" />
+                        </div>
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">نوع العملية</span>
+                            </label>
+                            <select id="filterType"
+                                class="select select-primary w-full focus:ring-2 focus:ring-primary">
+                                <option value="">كل الأنواع</option>
+                                <option value="revenue">إيراد</option>
+                                <option value="expense">مصروف</option>
+                            </select>
+                        </div>
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">اسم المستخدم</span>
+                            </label>
+                            <input type="text" id="filterUser" placeholder="اسم المستخدم"
+                                class="input input-primary  w-full focus:ring-2 focus:ring-primary" />
+                        </div>
+                        <div class="form-control">
+                            <label class="label">
+                                <span class="label-text">المبلغ</span>
+                            </label>
+                            <input type="number" id="filterAmount" placeholder="المبلغ"
+                                class="input input-primary  w-full focus:ring-2 focus:ring-primary" />
+                        </div>
+                    </div>
+                    <div class="mt-6 flex justify-end">
+                        <button onclick="filterTransactions()" class="btn btn-primary gap-2">
+                            <i class="fas fa-filter"></i>
+                            تطبيق الفلتر
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions Table -->
+            <div class="card bg-base-100 shadow-lg border border-base-200">
+                <div class="card-body p-0">
+                    <div class="p-6 pb-4">
+                        <h2 class="card-title text-lg font-bold text-primary">
+                            <i class="fas fa-history ml-2"></i>
+                            سجل العمليات
+                        </h2>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="table">
+                            <thead>
+                                <tr class="text-base">
+                                    <th class="text-right">التاريخ والوقت</th>
+                                    <th class="text-right">نوع الحركة</th>
+                                    <th class="text-right">المبلغ</th>
+                                    <th class="text-right">الوصف</th>
+                                    <th class="text-right">المستخدم</th>
+                                    <th class="text-right">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionsBody" class="divide-y divide-base-200"></tbody>
+                        </table>
+                    </div>
+                    <!-- Transactions Pagination -->
+                    <div id="transactionsPagination"></div>
+                </div>
+            </div>
+
+            <!-- Daily Stats Section -->
+            <div class="card bg-base-100 shadow-lg border border-base-200 mt-6">
+                <div class="card-body">
+                    <h2 class="card-title text-lg font-bold text-primary">
+                        <i class="fas fa-chart-line ml-2"></i>
+                        إحصائيات المعاملات اليومية (آخر 30 يومًا)
+                    </h2>
+                    <div class="overflow-x-auto">
+                        <table class="table">
+                            <thead>
+                                <tr class="text-base">
+                                    <th class="text-right">التاريخ</th>
+                                    <th class="text-right">إجمالي الإيرادات</th>
+                                    <th class="text-right">إجمالي المصروفات</th>
+                                    <th class="text-right">الصافي</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dailyStatsBody" class="divide-y divide-base-200"></tbody>
+                        </table>
+                    </div>
+                    <!-- Chart -->
+                    <div class="mt-6">
+                        <canvas id="dailyStatsChart" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Modal (Revenue / Expense) -->
+    <div id="transactionModal" class="modal-overlay" onclick="handleOverlayClick(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <div id="modalIconWrap" class="modal-icon-wrap revenue">
+                        <i id="modalIcon" class="fas fa-plus-circle"></i>
+                    </div>
+                    <span id="modalTitle">إضافة إيراد جديد</span>
+                </div>
+                <button class="modal-close" onclick="closeModal()" title="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="transactionForm" onsubmit="event.preventDefault();">
+                <div class="field-group">
+                    <label>
+                        <i class="fas fa-money-bill-wave"></i>
+                        المبلغ
+                        <span class="required-star">*</span>
+                    </label>
+                    <div class="amount-input-wrapper">
+                        <input type="number" id="transactionAmount" class="modal-input" placeholder="0.00" step="any" min="0.01" required>
+                        <span class="currency-badge">جنيه</span>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label>
+                        <i class="fas fa-align-right"></i>
+                        الوصف
+                        <span class="required-star">*</span>
+                    </label>
+                    <textarea id="transactionDescription" class="modal-input modal-textarea" placeholder="اكتب تفاصيل أو سبب العملية..." rows="3" required></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" onclick="closeModal()" class="btn-cancel">
+                        <i class="fas fa-times"></i>
+                        إلغاء
+                    </button>
+                    <button type="button" id="submitTransaction" class="btn-submit revenue">
+                        <i class="fas fa-check"></i>
+                        <span id="submitBtnText">تأكيد الإضافة</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="footer-container" class="z-10"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script type="module" src="../js/calculator.js"></script>
+    <script type="module" src="../js/shared.js"></script>
+    <script type="module" src="../js/treasury.js"></script>
+    <script>
+        window.addEventListener("DOMContentLoaded", async () => {
+            const user = (await window.electronAPI.getSettings())?.currentUser || "غير معروف";
+            document.getElementById("currentUserName").textContent = user;
+        });
+    </script>
+</body>
+
+</html>
