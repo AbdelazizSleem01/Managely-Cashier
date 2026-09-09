@@ -263,7 +263,7 @@
     <div class="ambient-glow"></div>
 
     <div class="splash-card" id="splashCard">
-        <div class="badge-version">v1.0.2</div>
+        <div class="badge-version" id="versionBadge">v1.0.3</div>
         <div class="badge-status">نظام جاهز</div>
 
         <div class="logo-wrapper">
@@ -285,7 +285,7 @@
         </div>
 
         <div class="footer-copyright">
-            حقوق النشر © 2025 Abdelaziz Sleem | جميع الحقوق محفوظة
+            حقوق النشر © 2026 Abdelaziz Sleem | جميع الحقوق محفوظة
         </div>
     </div>
 
@@ -293,6 +293,14 @@
         const progressBar = document.getElementById('progressBar');
         const statusLabel = document.getElementById('statusLabel');
         const splashCard = document.getElementById('splashCard');
+
+        try {
+            if (window.electronAPI && window.electronAPI.getAppVersion) {
+                window.electronAPI.getAppVersion().then(v => {
+                    if (v) document.getElementById('versionBadge').textContent = 'v' + v;
+                });
+            }
+        } catch (e) {}
 
         const steps = [
             { progress: 20, text: 'جاري تهيئة قاعدة البيانات المحلية...', delay: 400 },
