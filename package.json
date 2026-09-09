@@ -1,7 +1,7 @@
 {
   "name": "managely-cashier-system",
   "productName": "Managely Cashier",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Desktop Cashier & POS Management System",
   "main": "src/main.js",
   "type": "module",

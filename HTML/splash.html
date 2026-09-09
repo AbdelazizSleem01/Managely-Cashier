@@ -3,216 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة الكاشير</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Managely Cashier - شاشة التحميل</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            user-select: none;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Cairo', sans-serif;
+            background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 60%, #020617 100%);
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            color: #f8fafc;
         }
 
-        .splash-container {
+        /* Ambient Glow Background */
+        .ambient-glow {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(168, 85, 247, 0.08) 50%, transparent 70%);
+            filter: blur(50px);
+            animation: floatGlow 6s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        .splash-card {
+            position: relative;
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6), 0 0 30px rgba(99, 102, 241, 0.2);
+            border-radius: 28px;
+            padding: 48px 40px;
+            width: 440px;
             text-align: center;
-            color: white;
-            animation: fadeInUp 1s ease-out;
+            animation: cardEntrance 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            z-index: 10;
         }
 
-        .logo {
-            font-size: 4rem;
-            margin-bottom: 2rem;
-            animation: pulse 2s infinite;
+        /* Logo Container */
+        .logo-wrapper {
+            position: relative;
+            width: 110px;
+            height: 110px;
+            margin: 0 auto 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .app-name {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        .logo-ring {
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 2px dashed rgba(99, 102, 241, 0.4);
+            animation: rotateRing 15s linear infinite;
         }
 
-        .app-description {
-            font-size: 1.2rem;
-            margin-bottom: 2rem;
-            opacity: 0.9;
+        .logo-glow {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.4) 0%, transparent 70%);
+            filter: blur(12px);
+            animation: pulseGlow 2.5s ease-in-out infinite;
         }
 
-        .loading-bar {
-            width: 300px;
-            height: 6px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 3px;
-            margin: 0 auto 2rem;
+        .logo-img {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            position: relative;
+            z-index: 2;
+            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
+            animation: logoBounce 2.5s ease-in-out infinite;
+        }
+
+        /* Title & Tagline */
+        .brand-title {
+            font-size: 1.85rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #818cf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        .brand-subtitle {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            font-weight: 600;
+            margin-bottom: 28px;
+        }
+
+        /* Progress Bar */
+        .progress-wrapper {
+            width: 100%;
+            height: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 100px;
+            padding: 2px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
             overflow: hidden;
             position: relative;
         }
 
-        .loading-progress {
+        .progress-bar {
             height: 100%;
-            background: linear-gradient(90deg, #fff, #f0f0f0);
-            border-radius: 3px;
-            animation: loading 3s ease-in-out infinite;
             width: 0%;
+            background: linear-gradient(90deg, #38bdf8 0%, #6366f1 50%, #ec4899 100%);
+            border-radius: 100px;
+            box-shadow: 0 0 16px rgba(99, 102, 241, 0.8);
+            transition: width 0.4s ease-out;
         }
 
-        .loading-text {
-            font-size: 1rem;
-            opacity: 0.8;
-            animation: blink 1.5s infinite;
-        }
-
-        .features {
-            display: flex;
-            justify-content: center;
-            gap: 2rem;
-            margin-top: 3rem;
-            flex-wrap: wrap;
-        }
-
-        .feature {
+        .status-text {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            font-weight: 600;
+            min-height: 22px;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-            opacity: 0.8;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .feature i {
+        .status-text i {
+            color: #38bdf8;
+            font-size: 0.8rem;
+            animation: spin 1.2s linear infinite;
+        }
+
+        /* Badges */
+        .badge-version {
+            position: absolute;
+            top: 16px;
+            left: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #a5b4fc;
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 2px 10px;
+            border-radius: 20px;
+        }
+
+        .badge-status {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            font-size: 0.72rem;
+            font-weight: 600;
             color: #4ade80;
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            padding: 2px 10px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        @keyframes fadeInUp {
+        .badge-status::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #4ade80;
+            border-radius: 50%;
+            box-shadow: 0 0 6px #4ade80;
+        }
+
+        .footer-copyright {
+            margin-top: 24px;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        /* Keyframes */
+        @keyframes cardEntrance {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: scale(0.92) translateY(20px);
             }
             to {
                 opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes floatGlow {
+            from {
+                transform: translate(-30px, -20px) scale(0.9);
+            }
+            to {
+                transform: translate(30px, 20px) scale(1.1);
+            }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% {
+                transform: scale(0.95);
+                opacity: 0.5;
+            }
+            50% {
+                transform: scale(1.15);
+                opacity: 0.9;
+            }
+        }
+
+        @keyframes rotateRing {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes logoBounce {
+            0%, 100% {
                 transform: translateY(0);
             }
-        }
-
-        @keyframes pulse {
-            0%, 100% {
-                transform: scale(1);
-            }
             50% {
-                transform: scale(1.1);
+                transform: translateY(-6px);
             }
         }
 
-        @keyframes loading {
-            0% {
-                width: 0%;
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
             }
-            50% {
-                width: 70%;
-            }
-            100% {
-                width: 100%;
+            to {
+                transform: rotate(360deg);
             }
         }
 
-        @keyframes blink {
-            0%, 50% {
-                opacity: 0.8;
-            }
-            51%, 100% {
-                opacity: 0.4;
-            }
-        }
-
-        .version {
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            font-size: 0.8rem;
-            opacity: 0.6;
-        }
-
-        .company {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            font-size: 0.8rem;
-            opacity: 0.6;
-            color: rgb(234, 234, 234);
+        .fade-out {
+            opacity: 0;
+            transform: scale(0.96);
+            transition: all 0.5s ease-in;
         }
     </style>
 </head>
 <body>
-    <div class="splash-container">
-        <div class="logo">
-            <i class="fas fa-cash-register"></i>
+    <div class="ambient-glow"></div>
+
+    <div class="splash-card" id="splashCard">
+        <div class="badge-version">v1.0.2</div>
+        <div class="badge-status">نظام جاهز</div>
+
+        <div class="logo-wrapper">
+            <div class="logo-ring"></div>
+            <div class="logo-glow"></div>
+            <img src="../assets/images/Logo.png" alt="Managely Logo" class="logo-img" onerror="this.src='../assets/images/pay.png'">
         </div>
-        
-        <h1 class="app-name">نظام إدارة الكاشير</h1>
-        <p class="app-description">حل متكامل لإدارة المبيعات والمخزون</p>
-        
-        <div class="loading-bar">
-            <div class="loading-progress"></div>
+
+        <h1 class="brand-title">Managely Cashier</h1>
+        <p class="brand-subtitle">نظام إدارة نقاط البيع والكاشير المتقدم</p>
+
+        <div class="progress-wrapper">
+            <div class="progress-bar" id="progressBar"></div>
         </div>
-        
-        <p class="loading-text">جاري تحميل النظام...</p>
-        
-        <div class="features">
-            <div class="feature">
-                <i class="fas fa-check-circle"></i>
-                <span>إدارة المنتجات</span>
-            </div>
-            <div class="feature">
-                <i class="fas fa-check-circle"></i>
-                <span>المبيعات والفواتير</span>
-            </div>
-            <div class="feature">
-                <i class="fas fa-check-circle"></i>
-                <span>إدارة الخزنة</span>
-            </div>
-            <div class="feature">
-                <i class="fas fa-check-circle"></i>
-                <span>التقارير والإحصائيات</span>
-            </div>
+
+        <div class="status-text" id="statusText">
+            <i class="fas fa-circle-notch"></i>
+            <span id="statusLabel">جاري تهيئة النظام...</span>
+        </div>
+
+        <div class="footer-copyright">
+            حقوق النشر © 2025 Abdelaziz Sleem | جميع الحقوق محفوظة
         </div>
     </div>
 
-    <div class="version">الإصدار 1.0.0</div>
-    <div class="company">تم التطوير بواسطة عبدالعزيز سليم </div>
-
     <script>
-        setTimeout(() => {
-            window.location.href = 'login.html';
-        }, 4000);
+        const progressBar = document.getElementById('progressBar');
+        const statusLabel = document.getElementById('statusLabel');
+        const splashCard = document.getElementById('splashCard');
 
-     
-        const loadingTexts = [
-            'جاري تحميل النظام...',
-            'جاري تهيئة قاعدة البيانات...',
-            'جاري تحميل الواجهات...',
-            'جاري التحقق من الترخيص...',
-            'جاهز للاستخدام!'
+        const steps = [
+            { progress: 20, text: 'جاري تهيئة قاعدة البيانات المحلية...', delay: 400 },
+            { progress: 50, text: 'فحص تكامل بيانات الكاشير والمبيعات...', delay: 800 },
+            { progress: 85, text: 'جاري تحميل واجهة المستخدم الرئيسية...', delay: 1400 },
+            { progress: 100, text: 'مرحباً بك! جاري فتح البرنامج...', delay: 2000 }
         ];
 
-        let currentTextIndex = 0;
-        const loadingTextElement = document.querySelector('.loading-text');
-
-        setInterval(() => {
-            loadingTextElement.style.opacity = '0';
+        steps.forEach(step => {
             setTimeout(() => {
-                loadingTextElement.textContent = loadingTexts[currentTextIndex];
-                loadingTextElement.style.opacity = '1';
-                currentTextIndex = (currentTextIndex + 1) % loadingTexts.length;
-            }, 200);
-        }, 800);
+                progressBar.style.width = step.progress + '%';
+                statusLabel.textContent = step.text;
+            }, step.delay);
+        });
+
+        // Smooth transition to main app
+        setTimeout(() => {
+            splashCard.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 400);
+        }, 2500);
     </script>
 </body>
 </html>
