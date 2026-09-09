@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import electronPkg from 'electron';
+const { app, BrowserWindow, ipcMain, dialog } = electronPkg;
 import { join } from 'path';
 import { readFile, writeFile, unlink } from 'fs/promises';
 import { existsSync } from 'fs';
