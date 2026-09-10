@@ -1,14 +1,509 @@
-async function getProducts(){try{const e=await window.electronAPI.getProducts();return Array.isArray(e)?e.filter((e=>e&&"object"==typeof e)):[]}catch(e){return showErrorToast("فشل في جلب بيانات المنتجات"),[]}}async function getCustomers(){try{const e=await window.electronAPI.getCustomers();return Array.isArray(e)?e.filter((e=>e&&"object"==typeof e)):[]}catch(e){return showErrorToast("فشل في جلب بيانات العملاء"),[]}}async function getOrders(){try{const e=await window.electronAPI.getOrders();return Array.isArray(e)?e.filter((e=>e&&"object"==typeof e)):[]}catch(e){return showErrorToast("فشل في جلب بيانات الأوردرات"),[]}}async function getSalesData(){try{const e=await window.electronAPI.getSalesData();if(!e||"object"!=typeof e)return{daily:[],monthly:{sales:0,month:"",previousSales:0},yearly:{sales:0,year:"",previousSales:0},monthlyOrders:0,yearlyOrders:0};if(e.daily&&!Array.isArray(e.daily)){const t=e.daily;e.daily=[],t.date&&"number"==typeof t.sales&&e.daily.push({date:t.date,sales:t.sales,orders:e.dailyOrders||0}),delete e.dailyOrders}return Array.isArray(e.daily)||(e.daily=[]),e.monthly&&"object"==typeof e.monthly||(e.monthly={sales:0,month:"",previousSales:0}),e.yearly&&"object"==typeof e.yearly||(e.yearly={sales:0,year:"",previousSales:0}),e}catch(e){return showErrorToast("فشل في جلب بيانات المبيعات"),{daily:[],monthly:{sales:0,month:"",previousSales:0},yearly:{sales:0,year:"",previousSales:0},monthlyOrders:0,yearlyOrders:0}}}async function saveSalesData(e){try{if(!e||"object"!=typeof e)throw new Error("Invalid sales data format");await window.electronAPI.saveSalesData(e)}catch(e){}}function showErrorToast(e){Swal.fire({icon:"error",title:"خطأ",text:e,toast:!0,position:"top-start",showConfirmButton:!1,timer:3e3})}function showSuccessToast(e){}async function loadStatistics(){try{const[e,t,a,s]=await Promise.all([getProducts(),getCustomers(),getOrders(),getSalesData()]),n=new Date,r=n.toISOString().split("T")[0],o=n.toISOString().slice(0,7),l=n.getFullYear().toString(),i=new Date;i.setDate(i.getDate()-30);const d=s.daily.filter((e=>{if(!e||!e.date)return!1;return new Date(e.date)>=i})),c={...s,daily:d};c.monthly.month!==o&&(c.monthly.previousSales=c.monthly.sales,c.monthly.sales=0,c.monthly.month=o,c.monthlyOrders=0),c.yearly.year!==l&&(c.yearly.previousSales=c.yearly.sales,c.yearly.sales=0,c.yearly.year=l,c.yearlyOrders=0),updateProductStats(e),updateCustomerStats(t,a,r),updateOrderStats(a),await updateSalesStats(a,c,r,o,l,n)}catch(e){showErrorToast("فشل في تحميل الإحصائيات")}}function updateProductStats(e){const t=e.length;document.getElementById("totalProducts").textContent=t;const a=e.filter((e=>e&&"number"==typeof e.quantity&&e.quantity<10)),s=document.getElementById("lowStockProducts");s.innerHTML="",0===a.length?s.innerHTML='\n            <p class="text-gray-500 p-4 text-center">\n                <i class="fas fa-check-circle text-green-500 mr-2"></i>\n                لا توجد منتجات قاربت على النفاد.\n            </p>\n        ':a.forEach((e=>{const t=document.createElement("div");t.className="Low flex justify-between items-center p-4 bg-red-300 rounded-lg  shadow-sm mb-2 hover:bg-gray-50 transition-colors",t.innerHTML=`\n                <span class="font-medium text-gray-700">${e.name||"غير معروف"}</span>\n                <span class="text-lg font-bold shadow-xl ${e.quantity<5?"text-error":"text-warning"}">\n                    ${e.quantity} متبقي\n                </span>\n            `,s.appendChild(t)}))}function updateCustomerStats(e,t,a){const s=[...new Set(e.filter((e=>e?.name&&"string"==typeof e.name)).map((e=>e.name.trim().toLowerCase())))].length;document.getElementById("totalCustomers").textContent=s;const n=t.filter((e=>e?.date&&new Date(e.date).toISOString().split("T")[0]===a)),r=[...new Set(n.filter((e=>e?.customerName)).map((e=>e.customerName.trim().toLowerCase())))],o=[...new Set(t.filter((e=>e?.date&&new Date(e.date).toISOString().split("T")[0]<a&&e?.customerName)).map((e=>e.customerName.trim().toLowerCase())))],l=r.filter((e=>!o.includes(e))),i=r.filter((e=>o.includes(e)));document.getElementById("newCustomers").textContent=l.length,document.getElementById("oldCustomers").textContent=i.length;const d=s>0?Math.round(l.length/s*100):0;document.getElementById("newCustomersPercentage").textContent=`${d}%`}function updateOrderStats(e){document.getElementById("totalOrders").textContent=e.length}async function updateSalesStats(e,t,a,s,n,r){let o=0,l=0,i=0,d=0,c=0,y=0,m=new Map,u=new Date(r);u.setDate(u.getDate()-29),u.setHours(0,0,0,0),e.forEach(f=>{if(!f?.date||typeof f.total!="number")return;const p=new Date(f.date);if(isNaN(p.getTime()))return;const g=p.toISOString().split("T")[0],h=p.toISOString().slice(0,7),v=p.getFullYear().toString(),b=parseFloat(f.total||0)-(parseFloat(f.returnAmount||0)||0);p>=u&&p<=r&&(m.has(g)||m.set(g,{date:g,sales:0,orders:0}),m.get(g).sales+=b,m.get(g).orders+=1,o+=b,l+=1),h===s&&(i+=b,d+=1),v===n&&(c+=b,y+=1)});const f=Array.from(m.values()).sort((w,z)=>new Date(w.date)-new Date(z.date)),S={...t,daily:f,monthly:{...t.monthly,sales:i,month:s,previousSales:t.monthly.month===s?t.monthly.previousSales:t.monthly.sales||0},yearly:{...t.yearly,sales:c,year:n,previousSales:t.yearly.year===n?t.yearly.previousSales:t.yearly.sales||0},monthlyOrders:d,yearlyOrders:y};document.getElementById("dailySales").textContent=`${o.toFixed(2)} ج.م`,document.getElementById("monthlySales").textContent=`${i.toFixed(2)} ج.م`,document.getElementById("yearlySales").textContent=`${c.toFixed(2)} ج.م`,document.getElementById("dailyOrders").textContent=l,document.getElementById("monthlyOrders").textContent=d,document.getElementById("yearlyOrders").textContent=y,updateDailySalesProgress(f),updateDailySalesChart(f),updateSalesChanges(S,i,c),updateTopProducts(e),await saveSalesData(S)}
-function updateDailySalesProgress(e){const t=document.getElementById("dailySalesProgress");if(t.innerHTML="",0===e.length)return void(t.innerHTML='\n            <p class="text-center p-4 text-gray-500">\n                <i class="fas fa-info-circle text-blue-500 mr-2"></i>\n                لا توجد بيانات مبيعات يومية متاحة\n            </p>\n        ');e.sort(((e,t)=>new Date(t.date)-new Date(e.date)));const a=Math.max(...e.map((e=>e.sales)),1);e.forEach((e=>{const s=Math.min(e.sales/a*100,100),n=document.createElement("div");n.className="flex items-center gap-4 p-3 my-2 bg-white rounded-lg shadow-lg hover:bg-gray-50 transition-colors",n.innerHTML=`\n            <span class="w-32 font-semibold text-gray-700">${formatDate(e.date)}</span>\n            <div class="flex-1">\n                <div class="progress-container">\n                    <div class="progress-bar" style="width: ${s}%"></div>\n                </div>\n            </div>\n            <span class="w-28 text-left font-bold text-blue-600">${e.sales.toFixed(2)} ج.م</span>\n            <span class="w-20 text-left text-sm text-gray-500">(${e.orders} أوردر)</span>\n        `,t.appendChild(n)}))}function updateDailySalesChart(e){const t=document.getElementById("dailySalesChart").getContext("2d");e.sort(((e,t)=>new Date(e.date)-new Date(t.date)));const a=e.map((e=>formatDate(e.date))),s=e.map((e=>e.sales));new Chart(t,{type:"line",data:{labels:a,datasets:[{label:"المبيعات اليومية (ج.م)",data:s,borderColor:"#3b82f6",backgroundColor:"rgba(59, 130, 246, 0.2)",fill:!0,tension:.4,pointBackgroundColor:"#3b82f6",pointBorderColor:"#ffffff",pointBorderWidth:2,pointRadius:5,pointHoverRadius:7}]},options:{responsive:!0,plugins:{legend:{display:!0,position:"top",labels:{font:{size:14,family:"Cairo, sans-serif"}}},tooltip:{backgroundColor:"#1f2937",titleFont:{family:"Cairo, sans-serif"},bodyFont:{family:"Cairo, sans-serif"},callbacks:{label:e=>`${e.parsed.y.toFixed(2)} ج.م`}}},scales:{x:{ticks:{font:{family:"Cairo, sans-serif"}},grid:{display:!1}},y:{beginAtZero:!0,ticks:{font:{family:"Cairo, sans-serif"},callback:e=>`${e} ج.م`},grid:{color:"#e5e7eb"}}}}})}function formatDate(e){const t=new Date(e);return isNaN(t.getTime())?e:t.toLocaleDateString("ar-EG",{year:"numeric",month:"short",day:"numeric"})}function updateSalesChanges(e,t,a){let s=0,n=0;e.monthly.previousSales>0&&(s=(t-e.monthly.previousSales)/e.monthly.previousSales*100),e.yearly.previousSales>0&&(n=(a-e.yearly.previousSales)/e.yearly.previousSales*100),document.getElementById("monthlySalesChange").innerHTML=e.monthly.previousSales>0?s>=0?`<span class="text-green-600 font-semibold flex items-center">
-            <i class="fas fa-arrow-up ml-1"></i>
-            +${Math.abs(s).toFixed(1)}% عن الشهر السابق
-        </span>`:`<span class="text-red-600 font-semibold flex items-center">
-            <i class="fas fa-arrow-down ml-1"></i>
-            -${Math.abs(s).toFixed(1)}% عن الشهر السابق
-        </span>`:'<span class="text-gray-500">لا توجد بيانات شهر سابق</span>',document.getElementById("yearlySalesChange").innerHTML=e.yearly.previousSales>0?n>=0?`<span class="text-green-600 font-semibold flex items-center">
-            <i class="fas fa-arrow-up ml-1"></i>
-            +${Math.abs(n).toFixed(1)}% عن السنة السابقة
-        </span>`:`<span class="text-red-600 font-semibold flex items-center">
-            <i class="fas fa-arrow-down ml-1"></i>
-            -${Math.abs(n).toFixed(1)}% عن السنة السابقة
-        </span>`:'<span class="text-gray-500">لا توجد بيانات سنة سابقة</span>'}function updateTopProducts(e){const t={};e.forEach((e=>{e?.items&&Array.isArray(e.items)&&e.items.forEach((e=>{if(!e?.name)return;const a=e.name.trim(),s=parseInt(e.quantity)||0;t[a]=(t[a]||0)+s}))}));const a=Object.entries(t).sort(((e,t)=>t[1]-e[1])).slice(0,5),s=document.getElementById("topProducts");s.innerHTML="",0!==a.length?a.forEach((([e,t],a)=>{const n=document.createElement("div");n.className=`flex justify-between items-center p-4 ${a%2==0?"bg-white":"bg-gray-50"} rounded-lg hover:bg-gray-100 transition-colors`,n.innerHTML=`\n            <span class="font-medium text-gray-700">${e}</span>\n            <span class="text-primary font-bold">${t} وحدة</span>\n        `,s.appendChild(n)})):s.innerHTML='\n            <p class="text-gray-500 p-4 text-center">\n                <i class="fas fa-info-circle text-blue-500 mr-2"></i>\n                لا توجد مبيعات بعد.\n            </p>\n        '}document.addEventListener("DOMContentLoaded",(()=>{loadStatistics().catch((e=>{}))}));
+async function getProducts() {
+    try {
+        const products = await window.electronAPI.getProducts();
+        return Array.isArray(products) ? products.filter(p => p && typeof p === "object") : [];
+    } catch (e) {
+        showErrorToast("فشل في جلب بيانات المنتجات");
+        return [];
+    }
+}
+
+async function getCustomers() {
+    try {
+        const customers = await window.electronAPI.getCustomers();
+        return Array.isArray(customers) ? customers.filter(c => c && typeof c === "object") : [];
+    } catch (e) {
+        showErrorToast("فشل في جلب بيانات العملاء");
+        return [];
+    }
+}
+
+async function getOrders() {
+    try {
+        const orders = await window.electronAPI.getOrders();
+        return Array.isArray(orders) ? orders.filter(o => o && typeof o === "object") : [];
+    } catch (e) {
+        showErrorToast("فشل في جلب بيانات الأوردرات");
+        return [];
+    }
+}
+
+async function getSalesData() {
+    try {
+        const data = await window.electronAPI.getSalesData();
+        if (!data || typeof data !== "object") {
+            return {
+                daily: [],
+                monthly: { sales: 0, month: "", previousSales: 0 },
+                yearly: { sales: 0, year: "", previousSales: 0 },
+                monthlyOrders: 0,
+                yearlyOrders: 0
+            };
+        }
+        if (data.daily && !Array.isArray(data.daily)) {
+            const t = data.daily;
+            data.daily = [];
+            if (t.date && typeof t.sales === "number") {
+                data.daily.push({ date: t.date, sales: t.sales, orders: data.dailyOrders || 0 });
+            }
+            delete data.dailyOrders;
+        }
+        if (!Array.isArray(data.daily)) data.daily = [];
+        if (!data.monthly || typeof data.monthly !== "object") data.monthly = { sales: 0, month: "", previousSales: 0 };
+        if (!data.yearly || typeof data.yearly !== "object") data.yearly = { sales: 0, year: "", previousSales: 0 };
+        return data;
+    } catch (e) {
+        showErrorToast("فشل في جلب بيانات المبيعات");
+        return {
+            daily: [],
+            monthly: { sales: 0, month: "", previousSales: 0 },
+            yearly: { sales: 0, year: "", previousSales: 0 },
+            monthlyOrders: 0,
+            yearlyOrders: 0
+        };
+    }
+}
+
+async function saveSalesData(data) {
+    try {
+        if (!data || typeof data !== "object") return;
+        await window.electronAPI.saveSalesData(data);
+    } catch (e) { }
+}
+
+function showErrorToast(msg) {
+    Swal.fire({
+        icon: "error",
+        title: "خطأ",
+        text: msg,
+        toast: true,
+        position: "top-start",
+        showConfirmButton: false,
+        timer: 3000
+    });
+}
+
+async function loadStatistics() {
+    try {
+        const [products, customers, orders, salesData] = await Promise.all([
+            getProducts(),
+            getCustomers(),
+            getOrders(),
+            getSalesData()
+        ]);
+
+        const now = new Date();
+        const todayStr = now.toISOString().split("T")[0];
+        const currentMonth = now.toISOString().slice(0, 7);
+        const currentYear = now.getFullYear().toString();
+
+        const past30Days = new Date();
+        past30Days.setDate(past30Days.getDate() - 30);
+
+        const recentDaily = (salesData.daily || []).filter(item => {
+            if (!item || !item.date) return false;
+            return new Date(item.date) >= past30Days;
+        });
+
+        const currentSales = { ...salesData, daily: recentDaily };
+        if (currentSales.monthly.month !== currentMonth) {
+            currentSales.monthly.previousSales = currentSales.monthly.sales;
+            currentSales.monthly.sales = 0;
+            currentSales.monthly.month = currentMonth;
+            currentSales.monthlyOrders = 0;
+        }
+        if (currentSales.yearly.year !== currentYear) {
+            currentSales.yearly.previousSales = currentSales.yearly.sales;
+            currentSales.yearly.sales = 0;
+            currentSales.yearly.year = currentYear;
+            currentSales.yearlyOrders = 0;
+        }
+
+        updateProductStats(products);
+        updateCustomerStats(customers, orders, todayStr);
+        updateOrderStats(orders);
+        await updateSalesStats(orders, currentSales, todayStr, currentMonth, currentYear, now);
+    } catch (e) {
+        showErrorToast("فشل في تحميل الإحصائيات");
+    }
+}
+
+function updateProductStats(products) {
+    const totalCount = products.length;
+    const elTotal = document.getElementById("totalProducts");
+    const elHeaderProd = document.getElementById("headerStatProducts");
+    if (elTotal) elTotal.textContent = totalCount.toLocaleString("ar-EG");
+    if (elHeaderProd) elHeaderProd.textContent = totalCount.toLocaleString("ar-EG");
+
+    const lowStock = products.filter(p => p && typeof p.quantity === "number" && p.quantity < 10);
+    const container = document.getElementById("lowStockProducts");
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (lowStock.length === 0) {
+        container.innerHTML = `
+            <div style="padding: 24px; text-align: center; color: #059669; font-weight: 700;">
+                <i class="fas fa-circle-check" style="font-size: 1.5rem; margin-bottom: 6px; display: block;"></i>
+                <span>جميع المنتجات متوفرة بكميات كافية وآمنة</span>
+            </div>
+        `;
+        return;
+    }
+
+    lowStock.forEach(item => {
+        const isCritical = (item.quantity || 0) < 5;
+        const row = document.createElement("div");
+        row.className = "low-stock-row";
+        row.innerHTML = `
+            <div class="low-stock-title">
+                <i class="fas fa-triangle-exclamation" style="color: ${isCritical ? '#dc2626' : '#d97706'};"></i>
+                <span>${item.name || "منتج غير محدد"}</span>
+            </div>
+            <span class="low-stock-badge ${isCritical ? 'critical' : ''}">
+                ${item.quantity || 0} متبقي بالمخزن
+            </span>
+        `;
+        container.appendChild(row);
+    });
+}
+
+function updateCustomerStats(customers, orders, todayStr) {
+    const validCustomers = [...new Set(customers.filter(c => c?.name && typeof c.name === "string").map(c => c.name.trim().toLowerCase()))];
+    const totalCustomers = validCustomers.length;
+
+    const elTotalCust = document.getElementById("totalCustomers");
+    const elHeaderCust = document.getElementById("headerStatCustomers");
+    if (elTotalCust) elTotalCust.textContent = totalCustomers.toLocaleString("ar-EG");
+    if (elHeaderCust) elHeaderCust.textContent = totalCustomers.toLocaleString("ar-EG");
+
+    const todayOrders = orders.filter(o => o?.date && new Date(o.date).toISOString().split("T")[0] === todayStr);
+    const todayCust = [...new Set(todayOrders.filter(o => o?.customerName).map(o => o.customerName.trim().toLowerCase()))];
+    const priorOrders = orders.filter(o => o?.date && new Date(o.date).toISOString().split("T")[0] < todayStr && o?.customerName);
+    const priorCust = [...new Set(priorOrders.map(o => o.customerName.trim().toLowerCase()))];
+
+    const newCustomers = todayCust.filter(c => !priorCust.includes(c));
+    const oldCustomers = todayCust.filter(c => priorCust.includes(c));
+
+    const elNewCust = document.getElementById("newCustomers");
+    const elOldCust = document.getElementById("oldCustomers");
+    const elNewPct = document.getElementById("newCustomersPercentage");
+
+    if (elNewCust) elNewCust.textContent = newCustomers.length.toLocaleString("ar-EG");
+    if (elOldCust) elOldCust.textContent = oldCustomers.length.toLocaleString("ar-EG");
+
+    const pct = totalCustomers > 0 ? Math.round((newCustomers.length / totalCustomers) * 100) : 0;
+    if (elNewPct) elNewPct.textContent = `${pct}%`;
+}
+
+function updateOrderStats(orders) {
+    const elOrders = document.getElementById("totalOrders");
+    if (elOrders) elOrders.textContent = (orders.length || 0).toLocaleString("ar-EG");
+}
+
+async function updateSalesStats(orders, salesData, todayStr, currentMonth, currentYear, now) {
+    let dailyTotal = 0;
+    let dailyCount = 0;
+    let monthlyTotal = 0;
+    let monthlyCount = 0;
+    let yearlyTotal = 0;
+    let yearlyCount = 0;
+
+    const dailyMap = new Map();
+    const past29Days = new Date(now);
+    past29Days.setDate(past29Days.getDate() - 29);
+    past29Days.setHours(0, 0, 0, 0);
+
+    orders.forEach(ord => {
+        if (!ord?.date || typeof ord.total !== "number") return;
+        const d = new Date(ord.date);
+        if (isNaN(d.getTime())) return;
+
+        const dateKey = d.toISOString().split("T")[0];
+        const monthKey = d.toISOString().slice(0, 7);
+        const yearKey = d.getFullYear().toString();
+        const netAmt = parseFloat(ord.total || 0) - (parseFloat(ord.returnAmount || 0) || 0);
+
+        if (d >= past29Days && d <= now) {
+            if (!dailyMap.has(dateKey)) {
+                dailyMap.set(dateKey, { date: dateKey, sales: 0, orders: 0 });
+            }
+            const cur = dailyMap.get(dateKey);
+            cur.sales += netAmt;
+            cur.orders += 1;
+            dailyTotal += netAmt;
+            dailyCount += 1;
+        }
+
+        if (monthKey === currentMonth) {
+            monthlyTotal += netAmt;
+            monthlyCount += 1;
+        }
+
+        if (yearKey === currentYear) {
+            yearlyTotal += netAmt;
+            yearlyCount += 1;
+        }
+    });
+
+    const dailyList = Array.from(dailyMap.values()).sort((a, b) => new Date(a.date) - new Date(b.date));
+    const updatedSalesData = {
+        ...salesData,
+        daily: dailyList,
+        monthly: {
+            ...salesData.monthly,
+            sales: monthlyTotal,
+            month: currentMonth,
+            previousSales: salesData.monthly.month === currentMonth ? salesData.monthly.previousSales : (salesData.monthly.sales || 0)
+        },
+        yearly: {
+            ...salesData.yearly,
+            sales: yearlyTotal,
+            year: currentYear,
+            previousSales: salesData.yearly.year === currentYear ? salesData.yearly.previousSales : (salesData.yearly.sales || 0)
+        },
+        monthlyOrders: monthlyCount,
+        yearlyOrders: yearlyCount
+    };
+
+    const elDailySales = document.getElementById("dailySales");
+    const elMonthlySales = document.getElementById("monthlySales");
+    const elYearlySales = document.getElementById("yearlySales");
+    const elHeaderSales = document.getElementById("headerStatSales");
+
+    if (elDailySales) elDailySales.textContent = `${dailyTotal.toFixed(2)} ج.م`;
+    if (elMonthlySales) elMonthlySales.textContent = `${monthlyTotal.toFixed(2)} ج.م`;
+    if (elYearlySales) elYearlySales.textContent = `${yearlyTotal.toFixed(2)} ج.م`;
+    if (elHeaderSales) elHeaderSales.textContent = `${monthlyTotal.toFixed(2)} ج.م`;
+
+    const elDailyOrders = document.getElementById("dailyOrders");
+    const elMonthlyOrders = document.getElementById("monthlyOrders");
+    const elYearlyOrders = document.getElementById("yearlyOrders");
+
+    if (elDailyOrders) elDailyOrders.textContent = dailyCount.toLocaleString("ar-EG");
+    if (elMonthlyOrders) elMonthlyOrders.textContent = monthlyCount.toLocaleString("ar-EG");
+    if (elYearlyOrders) elYearlyOrders.textContent = yearlyCount.toLocaleString("ar-EG");
+
+    updateDailySalesProgress(dailyList);
+    updateDailySalesChart(dailyList);
+    updateSalesChanges(updatedSalesData, monthlyTotal, yearlyTotal);
+    updateTopProducts(orders);
+    await saveSalesData(updatedSalesData);
+}
+
+function updateDailySalesProgress(dailyList) {
+    const container = document.getElementById("dailySalesProgress");
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (!Array.isArray(dailyList) || dailyList.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 24px; color: #64748b;">
+                <i class="fas fa-chart-simple" style="font-size: 1.5rem; color: #94a3b8; margin-bottom: 6px; display: block;"></i>
+                <span>لا توجد مبيعات مسجلة خلال آخر 30 يوم</span>
+            </div>
+        `;
+        return;
+    }
+
+    const sorted = [...dailyList].sort((a, b) => new Date(b.date) - new Date(a.date));
+    const maxSales = Math.max(...sorted.map(d => d.sales), 1);
+
+    sorted.forEach(item => {
+        const pct = Math.min((item.sales / maxSales) * 100, 100);
+        const row = document.createElement("div");
+        row.className = "progress-row-item";
+        row.innerHTML = `
+            <span class="progress-date">${formatDate(item.date)}</span>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: ${pct}%;"></div>
+            </div>
+            <span class="progress-amount">${(Number(item.sales) || 0).toFixed(2)} ج.م</span>
+            <span class="progress-orders-cnt">(${item.orders || 0} طلب)</span>
+        `;
+        container.appendChild(row);
+    });
+}
+
+let chartInstance = null;
+
+function updateDailySalesChart(dailyList) {
+    const canvas = document.getElementById("dailySalesChart");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const sorted = [...dailyList].sort((a, b) => new Date(a.date) - new Date(b.date));
+    const labels = sorted.map(d => formatDate(d.date));
+    const values = sorted.map(d => d.sales);
+
+    if (chartInstance) {
+        chartInstance.destroy();
+    }
+
+    // Create purple gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, "rgba(109, 40, 217, 0.3)");
+    gradient.addColorStop(1, "rgba(109, 40, 217, 0.0)");
+
+    chartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: labels,
+            datasets: [{
+                label: "المبيعات اليومية (ج.م)",
+                data: values,
+                borderColor: "#6d28d9",
+                backgroundColor: gradient,
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.35,
+                pointBackgroundColor: "#6d28d9",
+                pointBorderColor: "#ffffff",
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: "top",
+                    labels: {
+                        font: { size: 13, family: "'Tajawal', sans-serif", weight: "bold" },
+                        color: "#334155"
+                    }
+                },
+                tooltip: {
+                    backgroundColor: "#1e1b4b",
+                    titleFont: { family: "'Tajawal', sans-serif" },
+                    bodyFont: { family: "'Tajawal', sans-serif", weight: "bold" },
+                    padding: 10,
+                    cornerRadius: 8,
+                    callbacks: {
+                        label: item => ` المبيعات: ${Number(item.parsed.y).toFixed(2)} ج.م`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        font: { family: "'Tajawal', sans-serif", size: 11 },
+                        color: "#64748b"
+                    },
+                    grid: { display: false }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        font: { family: "'Tajawal', sans-serif", size: 11 },
+                        color: "#64748b",
+                        callback: val => `${val} ج`
+                    },
+                    grid: { color: "#f1f5f9" }
+                }
+            }
+        }
+    });
+}
+
+function formatDate(dateStr) {
+    const d = new Date(dateStr);
+    return isNaN(d.getTime()) ? dateStr : d.toLocaleDateString("ar-EG", { month: "short", day: "numeric" });
+}
+
+function updateSalesChanges(salesData, currentMonthSales, currentYearSales) {
+    let monthPct = 0;
+    let yearPct = 0;
+
+    if (salesData.monthly.previousSales > 0) {
+        monthPct = ((currentMonthSales - salesData.monthly.previousSales) / salesData.monthly.previousSales) * 100;
+    }
+    if (salesData.yearly.previousSales > 0) {
+        yearPct = ((currentYearSales - salesData.yearly.previousSales) / salesData.yearly.previousSales) * 100;
+    }
+
+    const elMonthChange = document.getElementById("monthlySalesChange");
+    const elYearChange = document.getElementById("yearlySalesChange");
+
+    if (elMonthChange) {
+        if (salesData.monthly.previousSales > 0) {
+            const isUp = monthPct >= 0;
+            elMonthChange.innerHTML = `
+                <div class="kpi-change-tag ${isUp ? 'up' : 'down'}">
+                    <i class="fas fa-arrow-${isUp ? 'up' : 'down'}"></i>
+                    <span>${isUp ? '+' : ''}${monthPct.toFixed(1)}% عن الشهر السابق</span>
+                </div>
+            `;
+        } else {
+            elMonthChange.innerHTML = `<span class="kpi-subtext">لا توجد بيانات شهر سابق</span>`;
+        }
+    }
+
+    if (elYearChange) {
+        if (salesData.yearly.previousSales > 0) {
+            const isUp = yearPct >= 0;
+            elYearChange.innerHTML = `
+                <div class="kpi-change-tag ${isUp ? 'up' : 'down'}">
+                    <i class="fas fa-arrow-${isUp ? 'up' : 'down'}"></i>
+                    <span>${isUp ? '+' : ''}${yearPct.toFixed(1)}% عن السنة السابقة</span>
+                </div>
+            `;
+        } else {
+            elYearChange.innerHTML = `<span class="kpi-subtext">لا توجد بيانات سنة سابقة</span>`;
+        }
+    }
+}
+
+function updateTopProducts(orders) {
+    const counts = {};
+    orders.forEach(ord => {
+        if (ord?.items && Array.isArray(ord.items)) {
+            ord.items.forEach(it => {
+                if (!it?.name) return;
+                const name = it.name.trim();
+                const qty = parseInt(it.quantity) || 0;
+                counts[name] = (counts[name] || 0) + qty;
+            });
+        }
+    });
+
+    const topList = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const container = document.getElementById("topProducts");
+    if (!container) return;
+    container.innerHTML = "";
+
+    if (topList.length === 0) {
+        container.innerHTML = `
+            <div style="padding: 24px; text-align: center; color: #64748b;">
+                <i class="fas fa-bag-shopping" style="font-size: 1.5rem; color: #94a3b8; margin-bottom: 6px; display: block;"></i>
+                <span>لا توجد بيانات مبيعات حتى الآن</span>
+            </div>
+        `;
+        return;
+    }
+
+    const rankClasses = ["gold", "silver", "bronze", "", ""];
+    const rankEmojis = ["🥇", "🥈", "🥉", "4", "5"];
+
+    topList.forEach(([name, qty], idx) => {
+        const row = document.createElement("div");
+        row.className = "top-prod-row";
+        row.innerHTML = `
+            <div class="prod-rank-group">
+                <div class="rank-badge ${rankClasses[idx] || ''}">
+                    ${rankEmojis[idx] || (idx + 1)}
+                </div>
+                <span class="prod-title-text">${name}</span>
+            </div>
+            <span class="prod-qty-badge">${qty.toLocaleString("ar-EG")} وحدة مباعة</span>
+        `;
+        container.appendChild(row);
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadStatistics().catch(() => { });
+});

@@ -8,7 +8,12 @@ if (!window.electronAPI) {
     }
 }
 
-let categories = [], products = [], cart = [], customers = [];
+let categories = [];
+let products = [];
+let cart = [];
+let customers = [];
+let activeCategoryFilter = "";
+let isLowStockFilterActive = false;
 
 function debounce(func, wait) {
     let timeout;
@@ -18,396 +23,481 @@ function debounce(func, wait) {
     };
 }
 
+// 1. Live Arabic Clock & Dynamic Greeting
+function updateLiveClockAndGreeting() {
+    const timeEl = document.getElementById("liveHomeTime");
+    const dateEl = document.getElementById("liveHomeDate");
+    const greetingTextEl = document.getElementById("heroGreetingText");
+    const greetingBadgeEl = document.getElementById("heroGreetingBadge");
+
+    const now = new Date();
+    const hours = now.getHours();
+
+    if (greetingTextEl && greetingBadgeEl) {
+        if (hours >= 4 && hours < 13) {
+            greetingTextEl.textContent = "صباح الخير ";
+            const icon = greetingBadgeEl.querySelector("i");
+            if (icon) icon.className = "fas fa-sun";
+        } else if (hours >= 13 && hours < 18) {
+            greetingTextEl.textContent = "مساء الخير ";
+            const icon = greetingBadgeEl.querySelector("i");
+            if (icon) icon.className = "fas fa-cloud-sun";
+        } else {
+            greetingTextEl.textContent = "مساء الخير ";
+            const icon = greetingBadgeEl.querySelector("i");
+            if (icon) icon.className = "fas fa-moon";
+        }
+    }
+
+    if (timeEl) {
+        const hours24 = now.getHours();
+        const minutes = String(now.getMinutes()).padStart(2, "0");
+        const seconds = String(now.getSeconds()).padStart(2, "0");
+        const period = hours24 >= 12 ? "م" : "ص";
+        const hours12 = String(hours24 % 12 || 12).padStart(2, "0");
+        timeEl.textContent = `${hours12}:${minutes}:${seconds} ${period}`;
+    }
+
+    if (dateEl) {
+        dateEl.textContent = now.toLocaleDateString("ar-EG", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        });
+    }
+}
+
+// 2. Load Quick Stats & Treasury Balance & Store Name
 async function loadQuickStats() {
     try {
-        const today = (new Date).toISOString().split("T")[0];
-        const sales = (await window.electronAPI.getSales()).filter(s => s.date.startsWith(today));
-        const salesCount = sales.length;
-        const totalRevenue = sales.reduce((acc, curr) => acc + (curr.total || 0) - (curr.returnAmount || 0), 0).toFixed(2);
-        const lowStockCount = (await window.electronAPI.getProducts()).filter(p => p.quantity <= 3).length;
+        const today = (new Date()).toISOString().split("T")[0];
+        const allSales = (await window.electronAPI.getSales()) || [];
+        const todaySales = allSales.filter(s => s && s.date && s.date.startsWith(today));
+
+        const salesCount = todaySales.length;
+        const totalRevenue = todaySales.reduce((acc, curr) => acc + (curr.total || 0) - (curr.returnAmount || 0), 0).toFixed(2);
+
+        const allProducts = (await window.electronAPI.getProducts()) || [];
+        const lowStockCount = allProducts.filter(p => Number(p.quantity || 0) <= 3).length;
 
         const elSales = document.getElementById("dailySales");
         const elRev = document.getElementById("dailyRevenue");
         const elStock = document.getElementById("lowStock");
+        const elTreasury = document.getElementById("homeTreasuryBalance");
 
         if (elSales) elSales.textContent = salesCount;
-        if (elRev) elRev.textContent = `${totalRevenue} جنيه`;
+        if (elRev) elRev.textContent = `${Number(totalRevenue).toLocaleString("ar-EG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} جنيه`;
         if (elStock) elStock.textContent = lowStockCount;
+
+        // Load Treasury balance
+        if (elTreasury) {
+            try {
+                if (typeof window.electronAPI.getTreasurySummary === "function") {
+                    const treasurySummary = await window.electronAPI.getTreasurySummary();
+                    if (treasurySummary && typeof treasurySummary.balance === "number") {
+                        elTreasury.textContent = `${treasurySummary.balance.toLocaleString("ar-EG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} جنيه`;
+                    }
+                } else if (typeof window.electronAPI.getTreasuryTransactions === "function") {
+                    const txs = await window.electronAPI.getTreasuryTransactions();
+                    if (Array.isArray(txs)) {
+                        const totalIn = txs.filter(t => t.type === "deposit" || t.type === "sale").reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+                        const totalOut = txs.filter(t => t.type === "withdrawal" || t.type === "expense").reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+                        const bal = totalIn - totalOut;
+                        elTreasury.textContent = `${bal.toLocaleString("ar-EG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} جنيه`;
+                    }
+                }
+            } catch (tErr) {
+                console.warn("Could not fetch live treasury summary:", tErr);
+            }
+        }
+
+        // Load Store Name
+        try {
+            const settings = await window.electronAPI.getSettings();
+            if (settings && settings.storeName) {
+                const storeNameEl = document.getElementById("heroStoreName");
+                if (storeNameEl) {
+                    storeNameEl.textContent = `نظام ${settings.storeName} للإدارة ونقاط البيع`;
+                }
+            }
+        } catch (sErr) { }
+
     } catch (err) {
         console.error("Error loading quick stats:", err);
     }
 }
 
-function handleKeyboardShortcuts(e) {
-    const { key, ctrlKey } = e;
-    switch (true) {
-        case key === "F10": window.location.href = "./sales-invoice.html"; break;
-        case key === "F9": window.location.href = "./products.html"; break;
-        case key === "F12": window.location.href = "./treasury.html"; break;
-        case key === "t" && ctrlKey: window.location.href = "./categories.html"; break;
-        case key === "F4": window.location.href = "./customers.html"; break;
-        case key === "s" && ctrlKey: window.location.href = "./settings.html"; break;
-        case key === "p" && ctrlKey: window.location.href = "./suppliers.html"; break;
-        case key === "F8": window.location.href = "./ProductsPurchaseInvoices.html"; break;
-        case key === "F7": window.location.href = "./purchase-invoices.html"; break;
-        case key === "F6": window.location.href = "./sales.html"; break;
-        case key === "F5": window.location.href = "./statistics.html"; break;
-        case key === "F3": window.location.href = "./returns.html"; break;
-        default: break;
+// 3. Load Recent Invoices
+async function loadRecentInvoices() {
+    const container = document.getElementById("recentInvoicesContainer");
+    if (!container) return;
+
+    try {
+        const sales = (await window.electronAPI.getSales()) || [];
+        if (!sales.length) {
+            container.innerHTML = `
+                <div class="p-4 text-center text-gray-400 bg-gray-50 rounded-xl">
+                    <i class="fas fa-receipt text-2xl mb-1 text-gray-300"></i>
+                    <p class="text-xs font-semibold m-0">لا توجد فواتير مسجلة اليوم حتى الآن</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Sort descending by date/id
+        const sortedSales = [...sales].sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 5);
+
+        container.innerHTML = sortedSales.map(sale => {
+            const invNum = sale.invoiceNumber || sale.invoiceId || sale._id?.slice(-6) || "---";
+            const custName = sale.customerName || sale.customer || "عميل نقدي";
+            const total = Number(sale.total || 0).toFixed(2);
+            let timeStr = "";
+            if (sale.date) {
+                try {
+                    const d = new Date(sale.date);
+                    timeStr = d.toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" });
+                } catch (e) {
+                    timeStr = "";
+                }
+            }
+
+            return `
+                <div class="recent-invoice-item">
+                    <div class="recent-invoice-info">
+                        <div class="recent-invoice-icon">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <div>
+                            <div class="recent-invoice-title">فاتورة #${invNum}</div>
+                            <div class="recent-invoice-meta">${custName} ${timeStr ? `• ${timeStr}` : ""}</div>
+                        </div>
+                    </div>
+                    <div class="recent-invoice-total">${total} ج.م</div>
+                </div>
+            `;
+        }).join("");
+    } catch (err) {
+        container.innerHTML = `<p class="text-xs text-gray-400 text-center py-2">تعذر تحميل أحدث الفواتير</p>`;
     }
 }
 
-export async function renderHomeProducts(categoryFilter = "", searchFilter = "") {
-    const container = document.getElementById("products");
-    if (container) {
-        try {
-            let prods = await window.electronAPI.getProducts();
-            const cats = await window.electronAPI.getCategories();
-            if (!Array.isArray(prods)) prods = [];
-            if (categoryFilter) prods = prods.filter(p => p.category === categoryFilter);
-            if (searchFilter) prods = prods.filter(p => p.name.toLowerCase().includes(searchFilter.toLowerCase()));
-            prods.sort((a, b) => a.name.localeCompare(b.name));
+// 4. Keyboard Shortcuts Handler
+function handleKeyboardShortcuts(e) {
+    // If SweetAlert2 popup (e.g. Calculator) is currently visible, skip home shortcuts
+    if (typeof Swal !== "undefined" && Swal.isVisible()) {
+        return;
+    }
 
-            if (prods.length === 0) {
-                container.innerHTML = `
-                    <div class="no-results shadow-lg shadow-primary">
-                        <i class="fas fa-search text-3xl mb-2"></i>
-                        <p>لا توجد منتجات مطابقة للبحث</p>
-                    </div>
-                `;
-                return;
+    const { key, ctrlKey, target } = e;
+
+    // If typing in an input/textarea, ignore single key shortcuts except escape
+    const isTyping = target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT");
+
+    if (key === "Escape") {
+        closeShortcutsModal();
+        return;
+    }
+
+    if (key === "F1") {
+        e.preventDefault();
+        openShortcutsModal();
+        return;
+    }
+
+    if (key === "/" && !isTyping && !ctrlKey) {
+        e.preventDefault();
+        const searchInput = document.getElementById("searchInput");
+        if (searchInput) searchInput.focus();
+        return;
+    }
+
+    if (isTyping && !ctrlKey) return;
+
+    switch (true) {
+        case key === "F10":
+            e.preventDefault();
+            window.location.href = "./sales-invoice.html";
+            break;
+        case key === "F9":
+            e.preventDefault();
+            window.location.href = "./products.html";
+            break;
+        case key === "F12":
+            e.preventDefault();
+            window.location.href = "./treasury.html";
+            break;
+        case (key === "t" || key === "T" || key === "ف") && ctrlKey:
+            e.preventDefault();
+            window.location.href = "./categories.html";
+            break;
+        case key === "F4":
+            e.preventDefault();
+            window.location.href = "./customers.html";
+            break;
+        case (key === "s" || key === "S" || key === "س") && ctrlKey:
+            e.preventDefault();
+            window.location.href = "./settings.html";
+            break;
+        case (key === "p" || key === "P" || key === "ح") && ctrlKey:
+            e.preventDefault();
+            window.location.href = "./suppliers.html";
+            break;
+        case key === "F8":
+            e.preventDefault();
+            window.location.href = "./ProductsPurchaseInvoices.html";
+            break;
+        case key === "F7":
+            e.preventDefault();
+            window.location.href = "./purchase-invoices.html";
+            break;
+        case key === "F6":
+            e.preventDefault();
+            window.location.href = "./sales.html";
+            break;
+        case key === "F5":
+            // Allow default reload if Ctrl/Shift is pressed, otherwise go to statistics
+            if (!ctrlKey) {
+                e.preventDefault();
+                window.location.href = "./statistics.html";
+            }
+            break;
+        case key === "F3":
+            e.preventDefault();
+            window.location.href = "./returns.html";
+            break;
+        default:
+            break;
+    }
+}
+
+// 5. Render Products Grid
+export async function renderHomeProducts(categoryFilter = activeCategoryFilter, searchFilter = "", onlyLowStock = isLowStockFilterActive) {
+    const container = document.getElementById("products");
+    const noProductsEl = document.getElementById("noProducts");
+    const badgeEl = document.getElementById("totalProductsBadge");
+
+    if (!container) return;
+
+    try {
+        let prods = await window.electronAPI.getProducts();
+        if (!Array.isArray(prods)) prods = [];
+
+        // Update total product count badge
+        if (badgeEl) {
+            badgeEl.textContent = `${prods.length} منتج`;
+        }
+
+        // Apply filters
+        if (categoryFilter) {
+            prods = prods.filter(p => p.category === categoryFilter);
+        }
+        if (searchFilter) {
+            const q = searchFilter.toLowerCase().trim();
+            prods = prods.filter(p =>
+                (p.name && p.name.toLowerCase().includes(q)) ||
+                (p.barcode && String(p.barcode).toLowerCase().includes(q)) ||
+                (p.description && p.description.toLowerCase().includes(q))
+            );
+        }
+        if (onlyLowStock) {
+            prods = prods.filter(p => Number(p.quantity || 0) <= 3);
+        }
+
+        prods.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+
+        if (prods.length === 0) {
+            container.innerHTML = "";
+            if (noProductsEl) noProductsEl.classList.remove("hidden");
+            return;
+        }
+
+        if (noProductsEl) noProductsEl.classList.add("hidden");
+
+        container.innerHTML = prods.map(p => {
+            const price = typeof p.price === "number" ? p.price.toFixed(2) : (Number(p.price) || 0).toFixed(2);
+            const qty = Number(p.quantity || 0);
+
+            let stockClass = "in-stock";
+            let stockText = `متوفر: ${qty}`;
+            let stockIcon = "fa-check-circle";
+
+            if (qty <= 0) {
+                stockClass = "out-of-stock";
+                stockText = "نفذ من المخزون";
+                stockIcon = "fa-circle-xmark";
+            } else if (qty <= 3) {
+                stockClass = "low-stock";
+                stockText = `منخفض: ${qty}`;
+                stockIcon = "fa-triangle-exclamation";
             }
 
-            container.innerHTML = prods.map(p => {
-                const priceText = typeof p.price === "number" ? p.price.toFixed(2) : "غير متاح";
-                return `
-                    <div class="card product-card shadow-lg rounded-lg p-4 relative">
-                        <style>
-                            .description-container {
-                                position: relative;
-                                display: inline-block;
-                                width: 100%;
-                            }
-                            .description-text {
-                                display: -webkit-box;
-                                -webkit-line-clamp: 1;
-                                -webkit-box-orient: vertical;
-                                overflow: hidden;
-                                text-overflow: ellipsis;
-                                line-height: 1.5em;
-                                cursor: pointer;
-                            }
-                            .description-tooltip {
-                                visibility: hidden;
-                                width: auto;
-                                max-width: auto;
-                                background-color: #4d00c9;
-                                color: #fff;
-                                text-align: center;
-                                border-radius: 4px;
-                                padding: 8px;
-                                position: absolute;
-                                z-index: 10;
-                                bottom: 100%;
-                                left: 10%;
-                                opacity: 0;
-                                transition: opacity 0.3s;
-                                font-size: 14px;
-                                box-shadow: 3px 2px 8px rgba(0,0,0,0.2);
-                            }
-                            .description-container:hover .description-tooltip {
-                                visibility: visible;
-                                opacity: 1;
-                            }
-                            .bg-green-100 {
-                                background-color: #ccffc7;
-                                width: 50%;
-                                color: #000000;
-                                border-radius: 20px;
-                            }
-                            .bg-yellow-100 {
-                                background-color: #feed7b;
-                                width: 50%;
-                                color: #000000;
-                                border-radius: 20px;
-                            }
-                            .bg-red-100 {
-                                background-color: #ff9d9d;
-                                width: 50%;
-                                color: #000000;
-                                border-radius: 20px;
-                            }
-                        </style>
-                        <h3 class="text-lg font-bold text-blue-600">${p.name || "بدون اسم"}</h3>
-                        <p class="text-gray-600 inline-block px-4 rounded my-2 ${p.quantity > 10 ? "bg-green-100" : p.quantity > 3 ? "bg-yellow-100" : "bg-red-100"}">الكمية: ${p.quantity || 0}</p>
-                        <p class="text-green-600 font-bold">${priceText} جنيه</p>
-                        <div class="description-container">
-                            <div class="description-text text-gray-600 mt-1">${p.description || "لا يوجد وصف"}</div>
-                            <div class="description-tooltip">${p.description || "لا يوجد وصف"}</div>
+            return `
+                <div class="home-product-card">
+                    <div>
+                        <div class="product-card-head">
+                            <h3 class="product-card-title">${p.name || "منتج بدون اسم"}</h3>
+                            ${p.category ? `<span class="product-card-category">${p.category}</span>` : ""}
                         </div>
+                        <p class="product-card-desc" title="${p.description || ""}">${p.description || "لا يوجد وصف إضافي للمنتج"}</p>
                     </div>
-                `;
-            }).join("");
-        } catch (err) {
-            container.innerHTML = '<p class="text-center text-red-500 py-6">تعذر تحميل المنتجات حالياً، يرجى المحاولة لاحقاً.</p>';
+
+                    <div class="product-card-footer">
+                        <div class="product-card-price">${price} <span class="text-xs font-bold text-gray-500">ج.م</span></div>
+                        <span class="product-stock-tag ${stockClass}">
+                            <i class="fas ${stockIcon}"></i>
+                            <span>${stockText}</span>
+                        </span>
+                    </div>
+                </div>
+            `;
+        }).join("");
+
+    } catch (err) {
+        console.error("Error loading products:", err);
+        container.innerHTML = '<p class="text-center text-red-500 py-6 col-span-full">تعذر تحميل المنتجات حالياً، يرجى المحاولة لاحقاً.</p>';
+    }
+}
+
+// 6. Category Filter Pills
+export async function renderCategoryFilter() {
+    const pillsContainer = document.getElementById("categoryPillsContainer");
+    const selectEl = document.getElementById("filterCategory");
+
+    try {
+        categories = (await window.electronAPI.getCategories()) || [];
+
+        // Render Select (for backwards compatibility)
+        if (selectEl) {
+            selectEl.innerHTML = `<option value="">كل المنتجات</option>${categories.map(c => `<option value="${c.name}">${c.name}</option>`).join("")}`;
         }
+
+        // Render Modern Category Filter Pills
+        if (pillsContainer) {
+            let pillsHtml = `
+                <button type="button" class="category-pill-btn ${activeCategoryFilter === "" ? "active" : ""}" onclick="setCategoryFilter('')">
+                    <i class="fas fa-layer-group"></i>
+                    <span>كل المنتجات</span>
+                </button>
+            `;
+
+            categories.forEach(cat => {
+                const isActive = activeCategoryFilter === cat.name;
+                pillsHtml += `
+                    <button type="button" class="category-pill-btn ${isActive ? "active" : ""}" onclick="setCategoryFilter('${cat.name}')">
+                        <i class="fas fa-tag"></i>
+                        <span>${cat.name}</span>
+                    </button>
+                `;
+            });
+
+            pillsContainer.innerHTML = pillsHtml;
+        }
+    } catch (err) {
+        console.error("Error rendering category filter:", err);
+    }
+}
+
+export function setCategoryFilter(categoryName) {
+    activeCategoryFilter = categoryName;
+    isLowStockFilterActive = false;
+
+    // Update active pill button
+    const pills = document.querySelectorAll(".category-pill-btn");
+    pills.forEach(pill => {
+        const text = pill.querySelector("span")?.textContent || "";
+        if ((categoryName === "" && text === "كل المنتجات") || text === categoryName) {
+            pill.classList.add("active");
+        } else {
+            pill.classList.remove("active");
+        }
+    });
+
+    const selectEl = document.getElementById("filterCategory");
+    if (selectEl) selectEl.value = categoryName;
+
+    const sInput = document.getElementById("searchInput");
+    renderHomeProducts(activeCategoryFilter, sInput ? sInput.value : "", false);
+}
+
+export function filterLowStockProducts() {
+    isLowStockFilterActive = !isLowStockFilterActive;
+    activeCategoryFilter = "";
+
+    // Clear active pill state
+    document.querySelectorAll(".category-pill-btn").forEach(p => p.classList.remove("active"));
+
+    const sInput = document.getElementById("searchInput");
+    renderHomeProducts("", sInput ? sInput.value : "", isLowStockFilterActive);
+
+    if (isLowStockFilterActive) {
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000,
+            timerProgressBar: true
+        });
+        Toast.fire({
+            icon: 'info',
+            title: 'تمت تصفية المنتجات التي أوشكت على النفاد'
+        });
     }
 }
 
 function filterAndSearch() {
-    renderHomeProducts(
-        document.getElementById("filterCategory").value,
-        document.getElementById("searchInput").value
-    );
+    const sInput = document.getElementById("searchInput");
+    renderHomeProducts(activeCategoryFilter, sInput ? sInput.value : "", isLowStockFilterActive);
 }
 
+// 7. Shortcuts Modal Controls
+export function openShortcutsModal() {
+    const modal = document.getElementById("shortcutsModal");
+    if (modal) modal.classList.add("open");
+}
+
+export function closeShortcutsModal() {
+    const modal = document.getElementById("shortcutsModal");
+    if (modal) modal.classList.remove("open");
+}
+
+export function handleShortcutsOverlayClick(e) {
+    if (e.target && e.target.id === "shortcutsModal") {
+        closeShortcutsModal();
+    }
+}
+
+// 8. Initialization
 document.addEventListener("DOMContentLoaded", () => {
-    Promise.all([loadCategories(), loadProducts(), loadCart(), loadCustomers()]).then(() => {
-        renderHomeProducts();
+    updateLiveClockAndGreeting();
+    setInterval(updateLiveClockAndGreeting, 1000);
+
+    Promise.all([
+        window.electronAPI.getCategories().catch(() => []),
+        window.electronAPI.getProducts().catch(() => [])
+    ]).then(() => {
         renderCategoryFilter();
-        renderCustomers();
+        renderHomeProducts();
         loadQuickStats();
+        loadRecentInvoices();
+
         const sInput = document.getElementById("searchInput");
-        if (sInput) sInput.addEventListener("input", debounce(filterAndSearch, 300));
+        if (sInput) sInput.addEventListener("input", debounce(filterAndSearch, 250));
+
         document.addEventListener("keydown", handleKeyboardShortcuts);
-    }).catch(() => {});
+    }).catch(err => {
+        console.error("Init error on home page:", err);
+    });
 });
 
-export async function renderCategoryFilter() {
-    const el = document.getElementById("filter");
-    if (el) try {
-        const cats = await window.electronAPI.getCategories();
-        el.querySelector("select").innerHTML = `<option value="">كل المنتجات</option>${cats.map(c => `<option class="cursor-pointer" value="${c.name}">${c.name}</option>`).join("")}`;
-    } catch (err) {}
+// Window Exports
+if (typeof window !== "undefined") {
+    window.renderHomeProducts = renderHomeProducts;
+    window.filterProducts = filterAndSearch;
+    window.renderCategoryFilter = renderCategoryFilter;
+    window.setCategoryFilter = setCategoryFilter;
+    window.filterLowStockProducts = filterLowStockProducts;
+    window.openShortcutsModal = openShortcutsModal;
+    window.closeShortcutsModal = closeShortcutsModal;
+    window.handleShortcutsOverlayClick = handleShortcutsOverlayClick;
 }
-
-export async function renderCustomers() {
-    const container = document.getElementById("customersTable");
-    if (container) try {
-        customers = await window.electronAPI.getCustomers();
-        if (!customers?.length) {
-            return void (container.innerHTML = `
-                <div class="empty-state p-8 text-center">
-                    <i class="fas fa-users-slash text-4xl text-gray-300 mb-4"></i>
-                    <p class="text-gray-500 text-lg">لا يوجد عملاء مسجلين حالياً</p>
-                    <p class="text-gray-400 mt-2">يمكنك إضافة عميل جديد باستخدام النموذج أعلاه</p>
-                </div>
-            `);
-        }
-        container.innerHTML = `
-            <table class="table w-full rounded-lg overflow-hidden">
-                <thead>
-                    <tr>
-                        <th class="text-right bg-gradient-to-l from-indigo-600 to-purple-600 text-white py-4 px-6">اسم العميل</th>
-                        <th class="text-right bg-gradient-to-l from-indigo-600 to-purple-600 text-white py-4 px-6">رقم الهاتف</th>
-                        <th class="text-center bg-gradient-to-l from-indigo-600 to-purple-600 text-white py-4 px-6">الإجراءات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${customers.map(c => `
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="text-right py-4 px-6 border-b border-gray-100 font-medium">${c.name}</td>
-                            <td class="text-right py-4 px-6 border-b border-gray-100">${c.phone}</td>
-                            <td class="py-4 px-6 border-b border-gray-100">
-                                <div class="flex justify-center gap-2">
-                                    <button onclick="editCustomer('${c._id}')" 
-                                            class="btn btn-primary btn-sm min-h-8 h-8 px-3 rounded-md text-white bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 transition-all">
-                                        <i class="fas fa-pen-to-square ml-1"></i>
-                                        تعديل
-                                    </button>
-                                    <button onclick="deleteCustomer('${c._id}')" 
-                                            class="btn btn-error btn-sm min-h-8 h-8 px-3 rounded-md text-white bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 transition-all">
-                                        <i class="fas fa-trash ml-1"></i>
-                                        حذف
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `).join("")}
-                </tbody>
-            </table>
-        `;
-    } catch (err) {
-        container.innerHTML = `
-            <div class="error-state p-6 text-center bg-red-50 rounded-lg">
-                <i class="fas fa-exclamation-triangle text-red-500 text-3xl mb-3"></i>
-                <p class="text-red-600 font-medium">تعذر تحميل بيانات العملاء</p>
-                <p class="text-red-500 text-sm mt-1">يرجى المحاولة مرة أخرى لاحقاً</p>
-            </div>
-        `;
-    }
-}
-
-export async function addCustomer() {
-    const nameEl = document.getElementById("newCustomerName");
-    const phoneEl = document.getElementById("newCustomerPhone");
-    const name = nameEl ? nameEl.value.trim() : "";
-    const phone = phoneEl ? phoneEl.value.trim() : "";
-
-    let hasError = false;
-    let firstInvalid = null;
-
-    if (!name) {
-        if (typeof window.markFieldInvalid === "function" && nameEl) {
-            window.markFieldInvalid(nameEl, "يرجى إدخال اسم العميل");
-        }
-        if (!firstInvalid) firstInvalid = nameEl;
-        hasError = true;
-    }
-    if (!phone) {
-        if (typeof window.markFieldInvalid === "function" && phoneEl) {
-            window.markFieldInvalid(phoneEl, "يرجى إدخال رقم هاتف العميل");
-        }
-        if (!firstInvalid) firstInvalid = phoneEl;
-        hasError = true;
-    }
-
-    if (hasError) {
-        if (firstInvalid) firstInvalid.focus();
-        return Swal.fire({
-            title: "تنبيه",
-            text: "يرجى إدخال اسم العميل ورقم الهاتف للمتابعة.",
-            icon: "warning",
-            confirmButtonColor: "#3085d6"
-        });
-    }
-    if (customers.some(c => c.name.toLowerCase() === name.toLowerCase())) {
-        if (typeof window.markFieldInvalid === "function" && nameEl) {
-            window.markFieldInvalid(nameEl, "اسم العميل مسجل بالفعل");
-            nameEl.focus();
-        }
-        return Swal.fire({
-            title: "عميل مسجل مسبقاً",
-            text: "يوجد عميل مسجل بالفعل بنفس هذا الاسم.",
-            icon: "warning",
-            confirmButtonColor: "#3085d6"
-        });
-    }
-    try {
-        await window.electronAPI.addCustomer({
-            name,
-            phone,
-            dateAdded: (new Date).toISOString()
-        });
-        renderCustomers();
-        ["newCustomerName", "newCustomerPhone"].forEach(id => document.getElementById(id).value = "");
-        Swal.fire({
-            title: "تم الحفظ بنجاح",
-            text: "تمت إضافة العميل الجديد بنجاح.",
-            icon: "success",
-            confirmButtonColor: "#34D399"
-        });
-    } catch (err) {
-        Swal.fire({
-            title: "تنبيه",
-            text: "تعذر حفظ بيانات العميل، يرجى المحاولة مرة أخرى.",
-            icon: "error",
-            confirmButtonColor: "#EF4444"
-        });
-    }
-}
-
-export async function editCustomer(id) {
-    const customer = customers.find(c => c._id === id);
-    if (!customer) return;
-
-    Swal.fire({
-        title: "تعديل بيانات العميل",
-        html: `
-            <div class="space-y-3 text-right">
-                <label class="text-sm font-semibold text-gray-700">اسم العميل:</label>
-                <input id="editCustomerName" class="swal2-input !mt-1 !w-full" value="${customer.name}" placeholder="أدخل اسم العميل" required>
-                <label class="text-sm font-semibold text-gray-700 mt-2 block">رقم الهاتف:</label>
-                <input id="editCustomerPhone" class="swal2-input !mt-1 !w-full" value="${customer.phone}" placeholder="أدخل رقم الهاتف" required>
-            </div>
-        `,
-        showCancelButton: true,
-        confirmButtonText: "حفظ التعديل",
-        cancelButtonText: "إلغاء",
-        confirmButtonColor: "#34D399",
-        cancelButtonColor: "#6B7280",
-        preConfirm: () => {
-            const [name, phone] = ["editCustomerName", "editCustomerPhone"].map(elId => document.getElementById(elId).value.trim());
-            if (!name || !phone) {
-                Swal.showValidationMessage("يرجى إدخال اسم العميل ورقم الهاتف");
-                return false;
-            }
-            if (customers.some(c => c.name.toLowerCase() === name.toLowerCase() && c._id !== id)) {
-                Swal.showValidationMessage("يوجد عميل مسجل بالفعل بهذا الاسم");
-                return false;
-            }
-            return { name, phone };
-        }
-    }).then(async res => {
-        if (res.isConfirmed && res.value) {
-            try {
-                await window.electronAPI.updateCustomer(id, {
-                    name: res.value.name,
-                    phone: res.value.phone,
-                    dateAdded: customer.dateAdded
-                });
-                renderCustomers();
-                Swal.fire({
-                    title: "تم التعديل",
-                    text: "تم تحديث بيانات العميل بنجاح.",
-                    icon: "success",
-                    confirmButtonColor: "#34D399"
-                });
-            } catch (err) {
-                Swal.fire({
-                    title: "تنبيه",
-                    text: "تعذر تعديل بيانات العميل، يرجى المحاولة مرة أخرى.",
-                    icon: "error",
-                    confirmButtonColor: "#EF4444"
-                });
-            }
-        }
-    });
-}
-
-export async function deleteCustomer(id) {
-    const res = await Swal.fire({
-        title: "تأكيد حذف العميل",
-        text: "هل أنت متأكد من رغبتك في حذف هذا العميل؟",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "نعم، احذف",
-        cancelButtonText: "إلغاء",
-        confirmButtonColor: "#EF4444",
-        cancelButtonColor: "#6B7280"
-    });
-
-    if (res.isConfirmed) {
-        try {
-            await window.electronAPI.deleteCustomer(id);
-            renderCustomers();
-            Swal.fire({
-                title: "تم الحذف",
-                text: "تم حذف العميل بنجاح.",
-                icon: "success",
-                confirmButtonColor: "#34D399"
-            });
-        } catch (err) {
-            Swal.fire({
-                title: "تنبيه",
-                text: "تعذر حذف العميل، يرجى المحاولة مرة أخرى.",
-                icon: "error",
-                confirmButtonColor: "#EF4444"
-            });
-        }
-    }
-}
-
-async function loadCategories() { categories = await window.electronAPI.getCategories(); }
-async function loadProducts() { products = await window.electronAPI.getProducts(); }
-async function loadCart() { cart = await window.electronAPI.getCart(); }
-async function loadCustomers() { customers = await window.electronAPI.getCustomers(); }
-
-window.electronAPI.onOpenPage((url => { window.location.href = url; }));
-window.renderHomeProducts = renderHomeProducts;
-window.filterProducts = filterAndSearch;
-window.renderCategoryFilter = renderCategoryFilter;
-window.renderCustomers = renderCustomers;
-window.addCustomer = addCustomer;
-window.editCustomer = editCustomer;
-window.deleteCustomer = deleteCustomer;

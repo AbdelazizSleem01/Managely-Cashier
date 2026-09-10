@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-page="settings">
 
 <head>
     <meta charset="UTF-8">
@@ -8,403 +8,264 @@
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
     <link href="../styles/output.css" rel="stylesheet">
     <link href="../styles/home.css" rel="stylesheet">
+    <link href="../styles/settings.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #4f46e5;
-            --secondary-color: #f59e0b;
-        }
-
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background: linear-gradient(to bottom, #f3f4f6, #e5e7eb);
-            padding-top: 0px;
-
-        }
-
-        .card {
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        .page-title {
-            background: linear-gradient(to right, #4f46e5, #7c3aed);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .form-control button {
-            transition: all 0.3s ease;
-        }
-
-        .form-control input {
-            transition: none !important;
-        }
-
-        .form-control input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 5px var(--primary-color);
-            transition: none !important;
-        }
-
-        .form-control button:hover {
-            background: var(--secondary-color);
-            color: white;
-        }
-
-        .logo-preview-container {
-            border: 2px dashed #d1d5db;
-            transition: all 0.3s;
-            position: relative;
-            background: #f9fafb;
-        }
-
-        .logo-preview-container:hover {
-            border-color: var(--primary-color);
-        }
-
-        #logoPreview {
-            transition: opacity 0.3s ease;
-            margin-top: 60px;
-        }
-
-        #logoPlaceholder {
-            transition: opacity 0.3s ease;
-        }
-
-        #logoPreview.hidden+#logoPlaceholder {
-            opacity: 1;
-        }
-
-        #logoPlaceholder.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .setting-email-form {
-            margin: 30px;
-            padding: 40px;
-            background-color: #f9fafb;
-            border-radius: 0.75rem;
-            
-            box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.15)
-        }
-
-        .relative {
-            position: relative;
-        }
-
-        .fa-eye,
-        .fa-eye-slash {
-            position: absolute;
-            top: 50%;
-            left: 15px;
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #4f46e5;
-        }
-
-        /* File Input Styles */
-        .file-input-container {
-            margin-bottom: 1.25rem;
-        }
-
-        .file-input-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 600;
-            color: #4b5563;
-        }
-
-        .custom-file-input {
-            position: relative;
-            margin-top: 0.5rem;
-        }
-
-        .hidden-file-input {
-            display: none !important;
-        }
-
-        .file-input-box {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1.25rem;
-            border: 2px dashed #d1d5db;
-            border-radius: 0.75rem;
-            background-color: #f9fafb;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .file-input-box:hover {
-            border-color: #4d00c9;
-            background-color: #f0f7ff;
-        }
-
-        .file-input-icon {
-            color: #4d00c9;
-            width: 3rem;
-            height: 3rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #e0e7ff;
-            border-radius: 0.5rem;
-        }
-
-        .file-input-text {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .file-input-title {
-            font-weight: 600;
-            color: #111827;
-        }
-
-        .file-input-hint {
-            font-size: 0.875rem;
-            color: #6b7280;
-            margin-top: 0.25rem;
-        }
-
-
-        .my-8 {
-            margin-top: 30px;
-            padding-bottom: 30px;
-        }
-
-        .px-8 {
-            padding-left: 50px;
-            padding-right: 50px;
-        }
-
-        .mx-2 {
-            margin-left: 10px;
-            margin-right: 10px;
-        }
-    </style>
 </head>
 
 <body class="min-h-screen" data-page="settings">
 
     <div id="sidebar-container"></div>
 
-    <div class="main-content pr-64 lg:pr-0 transition-all duration-300 pb-16">
-        <div class="container mx-auto px-4 py-8">
-            <div class="flex flex-col items-center mb-8">
-                <h1 class="text-4xl font-bold text-center mb-2 page-title">إعدادات الموقع</h1>
+    <div class="main-content pt-10 pt-10">
+        <div class="container mx-auto px-4 py-6">
+            <!-- Unified Page Header -->
+            <div class="page-header">
+                <div class="page-title-group">
+                    <div class="page-icon-badge">
+                        <i class="fas fa-gear"></i>
+                    </div>
+                    <div>
+                        <h1>إعدادات الموقع</h1>
+                        <p>تخصيص بيانات المتجر، بيانات الحساب، وإدارة تحديثات النظام</p>
+                    </div>
+                </div>
+
+                <div class="header-stats">
+                    <div class="stat-pill stat-pill-status">
+                        <i class="fas fa-circle-check"></i>
+                        <div class="stat-info">
+                            <span class="stat-label">بيانات المتجر</span>
+                            <span class="stat-value" id="storeStatusBadge" style="color: #059669;">مكتملة</span>
+                        </div>
+                    </div>
+                    <div class="stat-pill stat-pill-version">
+                        <i class="fas fa-code-branch"></i>
+                        <div class="stat-info">
+                            <span class="stat-label">إصدار النظام</span>
+                            <span class="stat-value" id="headerAppVersion">v1.0.0</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="card bg-white shadow-2xl p-6 max-w-3xl mx-auto">
-                <div class="card-body p-0">
-                    <div class="flex items-center gap-3 mb-6 p-4 bg-gradient-to-r from-primary to-secondary rounded-lg">
-                        <i class="fas fa-store text-white text-2xl mx-2"></i>
-                        <h2 class="text-2xl font-bold text-white">
-                            بيانات المحل
-                        </h2>
+            <!-- Settings Cards Grid -->
+            <div class="settings-grid">
+
+                <!-- Card 1: Store Profile Data -->
+                <div class="settings-card">
+                    <div class="card-header-gradient">
+                        <div class="card-header-icon">
+                            <i class="fas fa-store"></i>
+                        </div>
+                        <div>
+                            <h2 class="card-header-title">بيانات المحل الأساسية</h2>
+                            <p class="card-header-desc">تظهر هذه البيانات في ترويسة الفواتير المطبوعة وتقارير النظام</p>
+                        </div>
                     </div>
 
-                    <div class="space-y-6 p-4">
+                    <div class="card-body-content">
                         <!-- اسم المحل -->
-                        <div class="form-control">
-                            <label for="storeName" class="label">
-                                <span class="label-text text-gray-700 font-medium flex items-center gap-2">
-                                    <i class="fas fa-signature text-primary"></i>
-                                    اسم المحل <span class="required-star">*</span>
-                                </span>
+                        <div class="form-group">
+                            <label for="storeName" class="form-label">
+                                <i class="fas fa-signature text-primary"></i>
+                                <span>اسم المحل</span>
+                                <span class="required-star">*</span>
                             </label>
-                            <input id="storeName" type="text"
-                                class="input text-black input-primary w-full bg-transparent"
-                                placeholder="أدخل اسم المحل">
+                            <div class="input-modern-wrap">
+                                <input id="storeName" type="text" placeholder="أدخل اسم المحل أو النشاط التجاري"
+                                    autocomplete="off" />
+                            </div>
                         </div>
 
                         <!-- أرقام الهواتف -->
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text text-gray-700 font-medium flex items-center gap-2">
-                                    <i class="fas fa-phone-alt text-primary"></i>
-                                    أرقام الهواتف <span class="required-star">*</span>
-                                </span>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-phone-alt text-primary"></i>
+                                <span>أرقام الهواتف والتواصل</span>
+                                <span class="required-star">*</span>
                             </label>
-                            <div id="phoneNumbers" class="space-y-3"></div>
-                            <button onclick="addPhoneNumberField()"
-                                class="btn btn-outline btn-primary mt-3 w-full sm:w-auto">
-                                <i class="fas fa-plus mr-2"></i> إضافة رقم هاتف
+                            <div id="phoneNumbers" class="phone-list-container"></div>
+                            <button type="button" onclick="addPhoneNumberField()" class="btn-add-phone">
+                                <i class="fas fa-plus"></i>
+                                <span>إضافة رقم هاتف جديد</span>
                             </button>
                         </div>
 
-                        <!-- الموقع -->
-                        <div class="form-control">
-                            <label for="storeLocation" class="label">
-                                <span class="label-text text-gray-700 font-medium flex items-center gap-2">
-                                    <i class="fas fa-map-marker-alt text-primary"></i>
-                                    الموقع <span class="required-star">*</span>
-                                </span>
+                        <!-- الموقع / العنوان -->
+                        <div class="form-group">
+                            <label for="storeLocation" class="form-label">
+                                <i class="fas fa-map-marker-alt text-primary"></i>
+                                <span>عنوان وموقع المحل</span>
+                                <span class="required-star">*</span>
                             </label>
-                            <input id="storeLocation" type="text"
-                                class="input text-black input-primary w-full bg-transparent"
-                                placeholder="أدخل عنوان المحل">
+                            <div class="input-modern-wrap">
+                                <input id="storeLocation" type="text"
+                                    placeholder="أدخل عنوان المحل بالتفصيل ليظهر في الفواتير" autocomplete="off" />
+                            </div>
                         </div>
 
                         <!-- الشعار -->
-                        <div class="form-control ">
-                            <label for="storeLogo" class="label">
-                                <span class="label-text text-gray-700 font-medium flex items-center gap-2">
-                                    <i class="fas fa-image text-primary"></i>
-                                    شعار المحل
-                                </span>
+                        <div class="form-group">
+                            <label class="form-label">
+                                <i class="fas fa-image text-primary"></i>
+                                <span>شعار المحل (Logo)</span>
                             </label>
-                            <div class="logo-preview-container rounded-lg p-4 pt-12 text-center">
-                                <input id="storeLogo" type="file" accept="image/*" class="hidden-file-input">
-                                <label for="storeLogo" class="file-input-box cursor-pointer">
-                                    <div class="file-input-icon">
-                                        <i class="fas fa-upload text-3xl"></i>
+
+                            <div class="logo-dropzone" onclick="document.getElementById('storeLogo').click()">
+                                <input id="storeLogo" type="file" accept="image/*" style="display: none;" />
+                                <div class="logo-picker-label">
+                                    <div class="logo-picker-icon">
+                                        <i class="fas fa-cloud-arrow-up"></i>
                                     </div>
-                                    <div class="file-input-text">
-                                        <span class="file-input-title">اختر شعار المحل</span>
-                                        <span class="file-input-hint">PNG, JPG, JPEG (حتى 2 ميجابايت)</span>
-                                    </div>
-                                </label>
+                                    <span class="logo-picker-text">اضغط هنا لاختيار أو تغيير الشعار</span>
+                                    <span class="logo-picker-hint">يدعم صيغ PNG, JPG, JPEG (الحجم الأقصى 2
+                                        ميجابايت)</span>
+                                </div>
                                 <input type="hidden" id="logoBase64" name="logoBase64">
 
-                                <img id="logoPreview" class="mt-12 mx-auto max-w-xs hidden rounded-lg shadow-md "
-                                    alt="معاينة الشعار">
-                                <div id="logoPlaceholder" class="text-gray-400 py-8">
-                                    <i class="fas fa-image text-4xl mb-2"></i>
-                                    <p class="text-sm">سيظهر الشعار هنا بعد اختياره</p>
+                                <img id="logoPreview" class="logo-preview-img hidden" alt="معاينة الشعار" />
+                                <div id="logoPlaceholder" style="margin-top: 12px; color: #94a3b8; font-size: 0.85rem;">
+                                    <i class="fas fa-circle-info"></i>
+                                    <span>سيظهر الشعار المحدد هنا مباشرة</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- زر الحفظ -->
-                        <div class="pt-4 mt-4">
-                            <button onclick="saveSettings()"
-                                class="btn btn-primary w-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
-                                <i class="fas fa-save mr-2"></i> حفظ الإعدادات
+                        <div style="margin-top: 24px;">
+                            <button onclick="saveSettings()" class="btn-save-action">
+                                <i class="fas fa-floppy-disk"></i>
+                                <span>حفظ بيانات المحل</span>
                             </button>
                         </div>
                     </div>
                 </div>
-            </div>
 
-
-        </div>
-        <div class="container setting-email-form mx-auto  max-w-3xl">
-            <div class="flex items-center gap-3 mb-6 p-4 bg-gradient-to-r from-primary to-secondary rounded-lg">
-                <i class="fas fa-user-cog text-white text-2xl mx-2"></i>
-                <h2 class=" text-2xl font-bold text-white">
-                    تعديل بيانات تسجيل الدخول
-                </h2>
-            </div>
-            <form id="settingsForm" class="max-w-lg mx-auto">
-                <div class="form-control mb-4">
-                    <label class="label">
-
-                        <span class="label-text text-gray-700 font-bold gap-2 flex items-center">
-                            <i class="fas fa-envelope text-primary"></i>
-                            البريد الإلكتروني الجديد <span class="required-star">*</span>
-                        </span>
-                    </label>
-                    <input type="email" id="newEmail"
-                        class="input input-bordered input-primary bg-transparent text-gray-800"
-                        placeholder="أدخل بريدك الإلكتروني الجديد">
-                </div>
-                <div class="form-control mb-4">
-                    <label class="label">
-                        <span class="label-text text-gray-700 font-bold gap-2 flex items-center">
-                            <i class="fas fa-lock text-primary"></i>
-                            كلمة المرور الجديدة <span class="required-star">*</span>
-                        </span>
-                    </label>
-                    <div class="relative">
-                        <input type="password" id="newPassword"
-                            class="input input-bordered input-primary bg-transparent text-gray-800 w-full"
-                            placeholder="أدخل كلمة المرور الجديدة">
-                        <i class="fas fa-eye toggle-password transform -translate-y-1/2 cursor-pointer text-primary"
-                            id="toggleNewPassword"></i>
-                    </div>
-                </div>
-                <div class="form-control">
-                    <button type="submit" class="btn btn-primary w-full">
-                        حفظ التغييرات
-                        <i class="fas fa-save ml-2"></i>
-
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- قسم معلومات البرنامج والتحديثات -->
-        <div class="container setting-email-form mx-auto max-w-3xl mt-8">
-            <div class="flex items-center gap-3 mb-6 p-4 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-lg shadow-md">
-                <i class="fas fa-cloud-arrow-down text-white text-2xl mx-2"></i>
-                <div>
-                    <h2 class="text-2xl font-bold text-white">معلومات النظام والتحديث التلقائي</h2>
-                    <p class="text-blue-100 text-xs mt-1">إدارة التحديثات وفحص النسخ الجديدة والنسخ الاحتياطي الآمن</p>
-                </div>
-            </div>
-
-            <div class="space-y-6">
-                <!-- Version & Status Box -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+                <!-- Card 2: Security & Login Credentials -->
+                <div class="settings-card">
+                    <div class="card-header-gradient security">
+                        <div class="card-header-icon">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
                         <div>
-                            <span class="text-xs text-gray-500 block">الإصدار المثبت حالياً</span>
-                            <span id="appCurrentVersionBadge" class="text-lg font-extrabold text-indigo-700">v1.0.0</span>
+                            <h2 class="card-header-title">تعديل بيانات تسجيل الدخول</h2>
+                            <p class="card-header-desc">تغيير البريد الإلكتروني وكلمة المرور لحساب المدير</p>
                         </div>
-                        <span class="badge badge-success gap-1 py-3 px-3 text-xs font-semibold">
-                            <i class="fas fa-circle-check"></i> مثبت ومرخص
-                        </span>
                     </div>
 
-                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+                    <div class="card-body-content">
+                        <form id="settingsForm">
+                            <div class="form-group">
+                                <label for="newEmail" class="form-label">
+                                    <i class="fas fa-envelope text-primary"></i>
+                                    <span>البريد الإلكتروني الجديد</span>
+                                    <span class="required-star">*</span>
+                                </label>
+                                <div class="input-modern-wrap">
+                                    <input type="email" id="newEmail" placeholder="example@managely.com"
+                                        autocomplete="username" />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="newPassword" class="form-label">
+                                    <i class="fas fa-lock text-primary"></i>
+                                    <span>كلمة المرور الجديدة</span>
+                                    <span class="required-star">*</span>
+                                </label>
+                                <div class="input-modern-wrap">
+                                    <input type="password" id="newPassword" placeholder="أدخل كلمة المرور الجديدة"
+                                        autocomplete="new-password" />
+                                    <i class="fas fa-eye password-toggle-btn" id="toggleNewPassword"
+                                        title="إظهار / إخفاء كلمة المرور"></i>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 24px;">
+                                <button type="submit" class="btn-save-action"
+                                    style="background: linear-gradient(135deg, #4f46e5, #3b82f6) !important;">
+                                    <i class="fas fa-key"></i>
+                                    <span>حفظ بيانات تسجيل الدخول</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Card 3: System Updates & Info -->
+                <div class="settings-card">
+                    <div class="card-header-gradient system">
+                        <div class="card-header-icon">
+                            <i class="fas fa-cloud-arrow-down"></i>
+                        </div>
                         <div>
-                            <span class="text-xs text-gray-500 block">حالة التحديثات</span>
-                            <span id="updateStatusText" class="text-sm font-bold text-gray-700">جاهز للتحقق</span>
+                            <h2 class="card-header-title">معلومات النظام والتحديث التلقائي</h2>
+                            <p class="card-header-desc">إدارة التحديثات وفحص النسخ الجديدة والنسخ الاحتياطي الآمن</p>
                         </div>
-                        <div id="updateStatusIcon" class="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
-                            <i class="fas fa-wifi"></i>
+                    </div>
+
+                    <div class="card-body-content">
+                        <!-- Version & Status Box -->
+                        <div class="system-status-grid">
+                            <div class="sys-box">
+                                <div class="sys-box-info">
+                                    <span>الإصدار المثبت حالياً</span>
+                                    <strong id="appCurrentVersionBadge">v1.0.0</strong>
+                                </div>
+                                <span class="badge-system success">
+                                    <i class="fas fa-shield-check"></i>
+                                    <span>مثبت ومرخص</span>
+                                </span>
+                            </div>
+
+                            <div class="sys-box">
+                                <div class="sys-box-info">
+                                    <span>حالة خادم التحديثات</span>
+                                    <strong id="updateStatusText" style="font-size: 0.95rem; color: #334155;">جاهز
+                                        للتحقق</strong>
+                                </div>
+                                <div id="updateStatusIcon"
+                                    style="width: 36px; height: 36px; border-radius: 10px; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                                    <i class="fas fa-wifi"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Database Safety Alert -->
+                        <div class="database-shield-card">
+                            <i class="fas fa-shield-halved"></i>
+                            <div class="database-shield-text">
+                                <strong>حماية البيانات والنسخ الاحتياطي مؤمنة بالكامل:</strong>
+                                قواعد البيانات (<code
+                                    style="background: rgba(5,150,105,0.12); padding: 2px 6px; border-radius: 6px; font-weight: 700;">userData/db</code>)
+                                مفصولة تماماً عن ملفات البرنامج. يتم إنشاء نسخة احتياطية Snapshot تلقائياً قبل أي ترقية
+                                أو ترحيل بيانات.
+                            </div>
+                        </div>
+
+                        <!-- Manual Check Button -->
+                        <div
+                            style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 16px;">
+                            <button id="btnCheckUpdateManual" type="button" class="btn-check-updates">
+                                <i class="fas fa-rotate" id="checkUpdateIcon"></i>
+                                <span>التحقق من وجود تحديثات الآن</span>
+                            </button>
+                            <span id="lastCheckTime" style="font-size: 0.8rem; color: #94a3b8; font-weight: 600;">لم يتم
+                                الفحص بعد</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Database Safety Alert -->
-                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
-                    <div class="text-emerald-600 text-xl mt-0.5">
-                        <i class="fas fa-shield-halved"></i>
-                    </div>
-                    <div class="text-xs text-emerald-800 leading-relaxed">
-                        <strong>حماية البيانات مؤمنة بنسبة 100%:</strong>
-                        قواعد البيانات (<code class="bg-emerald-100 px-1 py-0.5 rounded font-mono text-emerald-900">userData/db</code>) مفصولة تماماً عن ملفات التثبيت. يتم أخذ نسخة احتياطية Snapshot تلقائياً قبل أي ترقية أو Database Migration.
-                    </div>
-                </div>
-
-                <!-- Manual Check Button -->
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-                    <button id="btnCheckUpdateManual" type="button" class="btn btn-primary w-full sm:w-auto px-6 shadow-md hover:shadow-lg transition-all duration-300">
-                        <i class="fas fa-rotate mr-2" id="checkUpdateIcon"></i>
-                        التحقق من وجود تحديثات الآن
-                    </button>
-                    <span id="lastCheckTime" class="text-xs text-gray-400">لم يتم الفحص بعد</span>
-                </div>
             </div>
-        </div>
 
-        <div class="my-8 text-center">
-            <a href="index.html"
-                class="btn btn-outline btn-primary px-8 hover:bg-primary hover:text-white transition duration-300">
-                <i class="fas fa-home mr-2"></i> العودة للرئيسية
-            </a>
+            <!-- زر العودة للرئيسية -->
+            <div class="back-link-wrap">
+                <a href="index.html" class="btn-back-home">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>العودة للرئيسية</span>
+                </a>
+            </div>
         </div>
     </div>
 
@@ -412,31 +273,6 @@
     <script type="module" src="../js/calculator.js"></script>
     <script type="module" src="../js/settings.js"></script>
     <script type="module" src="../js/shared.js"></script>
-    <script type="module">
-        document.getElementById('settingsForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('newEmail').value.trim();
-            const password = document.getElementById('newPassword').value.trim();
-
-            try {
-                await window.electronAPI.updateLoginCredentials(email, password); // Update credentials
-                Swal.fire({
-                    title: 'تم!',
-                    text: 'تم تحديث بيانات تسجيل الدخول بنجاح.',
-                    icon: 'success',
-                    confirmButtonColor: '#34D399',
-                });
-            } catch (err) {
-                Swal.fire({
-                    title: 'خطأ!',
-                    text: err.message || 'حدث خطأ أثناء تحديث بيانات تسجيل الدخول.',
-                    icon: 'error',
-                    confirmButtonColor: '#EF4444',
-                });
-            }
-        });
-    </script>
-
 </body>
 
 </html>

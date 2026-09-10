@@ -1,216 +1,116 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-page="returns">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إدارة المرتجعات - كاشير</title>
+    <title>إدارة المرتجعات</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
     <link href="../styles/output.css" rel="stylesheet">
     <link href="../styles/home.css" rel="stylesheet">
+    <link href="../styles/returns.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #4d00c9;
-            --secondary-color: #6c757d;
-            --success-color: #28a745;
-            --info-color: #17a2b8;
-            --warning-color: #ffc107;
-            --danger-color: #dc3545;
-            --light-color: #f8f9fa;
-            --dark-color: #343a40;
-        }
-
-        body {
-            background-color: #f5f7fa;
-            font-family: 'Tajawal', sans-serif;
-        }
-
-        .page-title {
-            color: var(--primary-color);
-            position: relative;
-            padding-bottom: 15px;
-            margin-bottom: 30px;
-        }
-
-        .page-title::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 100px;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary-color), transparent);
-            border-radius: 2px;
-        }
-
-        .return-section {
-            margin-top: 20px;
-            padding: 20px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            border: 1px solid #e2e8f0;
-        }
-
-        .invoice-search-container {
-            position: relative;
-        }
-
-        #invoiceList {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            width: 100%;
-            max-height: 200px;
-            overflow-y: auto;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-        }
-
-        #invoiceList.hidden {
-            display: none;
-        }
-        .cursor-not-allowed{
-            cursor: not-allowed;
-            color: #aaaaaa;
-            padding: 10px; 
-        }
-        .cursor-pointer{
-            cursor: pointer;
-            color: #000000;;
-            padding: 10px; 
-        }
-
-        .products-container {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 10px;
-            background: #f8f9fa;
-        }
-
-        .product-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px;
-            margin-bottom: 8px;
-            background: white;
-            border-radius: 6px;
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s ease;
-        }
-
-        .product-item:hover {
-            border-color: var(--primary-color);
-            box-shadow: 0 2px 4px rgba(77, 0, 201, 0.1);
-        }
-
-        .product-info {
-            flex: 1;
-            margin-left: 10px;
-        }
-
-        .product-name {
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 4px;
-        }
-
-        .product-details {
-            font-size: 0.9em;
-            color: #666;
-        }
-
-        .quantity-input {
-            width: 80px;
-            text-align: center;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 4px;
-        }
-
-        .quantity-input:disabled {
-            background-color: #f5f5f5;
-            color: #999;
-        }
-
-        .return-summary {
-            background: #f0f9ff;
-            border: 1px solid #0ea5e9;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-        }
-
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            padding: 5px 0;
-            border-bottom: 1px solid #e0f2fe;
-        }
-
-        .summary-item:last-child {
-            border-bottom: none;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-    </style>
 </head>
 
 <body data-page="returns">
+    <!-- Sidebar Container -->
     <div id="sidebar-container"></div>
 
-    <div class="main-content">
-        <div class="container mx-auto px-4 py-8">
-            <h1 class="text-4xl font-bold text-center mb-8 page-title">إدارة المرتجعات</h1>
+    <main class="main-content pt-10">
+        <div class="p-6 max-w-7xl mx-auto">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="header-top">
+                    <div class="page-title-group">
+                        <div class="page-icon-badge">
+                            <i class="fas fa-arrows-rotate"></i>
+                        </div>
+                        <div>
+                            <h1>إدارة المرتجعات</h1>
+                            <p>البحث برقم الفاتورة، استرجاع الأصناف، واحتساب مبالغ المرتجع بدقة</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            <div class="return-section">
-                <div class="mb-6 invoice-search-container">
-                    <label class="block text-sm font-medium text-gray-700 mb-2" for="invoiceSearch">ابحث عن الفاتورة</label>
-                    <input type="text" id="invoiceSearch" class="input input-primary w-full bg-gray-50 focus:bg-white" placeholder="ابحث برقم الفاتورة أو التاريخ">
+            <!-- Returns Main Card -->
+            <div class="returns-card">
+                <!-- Invoice Search Box -->
+                <div class="invoice-search-container">
+                    <label class="block text-sm font-bold text-gray-700 mb-2" for="invoiceSearch">
+                        <i class="fas fa-file-invoice" style="color: var(--primary-color);"></i>
+                        <span>البحث عن الفاتورة</span>
+                    </label>
+                    <div class="search-input-wrap">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="invoiceSearch"
+                            placeholder="ابحث برقم الفاتورة، التاريخ، أو اسم العميل...">
+                    </div>
                     <div id="invoiceList" class="hidden"></div>
                 </div>
 
-                <div id="invoiceDetails" class="mb-6 hidden">
-                    <h3 class="text-lg font-semibold mb-3 text-gray-800">تفاصيل الفاتورة المحددة</h3>
-                    <div id="invoiceInfo" class="bg-gray-50 p-3 rounded-lg mb-4"></div>
-                    
-                    <div class="flex justify-between items-center mb-3">
-                        <h4 class="text-md font-medium text-gray-700">اختر المنتجات للمرتجع</h4>
+                <!-- Invoice Details & Product Selection -->
+                <div id="invoiceDetails" class="invoice-details-card hidden">
+                    <div class="invoice-details-header">
+                        <div class="invoice-details-title">
+                            <i class="fas fa-receipt" style="color: var(--primary-color);"></i>
+                            <span>تفاصيل الفاتورة المحددة</span>
+                        </div>
                         <div class="flex gap-2">
-                            <button id="selectAllBtn" class="btn btn-sm btn-outline btn-primary" onclick="selectAllProducts()">
-                                <i class="fas fa-check-double ml-1"></i> تحديد الكل
+                            <button id="selectAllBtn" class="btn-quick-select btn-select-all"
+                                onclick="selectAllProducts()">
+                                <i class="fas fa-check-double"></i>
+                                <span>تحديد الكل</span>
                             </button>
-                            <button id="deselectAllBtn" class="btn btn-sm btn-outline btn-secondary" onclick="deselectAllProducts()">
-                                <i class="fas fa-times ml-1"></i> إلغاء التحديد
+                            <button id="deselectAllBtn" class="btn-quick-select btn-deselect-all"
+                                onclick="deselectAllProducts()">
+                                <i class="fas fa-times"></i>
+                                <span>إلغاء التحديد</span>
                             </button>
                         </div>
                     </div>
+
+                    <div id="invoiceInfo" class="invoice-info-grid"></div>
+
+                    <h4 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-boxes-stacked" style="color: var(--primary-color);"></i>
+                        <span>اختر المنتجات وحدد الكميات المراد استرجاعها:</span>
+                    </h4>
+
                     <div id="productsContainer" class="products-container"></div>
                 </div>
 
+                <!-- Return Summary Breakdown -->
                 <div id="returnSummary" class="return-summary hidden">
-                    <h4 class="text-md font-semibold mb-3 text-blue-800">ملخص المرتجع</h4>
+                    <div class="summary-title">
+                        <i class="fas fa-calculator"></i>
+                        <span>ملخص مبالغ المرتجع</span>
+                    </div>
                     <div id="summaryContent"></div>
                 </div>
 
-                <button id="submitReturn" class="btn btn-primary w-full mt-6" onclick="processReturn()" disabled>
-                    <i class="fas fa-undo ml-2"></i> تأكيد المرتجع
+                <!-- Action Button -->
+                <button id="submitReturn" class="btn-submit-return" onclick="processReturn()" disabled>
+                    <i class="fas fa-undo-alt"></i>
+                    <span>تأكيد ومعالجة المرتجع</span>
                 </button>
             </div>
-        </div>
-    </div>
 
+            <!-- Back to Home -->
+            <div class="back-link-wrap">
+                <a href="index.html" class="btn-back-home">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>العودة للرئيسية</span>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer Container -->
     <div id="footer-container" class="z-10"></div>
 
+    <!-- Scripts -->
     <script type="module" src="../js/calculator.js"></script>
     <script type="module" src="../js/shared.js"></script>
     <script type="module" src="../js/returns.js"></script>

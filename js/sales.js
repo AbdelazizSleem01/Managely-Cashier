@@ -10,38 +10,53 @@ export function formatSaleRow(s) {
     const items = Array.isArray(s.items) ? s.items : [];
     const formattedDate = new Date(s.date).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
     const itemsHtml = items.map(item => `
-        <div class="product-item">
-            <span class="product-name">${item.name || "منتج غير محدد"}</span>
-            <span class="product-quantity">${item.quantity || 0} × ${(item.price || 0).toFixed(2)} ج</span>
+        <div class="product-item-chip">
+            <span class="prod-name" title="${item.name || 'منتج غير محدد'}">${item.name || "منتج غير محدد"}</span>
+            <span class="prod-qty-price">${item.quantity || 0} × ${(item.price || 0).toFixed(2)} ج</span>
         </div>
     `).join("");
 
     return `
-        <tr class="hover:bg-gray-50">
-            <td class="font-medium text-black">${s.invoiceNumber || "--"} ${s.hasReturn ? '<span class="text-red-500 font-bold">[مرتجع]</span>' : ''}</td>
-            <td>${formattedDate}</td>
-            <td class="text-right">
-                <div class="flex flex-col gap-2">
-                    ${itemsHtml}
+        <tr>
+            <td>
+                <div style="font-weight: 800; color: var(--primary-color);">
+                    #${s.invoiceNumber || "--"}
+                    ${s.hasReturn ? '<span class="badge-returned"><i class="fas fa-rotate-left"></i> مرتجع</span>' : ''}
                 </div>
             </td>
-            <td class="total-amount">${(s.total || 0).toFixed(2)} ج</td>
-            <td>${s.customerName || "--"}</td>
-            <td>${s.customerPhone || "--"}</td>
+            <td style="color: #64748b; font-size: 0.85rem;">${formattedDate}</td>
             <td>
-                <div class="flex items-center justify-center gap-2">
-                    <button onclick="printSale('${s._id}')" class="btn-print" title="طباعة الفاتورة">
+                <div class="row-product-list">
+                    ${itemsHtml || '<span style="color:#94a3b8; font-size:0.8rem;">لا توجد عناصر</span>'}
+                </div>
+            </td>
+            <td><span class="total-amount-tag">${(Number(s.total) || 0).toFixed(2)} ج.م</span></td>
+            <td style="font-weight: 600;">${s.customerName || "--"}</td>
+            <td style="direction: ltr; text-align: right; color: #64748b; font-size: 0.85rem;">${s.customerPhone || "--"}</td>
+            <td>
+                <div class="table-action-btns">
+                    <button onclick="printSale('${s._id}')" class="btn-tbl-action btn-tbl-print" title="طباعة الفاتورة">
                         <i class="fas fa-print"></i>
-                        طباعة
                     </button>
-                    <button onclick="deleteSale('${s._id}')" class="btn-danger" title="حذف">
-                        <i class="fas fa-trash"></i>
-                        حذف
+                    <button onclick="deleteSale('${s._id}')" class="btn-tbl-action btn-tbl-delete" title="حذف الفاتورة">
+                        <i class="fas fa-trash-can"></i>
                     </button>
                 </div>
             </td>
         </tr>
     `;
+}
+
+export function updateSalesStats(sales) {
+    if (!Array.isArray(sales)) return;
+    const totalAmt = sales.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
+    const totalRet = sales.filter(s => s.hasReturn).length;
+    const elAmt = document.getElementById("totalSalesAmount");
+    const elCnt = document.getElementById("totalInvoicesCount");
+    const elRet = document.getElementById("totalReturnsCount");
+    if (elAmt) elAmt.textContent = totalAmt.toFixed(2) + " ج.م";
+    if (elCnt) elCnt.textContent = sales.length.toLocaleString("ar-EG");
+    if (elRet) elRet.textContent = totalRet.toLocaleString("ar-EG");
 }
 
 export function renderSalesRows(sales, table, searchQuery = "") {
@@ -80,8 +95,7 @@ export function renderCurrentSalesPage() {
             currentSalesPage = newPage;
             salesPageSize = newSize;
             renderCurrentSalesPage();
-            // Smooth scroll to table if needed
-            const card = table.closest(".card");
+            const card = table.closest(".sales-card-container");
             if (card) {
                 card.scrollIntoView({ behavior: "smooth", block: "start" });
             }
@@ -107,6 +121,7 @@ export async function renderSales(searchQuery = "", resetPage = true) {
                 if (Array.isArray(parsed) && parsed.length > 0) {
                     allSales = parsed;
                     filteredSales = parsed;
+                    updateSalesStats(allSales);
                     renderCurrentSalesPage();
                 }
             }
@@ -118,6 +133,7 @@ export async function renderSales(searchQuery = "", resetPage = true) {
         if (!Array.isArray(sales)) sales = [];
         sales.sort((a, b) => new Date(b.date) - new Date(a.date));
         allSales = sales;
+        updateSalesStats(allSales);
 
         try {
             localStorage.setItem("managely_sales_cache", JSON.stringify(sales));
@@ -142,9 +158,9 @@ export async function renderSales(searchQuery = "", resetPage = true) {
                 <tr>
                     <td colspan="7">
                         <div class="empty-state">
-                            <i class="fas fa-exclamation-triangle text-red-500"></i>
-                            <p class="text-red-500">تعذر تحميل سجل المبيعات حالياً</p>
-                            <small class="text-gray-500">يرجى المحاولة مرة أخرى لاحقاً</small>
+                            <i class="fas fa-triangle-exclamation" style="color: #ef4444;"></i>
+                            <p style="color: #ef4444;">تعذر تحميل سجل المبيعات حالياً</p>
+                            <small style="color: #64748b;">يرجى المحاولة مرة أخرى لاحقاً</small>
                         </div>
                     </td>
                 </tr>

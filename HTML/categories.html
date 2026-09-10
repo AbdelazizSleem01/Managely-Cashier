@@ -3,52 +3,146 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>الفئات - كاشير</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة الفئات - نظام الكاشير</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
     <link rel="stylesheet" href="../styles/output.css">
     <link rel="stylesheet" href="../styles/home.css">
+    <link rel="stylesheet" href="../styles/categories.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
-<body class="bg-gray-50 min-h-screen" data-page="categories">
+<body class="min-h-screen" data-page="categories">
     <div id="sidebar-container"></div>
 
+    <div class="main-content pt-10">
+        <div class="container mx-auto px-4 py-6">
 
-    <div class="main-content">
-        <div class="mx-auto px-4 py-8  container">
-            <h1 class="font-bold text-center mb-8 page-title">إدارة الفئات</h1>
-            <div class="card bg-white shadow-xl p-6 mb-8">
-                <h2 class="text-2xl font-semibold mb-4 text-gray-800">إضافة فئة جديدة</h2>
-                <div class="form-control mb-4">
-                    <label class="label">
-                        <span class="label-text text-gray-700 font-semibold">اسم الفئة <span class="required-star">*</span></span>
-                    </label>
-                    <input id="categoryName" class="input input-primary text-black w-full bg-transparent"
-                        placeholder="اسم الفئة">
+            <!-- Unified Page Header -->
+            <div class="page-header">
+                <div class="page-title-group">
+                    <div class="page-icon-badge">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <div>
+                        <h1>إدارة الفئات</h1>
+                        <p>تصنيف المنتجات وتنظيم الأقسام لتسهيل الوصول إليها وسرعة البيع</p>
+                    </div>
                 </div>
-                <button class="btn btn-primary" onclick="addCategory()">إضافة</button>
+
+                <div class="header-stats">
+                    <div class="stat-pill stat-pill-categories">
+                        <i class="fas fa-layer-group"></i>
+                        <div class="stat-info">
+                            <span class="stat-label">إجمالي الفئات</span>
+                            <span class="stat-value" id="totalCategoriesCount">0</span>
+                        </div>
+                    </div>
+                    <div class="stat-pill stat-pill-products">
+                        <i class="fas fa-boxes-stacked"></i>
+                        <div class="stat-info">
+                            <span class="stat-label">المنتجات المصنفة</span>
+                            <span class="stat-value" id="totalCategorizedProducts">0</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div id="categories" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4"></div>
+
+            <!-- Action Bar: Add Category + Search Categories -->
+            <div class="action-card-wrap">
+                <!-- Add Category Form Bar -->
+                <form class="category-add-bar" onsubmit="event.preventDefault(); addCategory();">
+                    <div class="input-category-wrap">
+                        <input id="categoryName" type="text" placeholder="اكتب اسم الفئة الجديدة هنا..."
+                            autocomplete="off" />
+                    </div>
+                    <button type="submit" class="btn-add-category">
+                        <i class="fas fa-plus"></i>
+                        <span>إضافة فئة</span>
+                    </button>
+                </form>
+
+                <!-- Search Input -->
+                <div class="category-search-wrap">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchCategoryInput" placeholder="بحث في الفئات..."
+                        oninput="handleCategorySearch(this.value)" />
+                </div>
+            </div>
+
+            <!-- Categories Cards Grid -->
+            <div id="categories" class="categories-grid">
+                <!-- Loaded Dynamically by js/categories.js -->
+            </div>
+
+            <!-- زر العودة للرئيسية -->
+            <div class="back-link-wrap">
+                <a href="index.html" class="btn-back-home">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>العودة للرئيسية</span>
+                </a>
+            </div>
         </div>
     </div>
-    <div class="text-center mt-6">
-        <a href="index.html" class="btn btn-primary text-white ">
-            <p class="text-white">العودة للرئيسية</p>
-            <i class="fas fa-home ml-2 text-white"></i>
-        </a>
+
+    <!-- Edit Category Modal -->
+    <div id="editCategoryModal" class="modal-overlay" onclick="handleCategoryModalOverlayClick(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <div class="modal-icon-wrap edit-category">
+                        <i class="fas fa-pen-to-square"></i>
+                    </div>
+                    <span>تعديل اسم الفئة</span>
+                </div>
+                <button type="button" class="modal-close" onclick="closeEditCategoryModal()" title="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="editCategoryForm" onsubmit="event.preventDefault(); submitEditCategory();">
+                <input type="hidden" id="editCategoryId" value="" />
+
+                <div class="field-group">
+                    <label for="editCategoryInput">
+                        <i class="fas fa-tag"></i>
+                        <span>اسم الفئة</span>
+                        <span class="required-star">*</span>
+                    </label>
+                    <input type="text" id="editCategoryInput" class="modal-input" placeholder="اكتب اسم الفئة الجديد..."
+                        required autocomplete="off" />
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" onclick="closeEditCategoryModal()" class="btn-modal-cancel">
+                        <i class="fas fa-times"></i>
+                        <span>إلغاء</span>
+                    </button>
+                    <button type="submit" id="btnSaveCategoryEdit" class="btn-modal-submit">
+                        <i class="fas fa-check"></i>
+                        <span>حفظ التعديل</span>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <div id="footer-container"></div>
-    
+    <div id="footer-container" class="z-10"></div>
+
     <script type="module" src="../js/calculator.js"></script>
     <script type="module" src="../js/shared.js"></script>
     <script type="module" src="../js/categories.js"></script>
     <script type="module">
-        import { addCategory, deleteCategory, editCategory } from '../js/categories.js';
+        import { addCategory, deleteCategory, editCategory, handleCategorySearch, openEditCategoryModal, closeEditCategoryModal, handleCategoryModalOverlayClick, submitEditCategory } from '../js/categories.js';
         window.addCategory = addCategory;
         window.deleteCategory = deleteCategory;
         window.editCategory = editCategory;
+        window.handleCategorySearch = handleCategorySearch;
+        window.openEditCategoryModal = openEditCategoryModal;
+        window.closeEditCategoryModal = closeEditCategoryModal;
+        window.handleCategoryModalOverlayClick = handleCategoryModalOverlayClick;
+        window.submitEditCategory = submitEditCategory;
     </script>
 </body>
 

@@ -8,231 +8,184 @@
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
     <link href="../styles/output.css" rel="stylesheet">
     <link href="../styles/home.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="../styles/customers.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #4f46e5;
-            --secondary-color: #7c3aed;
-            --accent-color: #10b981;
-            --dark-color: #1e293b;
-            --light-color: #f8fafc;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
-            min-height: 100vh;
-            padding: 0;
-            font-family: 'Tajawal', sans-serif;
-        }
-        
-        .main-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-   
-        
-        .card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: none;
-            overflow: hidden;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-        }
-        
-        .card-header {
-            background: white;
-            color: #4d00c9;
-            padding: 1.25rem 1.5rem;
-            font-weight: 600;
-            font-size: 1.25rem;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-            border: none;
-            color: white;
-            font-weight: 600;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-        }
-        
-        .btn-outline.btn-primary {
-            background: transparent;
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
-        }
-        
-        .btn-outline.btn-primary:hover {
-            background: var(--primary-color);
-            color: white;
-        }
-        
-        .btn-error {
-            background: linear-gradient(90deg, #ef4444, #dc2626);
-        }
-        
-        .table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-        
-        .table th {
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 1rem;
-            font-weight: 600;
-            text-align: right;
-        }
-        
-        .table td {
-            padding: 1rem;
-            border-bottom: 1px solid #e2e8f0;
-            vertical-align: middle;
-        }
-        
-        .table tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .table tr:hover td {
-            background-color: #f8fafc;
-        }
-        
-        .input {
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            transition: all 0.3s ease;
-        }
-        
-        .input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-        }
-        
-        .action-buttons {
-            display: flex;
-            gap: 0.5rem;
-            justify-content: center;
-        }
-        
-        .btn-xs {
-            padding: 0.35rem 0.75rem;
-            font-size: 0.875rem;
-            border-radius: 6px;
-        }
-        
-        .empty-state {
-            padding: 2rem;
-            text-align: center;
-            color: #64748b;
-        }
-        
-        .empty-state i {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: #cbd5e1;
-        }
-        
-        @media (max-width: 768px) {
-            .main-content {
-                padding: 1rem;
-            }
-            
-            .page-title {
-                font-size: 2rem;
-            }
-            
-            .grid-cols-2 {
-                grid-template-columns: 1fr;
-            }
-            
-            .table th, .table td {
-                padding: 0.75rem;
-            }
-        }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
-<body class="bg-gray-100" data-page="customers">
+<body data-page="customers">
     <!-- Sidebar Container -->
     <div id="sidebar-container"></div>
 
-    <div class="main-content">
-        <div class="container mx-auto">
-            <h1 class="text-2xl font-bold mb-8 page-title text-center ">إدارة العملاء</h1>
-
-            <!-- Add Customer Form -->
-            <div class="card mb-8">
-                <div class="card-header">إضافة عميل جديد</div>
-                <div class="p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">اسم العميل <span class="required-star">*</span></label>
-                            <input id="newCustomerName" type="text" placeholder="أدخل اسم العميل"
-                                class="input input-bordered bg-transparent input-primary w-full">
+    <main class="main-content pt-10">
+        <div class="p-6 max-w-7xl mx-auto">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="header-top">
+                    <div class="page-title-group">
+                        <div class="page-icon-badge">
+                            <i class="fas fa-users"></i>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف <span class="required-star">*</span></label>
-                            <input id="newCustomerPhone" type="text" placeholder="أدخل رقم الهاتف"
-                                class="input input-bordered bg-transparent input-primary w-full">
+                            <h1>إدارة العملاء</h1>
+                            <p>إدارة وتتبع بيانات العملاء وسجل المبيعات والمعاملات</p>
                         </div>
                     </div>
-                    <button onclick="addCustomer()" class="btn btn-primary w-full md:w-auto mt-2">
-                        <i class="fas fa-plus-circle mr-2"></i> إضافة عميل
+
+                    <!-- Header Stats -->
+                    <div class="header-stats">
+                        <div class="stat-pill">
+                            <i class="fas fa-user-friends"></i>
+                            <div class="stat-info">
+                                <span class="stat-label">إجمالي العملاء</span>
+                                <span id="totalCustomersCount" class="stat-value">0 عميل</span>
+                            </div>
+                        </div>
+                        <div class="stat-pill">
+                            <i class="fas fa-coins"></i>
+                            <div class="stat-info">
+                                <span class="stat-label">إجمالي المبيعات</span>
+                                <span id="totalPurchasesSum" class="stat-value">0 ج.م</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Header Controls (Search + Action Buttons) -->
+                <div class="header-controls">
+                    <div class="search-box-wrap">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchCustomerInput" class="search-input"
+                            placeholder="بحث بالاسم، رقم الهاتف، العنوان، أو الملاحظات..."
+                            oninput="handleCustomerSearch(this.value)">
+                    </div>
+
+                    <div class="header-action-btns">
+                        <button class="add-btn-header" onclick="openAddCustomerModal()">
+                            <i class="fas fa-user-plus"></i>
+                            <span>إضافة عميل جديد</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customers Cards Grid -->
+            <div id="customersList"></div>
+
+            <!-- Back to Home Link -->
+            <div class="back-link-wrap">
+                <a href="index.html" class="btn-back-home">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>العودة للرئيسية</span>
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- ===== Add / Edit Customer Modal ===== -->
+    <div id="customerModal" class="modal-overlay" onclick="handleModalOverlayClick(event)">
+        <div class="custom-modal-box customer-modal-box">
+            <div class="modal-scroll-inner">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <div class="modal-title-icon" id="modalIcon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div>
+                            <h3 id="formTitle">إضافة عميل جديد</h3>
+                            <p id="formSubtitle" class="modal-subtitle">أدخل بيانات العميل ومعلومات التواصل</p>
+                        </div>
+                    </div>
+                    <button class="modal-close" onclick="closeCustomerModal()" title="إغلاق">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <form id="customerForm">
+                    <input type="hidden" id="editingCustomerId">
+
+                    <!-- Basic Info Fields -->
+                    <div class="form-grid-2">
+                        <div class="field-group">
+                            <label for="customerName"><i class="fas fa-user"></i> اسم العميل <span
+                                    class="required-star">*</span></label>
+                            <input type="text" id="customerName" class="modal-input"
+                                placeholder="أدخل اسم العميل بالكامل" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="customerPhone"><i class="fas fa-phone"></i> رقم الهاتف <span
+                                    class="required-star">*</span></label>
+                            <input type="text" id="customerPhone" class="modal-input" placeholder="01XXXXXXXXX"
+                                required>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="customerAddress"><i class="fas fa-map-marker-alt"></i> العنوان</label>
+                        <input type="text" id="customerAddress" class="modal-input"
+                            placeholder="المدينة، المنطقة، الشارع (اختياري)">
+                    </div>
+
+                    <div class="field-group">
+                        <label for="customerNotes"><i class="fas fa-sticky-note"></i> ملاحظات إضافية</label>
+                        <textarea id="customerNotes" class="modal-textarea"
+                            placeholder="أية ملاحظات حول العميل، التفضيلات، إلخ (اختياري)"></textarea>
+                    </div>
+
+                    <!-- Modal Actions -->
+                    <div class="modal-footer">
+                        <button type="submit" id="saveCustomerBtn" class="btn-save-modal">
+                            <i class="fas fa-save"></i>
+                            <span>حفظ البيانات</span>
+                        </button>
+                        <button type="button" class="btn-cancel-modal" onclick="closeCustomerModal()">
+                            <i class="fas fa-times"></i>
+                            <span>إلغاء</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Customer Transactions / Sales History Modal ===== -->
+    <div id="customerTransactionsModal" class="modal-overlay" onclick="handleModalOverlayClick(event)">
+        <div class="custom-modal-box" style="max-width: 720px;">
+            <div class="modal-scroll-inner">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <div class="modal-title-icon">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <span id="transactionsModalTitle">سجل معاملات العميل</span>
+                    </div>
+                    <button class="modal-close" onclick="closeTransactionsModal()" title="إغلاق">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div id="transactionsContent">
+                    <!-- Loaded dynamically in js/customers.js -->
+                </div>
+
+                <div class="modal-footer" style="justify-content: flex-end;">
+                    <button type="button" class="btn-cancel-modal" onclick="closeTransactionsModal()">
+                        <i class="fas fa-times"></i>
+                        <span>إغلاق</span>
                     </button>
                 </div>
             </div>
-
-            <!-- Customers List -->
-            <div class="card">
-                <div class="card-header">قائمة العملاء</div>
-                <div class="p-4">
-                    <div id="customersTable" class="overflow-x-auto">
-                        <!-- Customers will be rendered here -->
-                    </div>
-                </div>
-            </div>
         </div>
-        
-        <!-- زر العودة للرئيسية -->
-        <div class="mt-12 text-center">
-            <a href="index.html" class="btn btn-outline btn-primary">
-                العودة للرئيسية  <i class="fas fa-arrow-left ml-2"></i> 
-            </a>
-        </div>
-        
     </div>
-    
-    <div id="footer-container" class="z-10"></div>
-    <script type="module" src="../js/calculator.js"></script>
 
-    <script type="module" src="../js/home.js"></script>
+    <!-- Footer Container -->
+    <div id="footer-container" class="z-10"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="../js/calculator.js"></script>
     <script type="module" src="../js/shared.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            renderCustomers();
-        });
-        window.addCustomer = addCustomer;
-        window.editCustomer = editCustomer;
-        window.deleteCustomer = deleteCustomer;
-    </script>
+    <script type="module" src="../js/customers.js"></script>
 </body>
 
 </html>

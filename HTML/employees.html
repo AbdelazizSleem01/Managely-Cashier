@@ -6,179 +6,434 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>إدارة الموظفين</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link href="../styles/output.css" rel="stylesheet">
     <link href="../styles/home.css" rel="stylesheet">
     <link href="../styles/employees.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
-    <style>
-         .hidden-content {
-            display: none;
-        }
-
-        .loading-screen {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background: #f8fafc;
-            font-size: 1.5rem;
-            color: #64748b;
-        }
-    </style>
 </head>
 
-<body class="min-h-screen" data-page="employees">
+<body data-page="employees">
+    <!-- Loading Screen during password check -->
     <div id="loadingScreen" class="loading-screen">
-        <i class="fas fa-spinner fa-spin mr-2"></i> جاري التحميل...
+        <i class="fas fa-spinner fa-spin text-3xl"></i>
+        <span>جاري التحقق وتأمين البيانات...</span>
     </div>
 
     <div id="pageContent" class="hidden-content">
         <!-- Sidebar Container -->
         <div id="sidebar-container"></div>
 
-        <main class="main-content">
-            <div class="container mx-auto p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h1 class="text-2xl font-bold text-gray-800 page-title">إدارة الموظفين</h1>
-                </div>
-
-                <div id="employeesList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                </div>
-
-                <div class="form-section">
-                    <h2>إضافة موظف جديد</h2>
-                    <form id="employeeForm">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="form-input">
-                                <label for="employeeName">اسم الموظف</label>
-                                <input id="employeeName" class="input input-bordered w-full text-gray-800"
-                                    placeholder="اسم الموظف" required>
+        <main class="main-content pt-10">
+            <div class="p-6 max-w-7xl mx-auto">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="header-top">
+                        <div class="page-title-group">
+                            <div class="page-icon-badge">
+                                <i class="fas fa-users-cog"></i>
                             </div>
-                            <div class="form-input">
-                                <label for="employeePhone">رقم الهاتف</label>
-                                <input id="employeePhone" class="input input-bordered w-full text-gray-800"
-                                    placeholder="رقم الهاتف" required>
-                            </div>
-                            <div class="form-input">
-                                <label for="employeeAddress">العنوان</label>
-                                <input id="employeeAddress" class="input input-bordered w-full text-gray-800"
-                                    placeholder="العنوان" required>
-                            </div>
-                            <div class="form-input">
-                                <label for="employeeSalary">الراتب (جنيه)</label>
-                                <input id="employeeSalary" type="number" min="0" step="0.01"
-                                    class="input input-bordered w-full text-gray-800" placeholder="الراتب" required>
-                            </div>
-                            <div class="form-input">
-                                <label for="employeeEducation">المؤهل الدراسي</label>
-                                <input id="employeeEducation" class="input input-bordered w-full text-gray-800"
-                                    placeholder="المؤهل الدراسي" required>
-                            </div>
-                            <div class="form-input">
-                                <label for="employeeJobTitle">الوظيفة</label>
-                                <input id="employeeJobTitle" class="input input-bordered w-full text-gray-800"
-                                    placeholder="الوظيفة" required>
-                            </div>
-                            <div class="form-input">
-                                <label for="employeeHireDate">تاريخ التعيين</label>
-                                <input id="employeeHireDate" type="date"
-                                    class="input input-bordered w-full text-gray-800 datepicker-dark" required>
-                            </div>
-                        </div>
-                        <div class="file-input-container block">
-                            <label for="employeePhoto" class="file-input-label">صورة الموظف:</label>
-                            <div class="custom-file-input">
-                                <input id="employeePhoto" type="file" accept="image/*" class="hidden-file-input">
-                                <label for="employeePhoto" class="file-input-box">
-                                    <div class="file-input-icon">
-                                        <i class="fas fa-camera text-2xl"></i>
-                                    </div>
-                                    <div class="file-input-text">
-                                        <span class="file-input-title">اختر صورة الموظف</span>
-                                        <span class="file-input-hint">JPEG, PNG (الحجم الأقصى 5MB)</span>
-                                    </div>
-                                </label>
-                            </div>
-                            <div id="photoPreview" class="mt-2 hidden">
-                                <img id="photoPreviewImg" class="employee-photo" src="" alt="معاينة الصورة">
+                            <div>
+                                <h1>إدارة الموظفين</h1>
+                                <p>إدارة بيانات فريق العمل والرواتب والمستندات الرسمية</p>
                             </div>
                         </div>
 
-                        <div class="file-input-container">
-                            <label for="employeeIdPhoto" class="file-input-label">صورة البطاقة:</label>
-                            <div class="custom-file-input">
-                                <input id="employeeIdPhoto" type="file" accept="image/*" class="hidden-file-input">
-                                <label for="employeeIdPhoto" class="file-input-box">
-                                    <div class="file-input-icon">
-                                        <i class="fas fa-id-card text-2xl"></i>
-                                    </div>
-                                    <div class="file-input-text">
-                                        <span class="file-input-title">اختر صورة البطاقة</span>
-                                        <span class="file-input-hint">JPEG, PNG (الحجم الأقصى 5MB)</span>
-                                    </div>
-                                </label>
+                        <!-- Header Stats -->
+                        <div class="header-stats">
+                            <div class="stat-pill">
+                                <i class="fas fa-users"></i>
+                                <div class="stat-info">
+                                    <span class="stat-label">إجمالي الموظفين</span>
+                                    <span id="totalEmployeesCount" class="stat-value">0 موظف</span>
+                                </div>
                             </div>
-                            <div id="idPhotoPreview" class="mt-2 hidden">
-                                <img id="idPhotoPreviewImg" class="employee-id-photo " src="" alt="معاينة صورة البطاقة">
-                            </div>
-                        </div>
-
-                        <div class="file-input-container">
-                            <label for="employeeCV" class="file-input-label">ملف السيرة الذاتية (اختياري):</label>
-                            <div class="custom-file-input">
-                                <input id="employeeCV" type="file" accept=".pdf" class="hidden-file-input">
-                                <label for="employeeCV" class="file-input-box">
-                                    <div class="file-input-icon">
-                                        <i class="fas fa-file-pdf text-2xl"></i>
-                                    </div>
-                                    <div class="file-input-text">
-                                        <span class="file-input-title">اختر ملف السيرة الذاتية</span>
-                                        <span class="file-input-hint">PDF فقط (الحجم الأقصى 10MB)</span>
-                                    </div>
-                                </label>
-                            </div>
-                            <div id="cvPreview" class="mt-2 hidden">
-                                <div class="pdf-preview">
-                                    <i class="fas fa-file-pdf text-4xl text-red-500"></i>
-                                    <span id="cvFileName" class="text-sm font-medium text-gray-700 mt-2"></span>
-                                    <button id="viewPdfBtn" class="text-blue-500 hover:underline text-sm mt-1">
-                                        <i class="fas fa-eye mr-1"></i> عرض الملف
-                                    </button>
+                            <div class="stat-pill">
+                                <i class="fas fa-money-bill-wave"></i>
+                                <div class="stat-info">
+                                    <span class="stat-label">إجمالي الرواتب</span>
+                                    <span id="totalSalariesSum" class="stat-value">0 ج.م</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="form-footer flex mt-4">
-                            <button type="submit" id="saveEmployeeBtn" class="btn btn-primary py-2 px-4 rounded">
-                                <i class="fas fa-save"></i> حفظ
+                    </div>
+
+                    <!-- Header Controls (Search + Action Buttons) -->
+                    <div class="header-controls">
+                        <div class="search-box-wrap">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" id="searchEmployeeInput" class="search-input"
+                                placeholder="بحث بالاسم، الوظيفة، أو رقم الهاتف..."
+                                oninput="handleEmployeeSearch(this.value)">
+                        </div>
+
+                        <div class="header-action-btns">
+                            <button id="changePasswordBtn" class="btn-pwd-header" title="تغيير كلمة مرور صفحة الموظفين">
+                                <i class="fas fa-key"></i>
+                                <span>تغيير كلمة المرور</span>
                             </button>
-                            <button type="button" onclick="resetForm()"
-                                class="btn bg-gray-600 hover:bg-gray-900 text-white py-2 px-4 rounded">
-                                <i class="fas fa-times"></i> إلغاء
+                            <button class="add-btn-header" onclick="openAddEmployeeModal()">
+                                <i class="fas fa-user-plus"></i>
+                                <span>إضافة موظف جديد</span>
                             </button>
                         </div>
-                    </form>
+                    </div>
                 </div>
-                <div class="flex items-center justify-center mt-6 gap-4">
 
-                    <button id="changePasswordBtn" class="btn btn-primary ">
-                        تغيير كلمة المرور
-                        <i class="fas fa-pen-to-square"></i>
-
-                    </button>
-                    <a href="index.html"
-                        class="btn  btn-primary px-8 hover:bg-primary hover:text-white transition duration-300">
-                        العودة للرئيسية
-                        <i class="fas fa-home "></i>
-                    </a>
-                </div>
+                <!-- Employees Cards Grid -->
+                <div id="employeesList"></div>
             </div>
         </main>
-        
     </div>
+
+    <!-- ===== Add / Edit Employee Modal ===== -->
+    <div id="employeeModal" class="modal-overlay" onclick="handleModalOverlayClick(event)">
+        <div class="modal-box">
+            <div class="modal-scroll-inner">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <div class="modal-title-icon" id="modalIcon">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <span id="formTitle">إضافة موظف جديد</span>
+                    </div>
+                    <button class="modal-close" onclick="closeEmployeeModal()" title="إغلاق">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <form id="employeeForm">
+                    <input type="hidden" id="editingEmployeeId">
+
+                    <!-- Basic Info Fields -->
+                    <div class="form-grid-2">
+                        <div class="field-group">
+                            <label for="employeeName"><i class="fas fa-user"></i> اسم الموظف <span
+                                    class="required-star">*</span></label>
+                            <input type="text" id="employeeName" class="modal-input"
+                                placeholder="أدخل اسم الموظف بالكامل" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="employeePhone"><i class="fas fa-phone"></i> رقم الهاتف <span
+                                    class="required-star">*</span></label>
+                            <input type="text" id="employeePhone" class="modal-input" placeholder="01XXXXXXXXX"
+                                required>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="employeeJobTitle"><i class="fas fa-briefcase"></i> المسمى الوظيفي <span
+                                    class="required-star">*</span></label>
+                            <input type="text" id="employeeJobTitle" class="modal-input"
+                                placeholder="مثال: كاشير، مدير فرع..." required>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="employeeSalary"><i class="fas fa-money-bill-wave"></i> الراتب الشهري (جنيه)
+                                <span class="required-star">*</span></label>
+                            <input type="number" id="employeeSalary" min="0" step="0.01" class="modal-input"
+                                placeholder="0.00" required>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="employeeEducation"><i class="fas fa-graduation-cap"></i> المؤهل الدراسي <span
+                                    class="required-star">*</span></label>
+                            <input type="text" id="employeeEducation" class="modal-input"
+                                placeholder="مثال: بكالوريوس تجارة..." required>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="employeeHireDate"><i class="fas fa-calendar-alt"></i> تاريخ التعيين <span
+                                    class="required-star">*</span></label>
+                            <input type="date" id="employeeHireDate" class="modal-input" required>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label for="employeeAddress"><i class="fas fa-map-marker-alt"></i> العنوان بالتفصيل <span
+                                class="required-star">*</span></label>
+                        <input type="text" id="employeeAddress" class="modal-input"
+                            placeholder="المدينة، المنطقة، الشارع..." required>
+                    </div>
+
+                    <!-- File Uploads Section -->
+                    <div class="upload-section-title">
+                        <i class="fas fa-paperclip"></i>
+                        <span>المرفقات والمستندات الرسمية</span>
+                    </div>
+
+                    <div class="file-upload-grid">
+                        <!-- Employee Photo -->
+                        <div>
+                            <input id="employeePhoto" type="file" accept="image/*" class="hidden"
+                                onchange="handlePhotoChange(event)">
+                            <label for="employeePhoto" class="file-dropzone-box" id="photoDropzone">
+                                <div class="dropzone-icon">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <p class="dropzone-title">صورة الموظف</p>
+                                <span class="dropzone-hint">PNG, JPG (حد أقصى 5MB)</span>
+                            </label>
+                            <div id="photoPreview" class="preview-card hidden">
+                                <img id="photoPreviewImg" class="preview-img-thumb" src="" alt="معاينة الصورة">
+                                <button type="button" class="btn-remove-file" onclick="removeSelectedFile('photo')">
+                                    <i class="fas fa-trash-alt"></i> حذف / تغيير
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- National ID Photo -->
+                        <div>
+                            <input id="employeeIdPhoto" type="file" accept="image/*" class="hidden"
+                                onchange="handleIdPhotoChange(event)">
+                            <label for="employeeIdPhoto" class="file-dropzone-box" id="idPhotoDropzone">
+                                <div class="dropzone-icon">
+                                    <i class="fas fa-id-card"></i>
+                                </div>
+                                <p class="dropzone-title">صورة البطاقة</p>
+                                <span class="dropzone-hint">PNG, JPG (حد أقصى 5MB)</span>
+                            </label>
+                            <div id="idPhotoPreview" class="preview-card hidden">
+                                <img id="idPhotoPreviewImg" class="preview-img-thumb" src="" alt="معاينة البطاقة">
+                                <button type="button" class="btn-remove-file" onclick="removeSelectedFile('idPhoto')">
+                                    <i class="fas fa-trash-alt"></i> حذف / تغيير
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- CV PDF File -->
+                        <div>
+                            <input id="employeeCV" type="file" accept=".pdf" class="hidden"
+                                onchange="handleCVChange(event)">
+                            <label for="employeeCV" class="file-dropzone-box" id="cvDropzone">
+                                <div class="dropzone-icon">
+                                    <i class="fas fa-file-pdf"></i>
+                                </div>
+                                <p class="dropzone-title">السيرة الذاتية</p>
+                                <span class="dropzone-hint">PDF فقط (اختياري)</span>
+                            </label>
+                            <div id="cvPreview" class="preview-card hidden">
+                                <div class="preview-pdf-box">
+                                    <i class="fas fa-file-pdf"></i>
+                                    <span id="cvFileName" class="preview-pdf-name"></span>
+                                </div>
+                                <button type="button" class="btn-remove-file" onclick="removeSelectedFile('cv')">
+                                    <i class="fas fa-trash-alt"></i> حذف / تغيير
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Actions -->
+                    <div class="modal-footer">
+                        <button type="submit" id="saveEmployeeBtn" class="btn-save-modal">
+                            <i class="fas fa-save"></i>
+                            <span>حفظ البيانات</span>
+                        </button>
+                        <button type="button" class="btn-cancel-modal" onclick="closeEmployeeModal()">
+                            <i class="fas fa-times"></i>
+                            <span>إلغاء</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Security Password Modal (Page Access) ===== -->
+    <div id="securityPasswordModal" class="modal-overlay">
+        <div class="modal-box security-modal-box">
+            <div class="modal-header pb-4 mb-4">
+                <div class="modal-title">
+                    <div class="modal-title-icon security-icon">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <span>تأمين صفحة الموظفين</span>
+                </div>
+            </div>
+
+            <p class="security-modal-desc">
+                كلمة المرور مطلوبة للوصول إلى بيانات فريق العمل والرواتب والمستندات.
+            </p>
+
+            <form id="securityPasswordForm" onsubmit="event.preventDefault(); submitSecurityPassword();">
+                <div class="field-group mt-4">
+                    <label for="securityPasswordInput">
+                        <i class="fas fa-lock"></i>
+                        <span>كلمة المرور</span>
+                        <span class="required-star">*</span>
+                    </label>
+                    <div class="pwd-input-wrap">
+                        <input type="password" id="securityPasswordInput" class="modal-input pwd-field" placeholder="أدخل كلمة المرور..." required autocomplete="current-password" />
+                        <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('securityPasswordInput', this)" title="إظهار/إخفاء كلمة المرور">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="security-meta-row">
+                    <div id="pwdAttemptsBadge" class="pwd-attempts-pill">
+                        <i class="fas fa-clock-rotate-left"></i>
+                        <span id="pwdAttemptsCountText">3 محاولات متبقية</span>
+                    </div>
+                </div>
+
+                <div id="securityErrorMsg" class="security-error-alert hidden"></div>
+
+                <div class="modal-footer mt-6">
+                    <button type="submit" id="btnSubmitSecurityPwd" class="btn-save-modal flex-1">
+                        <i class="fas fa-right-to-bracket"></i>
+                        <span>دخول</span>
+                    </button>
+                    <button type="button" class="btn-cancel-modal" onclick="cancelSecurityAccess()">
+                        <i class="fas fa-home"></i>
+                        <span>الرئيسية</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== Create Password Modal (First Time Setup) ===== -->
+    <div id="createPasswordModal" class="modal-overlay">
+        <div class="modal-box security-modal-box">
+            <div class="modal-header pb-4 mb-4">
+                <div class="modal-title">
+                    <div class="modal-title-icon security-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <span>تعيين كلمة مرور الحماية</span>
+                </div>
+            </div>
+
+            <p class="security-modal-desc">
+                هذه أول مرة تفتح فيها صفحة الموظفين. يرجى إنشاء كلمة مرور لحماية بيانات الموظفين والرواتب.
+            </p>
+
+            <form id="createPasswordForm" onsubmit="event.preventDefault(); submitCreatePassword();">
+                <div class="field-group mt-4">
+                    <label for="createPwdInput">
+                        <i class="fas fa-lock"></i>
+                        <span>كلمة المرور الجديدة</span>
+                        <span class="required-star">*</span>
+                    </label>
+                    <div class="pwd-input-wrap">
+                        <input type="password" id="createPwdInput" class="modal-input pwd-field" placeholder="6 أحرف أو أرقام على الأقل" required minlength="6" autocomplete="new-password" />
+                        <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('createPwdInput', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label for="createPwdConfirmInput">
+                        <i class="fas fa-lock-open"></i>
+                        <span>تأكيد كلمة المرور</span>
+                        <span class="required-star">*</span>
+                    </label>
+                    <div class="pwd-input-wrap">
+                        <input type="password" id="createPwdConfirmInput" class="modal-input pwd-field" placeholder="أعد إدخال كلمة المرور" required minlength="6" autocomplete="new-password" />
+                        <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('createPwdConfirmInput', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="createPwdErrorMsg" class="security-error-alert hidden"></div>
+
+                <div class="modal-footer mt-6">
+                    <button type="submit" id="btnSubmitCreatePwd" class="btn-save-modal flex-1">
+                        <i class="fas fa-shield-halved"></i>
+                        <span>حفظ وتأمين الصفحة</span>
+                    </button>
+                    <button type="button" class="btn-cancel-modal" onclick="cancelSecurityAccess()">
+                        <i class="fas fa-times"></i>
+                        <span>إلغاء</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ===== Change Password Modal ===== -->
+    <div id="changePasswordModal" class="modal-overlay" onclick="handleChangePasswordOverlayClick(event)">
+        <div class="modal-box security-modal-box">
+            <div class="modal-header pb-4 mb-4">
+                <div class="modal-title">
+                    <div class="modal-title-icon security-icon">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <span>تغيير كلمة المرور</span>
+                </div>
+                <button type="button" class="modal-close" onclick="closeChangePasswordModal()" title="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="changePasswordForm" onsubmit="event.preventDefault(); submitChangePassword();">
+                <div class="field-group">
+                    <label for="changeCurrentPwdInput">
+                        <i class="fas fa-lock"></i>
+                        <span>كلمة المرور الحالية</span>
+                        <span class="required-star">*</span>
+                    </label>
+                    <div class="pwd-input-wrap">
+                        <input type="password" id="changeCurrentPwdInput" class="modal-input pwd-field" placeholder="أدخل كلمة المرور الحالية" required autocomplete="current-password" />
+                        <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('changeCurrentPwdInput', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label for="changeNewPwdInput">
+                        <i class="fas fa-key"></i>
+                        <span>كلمة المرور الجديدة</span>
+                        <span class="required-star">*</span>
+                    </label>
+                    <div class="pwd-input-wrap">
+                        <input type="password" id="changeNewPwdInput" class="modal-input pwd-field" placeholder="6 أحرف أو أرقام على الأقل" required minlength="6" autocomplete="new-password" />
+                        <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('changeNewPwdInput', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label for="changeConfirmPwdInput">
+                        <i class="fas fa-check-double"></i>
+                        <span>تأكيد كلمة المرور الجديدة</span>
+                        <span class="required-star">*</span>
+                    </label>
+                    <div class="pwd-input-wrap">
+                        <input type="password" id="changeConfirmPwdInput" class="modal-input pwd-field" placeholder="أعد إدخال كلمة المرور الجديدة" required minlength="6" autocomplete="new-password" />
+                        <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('changeConfirmPwdInput', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="changePwdErrorMsg" class="security-error-alert hidden"></div>
+
+                <div class="modal-footer mt-6">
+                    <button type="submit" id="btnSubmitChangePwd" class="btn-save-modal flex-1">
+                        <i class="fas fa-save"></i>
+                        <span>حفظ كلمة المرور</span>
+                    </button>
+                    <button type="button" class="btn-cancel-modal" onclick="closeChangePasswordModal()">
+                        <i class="fas fa-times"></i>
+                        <span>إلغاء</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
     <div id="footer-container" class="z-10"></div>
+
+    <!-- Scripts -->
     <script type="module" src="../js/calculator.js"></script>
     <script type="module" src="../js/shared.js"></script>
     <script type="module" src="../js/employees.js"></script>

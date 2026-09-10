@@ -1,386 +1,1553 @@
-let invoices = [], products = [], items = [], heldInvoices = [], suppliers = []; 
-const els = { 
-    list: document.getElementById("invoicesList"), 
-    content: document.getElementById("pageContent"), 
-    loading: document.getElementById("loadingScreen"), 
-    form: document.getElementById("invoiceForm"), 
-    formTitle: document.getElementById("formTitle"), 
-    editingInvoiceId: document.getElementById("editingInvoiceId"), 
-    supplierSearch: document.getElementById("supplierSearch"), 
-    supplierName: document.getElementById("supplierName"), 
-    supplierPhone: document.getElementById("supplierPhone"), 
-    createdByName: document.getElementById("createdByName"), 
-    createdByPhone: document.getElementById("createdByPhone"), 
-    invoiceDate: document.getElementById("invoiceDate"), 
-    productSelect: document.getElementById("productSelect"), 
-    quantity: document.getElementById("quantity"), 
-    itemsList: document.getElementById("itemsList"), 
-    totalAmount: document.getElementById("totalAmount"), 
-    notes: document.getElementById("notes"), 
-    invoiceImage: document.getElementById("invoiceImage"), 
-    imagePreview: document.getElementById("imagePreview"), 
-    imagePreviewImg: document.getElementById("imagePreviewImg"), 
-    paymentMethod: document.getElementById("paymentMethod"), 
-    paymentLabel: document.getElementById("paymentLabel"), 
-    installmentCount: document.getElementById("installmentCount"), 
-    paymentDisplay: document.getElementById("paymentDisplay"), 
-    invoicesSearch: document.getElementById("invoicesSearch"),
+let invoices = [];
+let products = [];
+let suppliers = [];
+let items = [];
+let currentInvoicesSearch = "";
+let editingInvoiceId = null;
+
+const els = {
+    list: document.getElementById("invoicesList"),
+    modal: document.getElementById("purchaseInvoiceModal"),
+    form: document.getElementById("invoiceForm"),
+    formTitle: document.getElementById("formTitle"),
+    modalIcon: document.getElementById("modalIcon"),
+    editingInvoiceId: document.getElementById("editingInvoiceId"),
+    selectedSupplierId: document.getElementById("selectedSupplierId"),
+    noSuppliersAlert: document.getElementById("noSuppliersAlert"),
+    supplierSearch: document.getElementById("supplierSearch"),
+    supplierDropdown: document.getElementById("supplierDropdown"),
+    supplierName: document.getElementById("supplierName"),
+    supplierPhone: document.getElementById("supplierPhone"),
+    createdByName: document.getElementById("createdByName"),
+    createdByPhone: document.getElementById("createdByPhone"),
+    invoiceDate: document.getElementById("invoiceDate"),
+    paymentMethodSelect: document.getElementById("paymentMethodSelect"),
+    paymentMethodHidden: document.getElementById("paymentMethodHidden"),
+    installmentCountGroup: document.getElementById("installmentCountGroup"),
+    installmentCount: document.getElementById("installmentCount"),
+    creditDueDateGroup: document.getElementById("creditDueDateGroup"),
+    creditDueDate: document.getElementById("creditDueDate"),
     installmentDatesContainer: document.getElementById("installmentDatesContainer"),
-    installmentDates: document.getElementById("installmentDates")
+    installmentDates: document.getElementById("installmentDates"),
+    productSearchInput: document.getElementById("productSearchInput"),
+    selectedProductId: document.getElementById("selectedProductId"),
+    productDropdown: document.getElementById("productDropdown"),
+    productQuantity: document.getElementById("productQuantity"),
+    productPrice: document.getElementById("productPrice"),
+    itemsListBody: document.getElementById("itemsListBody"),
+    totalAmount: document.getElementById("totalAmount"),
+    notes: document.getElementById("notes"),
+    invoiceImage: document.getElementById("invoiceImage"),
+    invoiceImageDropzone: document.getElementById("invoiceImageDropzone"),
+    imagePreview: document.getElementById("imagePreview"),
+    imagePreviewImg: document.getElementById("imagePreviewImg"),
+    saveInvoiceBtn: document.getElementById("saveInvoiceBtn"),
+    invoicesSearch: document.getElementById("invoicesSearch"),
+    totalInvoicesCount: document.getElementById("totalInvoicesCount"),
+    totalPurchasesSum: document.getElementById("totalPurchasesSum"),
 };
-async function loadSuppliers() { try { showLoading(!0), suppliers = await window.electronAPI.getSuppliers(), renderSupplierDatalist(suppliers) } catch (e) { showError("فشل في تحميل قائمة الموردين", e.message) } finally { showLoading(!1) } } function renderFilteredInvoices(e = invoices) { if (!els.list) return; if (!e.length) return void (els.list.innerHTML = '\n            <div class="col-span-full text-center p-8 bg-white rounded-2xl shadow-lg border border-gray-100">\n                <div class="flex flex-col items-center gap-4">\n                    <i class="fas fa-file-invoice text-6xl text-primary"></i>\n                    <div class="space-y-2">\n                        <h3 class="text-2xl font-bold text-primary">لا يوجد فواتير</h3>\n                        <p class="text-gray-500">لا توجد نتائج مطابقة للبحث</p>\n                    </div>\n                </div>\n            </div>\n        '); const n = e.map((async e => { let n = "", t = !1; return e.image && (n = await getFileAsDataURL(e.image), n || (t = !0)), `\n        <div class="invoice-table-container">\n            <table class="invoice-table">\n                <thead>\n                    <tr>\n                        <th width="20%">المورد</th>\n                        <th width="15%">التاريخ</th>\n                        <th width="15%">رقم الجوال</th>\n                        <th width="15%">المنتجات</th>\n                        <th width="15%">المجموع</th>\n                        <th width="15%">ملاحظات</th>\n                        <th width="20%">الإجراءات</th>\n                    </tr>\n                </thead>\n                <tbody>\n                    <tr class="invoice-row">\n                        <td class="supplier-info">\n                            <div class="supplier-name">\n                                <i class="fas fa-store-alt"></i>\n                                ${e.supplierName || "فاتورة بدون اسم"}\n                            </div>\n                            ${e.supplierPhone ? `\n                                <div class="created-by">\n                                    <i class="fas fa-user-edit"></i>\n                                    ${e.supplierPhone}\n                                </div>\n                                ` : ""}\n                        </td>\n                        \n                        <td class="invoice-date">\n                            <div class="date-badge">\n                                <i class="far fa-calendar-alt"></i>\n                                ${formatDate(e.date)}\n                            </div>\n                        </td>\n                        \n                        <td class="supplier-phone">\n                            ${e.createdByPhone ? `\n                                <a href="tel:${e.createdByPhone}" class="phone-link">\n                                    <i class="fas fa-phone-alt"></i>\n                                    ${e.createdByPhone}\n                                </a>\n                                ` : '<span class="text-muted">غير متوفر</span>'}\n                        </td>\n                        \n                        <td class="products-count">\n                            <div class="products-badge">\n                                <i class="fas fa-boxes"></i>\n                                ${e.items.length} منتج\n                            </div>\n                            <div class="top-product">\n                                ${e.items[0]?.productName || ""}\n                                ${e.items.length > 1 ? "+" + (e.items.length - 1) : ""}\n                            </div>\n                        </td>\n                        \n                        <td class="total-amount text-primary">\n                            <div class="amount">\n                                ${e.totalAmount ? e.totalAmount.toFixed(2) + " ج.م" : "--"}\n                            </div>\n                        </td>\n                        <td class="notes-preview">\n                            <div class="notes-badge">\n                                <i class="fas fa-sticky-note"></i>\n                                ${e.notes || ""}\n                            </div>\n                        </td>\n\n                        <td class="actions">\n                            <div class="action-buttons">\n                                <button onclick="openEditInvoiceModal('${e._id}')" class="btn-edit" title="تعديل">\n                                    <i class="fas fa-edit"></i>\n                                </button>\n                                <button onclick="printPurchaseInvoice('${e._id}')" class="btn-print" title="طباعة">\n                                    <i class="fas fa-print"></i>\n                                </button>\n                                <button onclick="confirmDeleteInvoice('${e._id}')" class="btn-delete" title="حذف">\n                                    <i class="fas fa-trash"></i>\n                                </button>\n                            </div>\n                            ${e.image ? `\n                                <div class="image-preview" onclick="${n ? `showFileInNewWindow('${n}')` : "Swal.fire({title: 'خطأ', text: 'الصورة غير متوفرة', icon: 'error', confirmButtonColor: '#EF4444'})"}">\n                                    <i class="fas fa-image"></i> ${t ? "الصورة غير متوفرة" : "صورة الفاتورة"}\n                                </div>\n                                ` : ""}\n                        </td>\n                    </tr>\n                </tbody>\n            </table>\n        </div>\n        ` })); Promise.all(n).then((e => { els.list.innerHTML = e.join("") })) } function renderSupplierDatalist(e = suppliers) { document.getElementById("supplierList").innerHTML = e.map((e => `\n        <option value="${e.name} (${e.phone})" data-name="${e.name}" data-phone="${e.phone}" data-id="${e._id}">\n    `)).join("") } async function loadProducts() { try { showLoading(!0), products = await window.electronAPI.getProducts(), renderProductSelect() } catch (e) { showError("فشل في تحميل المنتجات", e.message) } finally { showLoading(!1) } } function renderProductSelect() { els.productSelect.innerHTML = '<option value="">اختر منتجًا</option>' + products.map((e => `<option value="${e._id}" data-price="${e.purchasePrice || e.price || 0}">${e.name}</option>`)).join("") } async function loadInvoices() { try { showLoading(!0), invoices = await window.electronAPI.getProductsPurchaseInvoices(), renderFilteredInvoices() } catch (e) { showError("فشل في تحميل الفواتير", e.message) } finally { showLoading(!1) } } async function getFileAsDataURL(e) { try { if (!e || "" === e) return ""; let n = e; n = n.replace(/C:\\Users\\[^\\]+\\AppData\\Roaming\\cashier-system\\/gi, ""), n = n.replace(/C:\\Users\\[^\\]+\\OneDrive\\Documents\\/gi, ""); const t = n.split("/").pop(), i = n.substring(0, n.lastIndexOf("/")); n = `${i}/${t}`.replace(/\/+/g, "/"); try { return await window.electronAPI.readFileAsDataURL(n) || "" } catch (e) { return "" } } catch (e) { return "" } } async function renderInvoices() { if (!els.list) return; if (!invoices.length) return void (els.list.innerHTML = '\n            <div class="col-span-full text-center p-8 bg-white rounded-2xl shadow-lg border border-gray-100">\n                <div class="flex flex-col items-center gap-4">\n                    <i class="fas fa-file-invoice text-6xl text-primary"></i>\n                    <div class="space-y-2">\n                        <h3 class="text-2xl font-bold text-primary">لا يوجد فواتير</h3>\n                        <p class="text-gray-500">إبدأ بإضافة فاتورة جديدة الآن</p>\n                    </div>\n                </div>\n            </div>\n        '); const e = await Promise.all(invoices.map((async e => { let n = "", t = !1; return e.image && (n = await getFileAsDataURL(e.image), n || (t = !0)), `\n        <div class="invoice-table-container">\n            <table class="invoice-table">\n                <thead>\n                    <tr>\n                        <th width="20%">المورد</th>\n                        <th width="15%">التاريخ</th>\n                        <th width="15%">رقم الجوال</th>\n                        <th width="15%">المنتجات</th>\n                        <th width="15%">المجموع</th>\n                        <th width="15%">ملاحظات</th>\n                        <th width="20%">الإجراءات</th>\n                    </tr>\n                </thead>\n                <tbody>\n                    <tr class="invoice-row">\n                        <td class="supplier-info">\n                            <div class="supplier-name">\n                                <i class="fas fa-store-alt"></i>\n                                ${e.supplierName || "فاتورة بدون اسم"}\n                            </div>\n                            ${e.supplierPhone ? `\n                                <div class="created-by">\n                                    <i class="fas fa-user-edit"></i>\n                                    ${e.supplierPhone}\n                                </div>\n                                ` : ""}\n                        </td>\n                        \n                        <td class="invoice-date">\n                            <div class="date-badge">\n                                <i class="far fa-calendar-alt"></i>\n                                ${formatDate(e.date)}\n                            </div>\n                        </td>\n                        \n                        <td class="supplier-phone">\n                            ${e.createdByPhone ? `\n                                <a href="tel:${e.createdByPhone}" class="phone-link">\n                                    <i class="fas fa-phone-alt"></i>\n                                    ${e.createdByPhone}\n                                </a>\n                                ` : '<span class="text-muted">غير متوفر</span>'}\n                        </td>\n                        \n                        <td class="products-count">\n                            <div class="products-badge">\n                                <i class="fas fa-boxes"></i>\n                                ${e.items.length} منتج\n                            </div>\n                            <div class="top-product">\n                                ${e.items[0]?.productName || ""}\n                                ${e.items.length > 1 ? "+" + (e.items.length - 1) : ""}\n                            </div>\n                        </td>\n                        \n                        <td class="total-amount text-primary">\n                            <div class="amount">\n                                ${e.totalAmount ? e.totalAmount.toFixed(2) + " ج.م" : "--"}\n                            </div>\n                        </td>\n                        <td class="notes-preview">\n                            <div class="notes-badge">\n                                <i class="fas fa-sticky-note"></i>\n                                ${e.notes || ""}\n                            </div>\n                        </td>\n\n                        <td class="actions">\n                            <div class="action-buttons">\n                                <button onclick="openEditInvoiceModal('${e._id}')" class="btn-edit" title="تعديل">\n                                    <i class="fas fa-edit"></i>\n                                </button>\n                                <button onclick="printPurchaseInvoice('${e._id}')" class="btn-print" title="طباعة">\n                                    <i class="fas fa-print"></i>\n                                </button>\n                                <button onclick="confirmDeleteInvoice('${e._id}')" class="btn-delete" title="حذف">\n                                    <i class="fas fa-trash"></i>\n                                </button>\n                            </div>\n                            ${e.image ? `\n                                <div class="image-preview" onclick="${n ? `showFileInNewWindow('${n}')` : "Swal.fire({title: 'خطأ', text: 'الصورة غير متوفرة', icon: 'error', confirmButtonColor: '#EF4444'})"}">\n                                    <i class="fas fa-image"></i> ${t ? "الصورة غير متوفرة" : "صورة الفاتورة"}\n                                </div>\n                                ` : ""}\n                        </td>\n                    </tr>\n                </tbody>\n            </table>\n        </div>\n        ` }))); els.list.innerHTML = e.join("") } async function printPurchaseInvoice(e) {
-    const n = invoices.find((n => n._id === e));
-    if (!n) return void showError("خطأ", "فاتورة غير موجودة");
-    const t = await window.electronAPI.getSettings(), i = t?.storeName || "المتجر", a = t?.logo || "", s = (n.image && await getFileAsDataURL(n.image), `
-    <html lang="ar" dir="rtl">
-    <head>
-        <meta charset="UTF-8">
-        <title>فاتورة شراء - ${n.supplierName || "غير محدد"}</title>
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
-            
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-                font-family: 'Tajawal', sans-serif;
-                line-height: 1.3;
-            }
-            
-            body {
-                width: 80mm;
-                padding: 0;
-                margin: 0;
-                color: #000;
-                background: white;
-                font-size: 14px;
-                position: relative;
-            }
-            
-            .receipt {
-                width: 100%;
-                max-width: 80mm;
-                padding: 10px 15px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                position:absolute;
-                top: 20%;
-                left: -40%;
-                transform: translate(-50%, -50%);
-            }
-            
-            .header {
-                text-align: center;
-                margin-bottom: 10px;
-                padding-bottom: 8px;
-                border-bottom: 2px dashed #ccc;
-            }
-            
-            .logo {
-                max-width: 50%;
-                max-height: 50px;
-                border: 1px solid #ccc;
-                border-radius: 5px;
-                padding: 5px;
-                margin: 0 auto;
-            }
-            
-            .title {
-                font-weight: 700;
-                font-size: 18px;
-                margin: 5px 0;
-                color: #333;
-            }
-            
-            .subtitle {
-                font-size: 14px;
-                color: #555;
-                margin-bottom: 5px;
-            }
-            
-            .date-time {
-                font-size: 12px;
-                color: #666;
-                margin-bottom: 5px;
-            }
-            
-            .info-section {
-                margin: 8px 0;
-                padding: 5px 0;
-            }
-            
-            .info-row {
-                display: flex;
-                justify-content: space-between;
-                margin: 5px 0;
-                font-size: 13px;
-            }
-            
-            .info-label {
-                font-weight: 600;
-                color: #444;
-                min-width: 40%;\n            }\n            \n            .info-value {\n                font-weight: 500;\n                color: #222;\n                text-align: left;\n                direction: ltr;\n            }\n            \n            .divider {\n                border-top: 1px dashed #aaa;\n                margin: 8px 0;\n            }\n            \n            .items-table {\n                width: 100%;\n                border-collapse: collapse;\n                margin: 10px 0;\n            }\n            \n            .items-table th {\n                font-weight: 700;\n                font-size: 13px;\n                padding: 5px 3px;\n                border-bottom: 1px solid #ddd;\n                text-align: right;\n            }\n            \n            .items-table td {\n                padding: 4px 3px;\n                font-size: 12px;\n                border-bottom: 1px dotted #eee;\n                text-align: right;\n            }\n            \n            .total-row {\n                font-weight: 700;\n                font-size: 15px;\n                margin-top: 10px;\n                padding-top: 8px;\n                border-top: 2px dashed #ccc;\n                display: flex;\n                justify-content: space-between;\n            }\n            \n            .notes {\n                margin: 10px 0;\n                padding: 8px;\n                background: #f5f5f5;\n                border-radius: 4px;\n                font-size: 12px;\n                border-right: 3px solid #ddd;\n            }\n            \n            .footer {\n                text-align: center;\n                margin-top: 15px;\n                padding-top: 8px;\n                border-top: 2px dashed #ccc;\n                font-size: 11px;\n                color: #777;\n            }\n            \n            .barcode {\n                text-align: center;\n                margin: 10px 0;\n                padding: 5px;\n            }\n            \n            @media print {\n                body {\n                    width: 80mm !important;\n                    margin: 0 !important;\n                    padding: 0 !important;\n                }\n                .no-print {\n                    display: none !important;\n                }\n                .receipt {\n                    padding: 5px 10px !important;\n                }\n            }\n        </style>\n    </head>\n    <body>\n        <div class="receipt">\n            <div class="header">\n                ${a ? `<img src="${a}" alt="Store Logo" class="logo">` : ""}\n                <div class="title">${i}</div>\n                <div class="subtitle">فاتورة شراء - ${n.supplierName || "غير محدد"}</div>\n                <div class="date-time">${formatDate(n.date)}</div>\n            </div>\n            \n            <div class="info-section">\n                <div class="info-row">\n                    <span class="info-label">اسم المورد:</span>\n                    <span class="info-value">${n.supplierName || "--"}</span>\n                </div>\n                <div class="info-row">\n                    <span class="info-label">رقم المورد:</span>\n                    <span class="info-value">${n.supplierPhone || "--"}</span>\n                </div>\n                <div class="info-row">\n                    <span class="info-label">مسئول الإدخال:</span>\n                    <span class="info-value">${n.createdByName || "--"} (${n.createdByPhone || "--"})</span>\n                </div>\n            </div>\n            \n            <div class="divider"></div>\n            \n            <table class="items-table">\n                <thead>\n                    <tr>\n                        <th width="50%">المنتج</th>\n                        <th width="20%">الكمية</th>\n                        <th width="30%">السعر</th>\n                    </tr>\n                </thead>\n                <tbody>\n                    ${n.items.map((e => `\n                            <tr>\n                                <td>${e.productName}</td>\n                                <td>${e.quantity} ${e.unit || "وحدة"}</td>\n                                <td>${e.price ? e.price.toFixed(2) : "0.00"} ج.م</td>\n                            </tr>\n                        `)).join("")}\n                </tbody>\n            </table>\n            \n            <div class="total-row">\n                <span>المجموع الكلي:</span>\n                <span>${n.totalAmount ? n.totalAmount.toFixed(2) : "0.00"} ج.م</span>\n            </div>\n            \n            ${n.notes ? `\n                <div class="notes">\n                    <strong>ملاحظات:</strong> ${n.notes}\n                </div>\n            ` : ""}\n            \n            <div class="footer">\n                <div>${(new Date).getFullYear()} © نظام إدارة المشتريات</div>\n                <div class="barcode">\n                    * ${n.invoiceNumber || n._id.slice(-6)} *\n                    <div class="title">${i}</div>\n                </div>\n            </div>\n        </div>\n    </body>\n    </html>\n    `);
+
+/* ==========================================================================
+   Data Loading & Calculations
+   ========================================================================== */
+async function loadSuppliers() {
     try {
-        const r = await window.electronAPI.printInvoiceToPOS(s, n._id, "purchase");
-        if (r && r.success) {
-            showSuccess("تمت الطباعة بنجاح على الطابعة الافتراضية أو الحرارية.");
-        } else {
-            const pdfPath = await window.electronAPI.printPurchaseInvoice(s, n._id, "purchase");
-            showSuccess(`تم حفظ الفاتورة كملف PDF في: ${pdfPath}`);
-        }
+        suppliers = await window.electronAPI.getSuppliers();
+        if (!Array.isArray(suppliers)) suppliers = [];
+        checkSuppliersState();
     } catch (e) {
-        showError("خطأ أثناء الطباعة أو التصدير", e.message);
+        showError("فشل في تحميل الموردين", e.message);
     }
-} function showFileInNewWindow(e) { const n = window.open("", "_blank"); n ? n.document.write(`\n        <!DOCTYPE html>\n        <html>\n        <head>\n            <title>عرض صورة الفاتورة</title>\n            <style>\n                body { margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f0f0; }\n                img { max-width: 100%; max-height: 100%; }\n                .toolbar { position: fixed; top: 0; width: 100%; background: #f8f9fa; padding: 10px; text-align: center; border-bottom: 1px solid #ddd; }\n                .close-btn { background: #dc3545; color: white; border: none; padding: 5px 15px; border-radius: 4px; cursor: pointer; }\n            </style>\n        </head>\n        <body>\n            <div class="toolbar">\n                <button class="close-btn" onclick="window.close()"><i class="fas fa-times"></i> إغلاق</button>\n            </div>\n            <img src="${e}" alt="صورة الفاتورة">\n            <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"><\/script>\n        </body>\n        </html>\n    `) : alert("يرجى السماح بفتح النوافذ المنبثقة لهذا الموقع.") } function formatDate(e) { return new Date(e).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" }) } 
+}
 
-function calculateTotalAmount() { 
-    const e = items.reduce(((e, n) => e + n.quantity * n.price), 0); 
-    return els.totalAmount.value = e.toFixed(2), e 
-} 
+async function loadProducts() {
+    try {
+        products = await window.electronAPI.getProducts();
+        if (!Array.isArray(products)) products = [];
+    } catch (e) {
+        showError("فشل في تحميل المنتجات", e.message);
+    }
+}
 
-// تعريف الدالة في النطاق العام
-window.addItem = function() { 
-    const productId = els.productSelect.value;
-    const quantity = parseInt(els.quantity.value);
-    const selectedOption = els.productSelect.options[els.productSelect.selectedIndex];
-    const price = parseFloat(selectedOption.dataset.price) || 0;
-    
-    
-    
-    if (!productId) {
-        showError("خطأ", "يرجى اختيار منتج");
-        return;
+async function loadInvoices() {
+    try {
+        showLoading(true);
+        invoices = await window.electronAPI.getProductsPurchaseInvoices();
+        if (!Array.isArray(invoices)) invoices = [];
+        updateHeaderStats();
+        applyInvoicesFilterAndRender();
+    } catch (e) {
+        showError("فشل في تحميل الفواتير", e.message);
+    } finally {
+        showLoading(false);
     }
-    
-    if (!quantity || quantity <= 0) {
-        showError("خطأ", "يرجى إدخال كمية صحيحة");
-        return;
+}
+
+function updateHeaderStats() {
+    const totalCount = invoices.length;
+    const totalSum = invoices.reduce((sum, inv) => sum + (parseFloat(inv.totalAmount) || 0), 0);
+
+    if (els.totalInvoicesCount) {
+        els.totalInvoicesCount.textContent = `${totalCount} فاتورة`;
+        els.totalInvoicesCount.title = `إجمالي عدد الفواتير: ${totalCount} فاتورة`;
     }
-    
-    if (!price || price <= 0) {
-        showError("خطأ", "السعر غير صحيح");
-        return;
+    if (els.totalPurchasesSum) {
+        const formatted = formatCurrency(totalSum);
+        els.totalPurchasesSum.textContent = formatted;
+        els.totalPurchasesSum.title = `إجمالي المشتريات: ${totalSum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} جنيه مصري`;
     }
-    
-    const product = products.find(p => p._id === productId);
-    if (!product) {
-        showError("خطأ", "المنتج غير موجود");
-        return;
+}
+
+function getInvoiceDisplayNumber(inv) {
+    if (!inv) return "PUR-0001";
+    if (inv.invoiceNumber && !inv.invoiceNumber.startsWith("SUSPENDED_")) {
+        if (/^(PUR|PINV|INV|شراء)[\s-]/i.test(inv.invoiceNumber) || /^\d+$/.test(inv.invoiceNumber)) {
+            return inv.invoiceNumber;
+        }
+        return `PUR-${inv.invoiceNumber.replace(/^#/, '')}`;
     }
-    
-    // إضافة المنتج للقائمة
-    items.push({
-        productId: productId,
-        productName: product.name,
-        quantity: quantity,
-        price: price,
-        unit: product.unit || "وحدة"
+    if (inv._id) {
+        const idx = invoices.findIndex(i => i._id === inv._id);
+        if (idx !== -1) {
+            const seq = invoices.length - idx;
+            return `PUR-${String(seq).padStart(4, "0")}`;
+        }
+        const numericPart = inv._id.replace(/\D/g, '').slice(-4);
+        if (numericPart) return `PUR-${numericPart.padStart(4, "0")}`;
+    }
+    return "PUR-0001";
+}
+
+function formatCurrency(amount) {
+    const val = parseFloat(amount) || 0;
+    const isInteger = val % 1 === 0;
+    const formattedNum = new Intl.NumberFormat("ar-EG", {
+        minimumFractionDigits: isInteger ? 0 : 2,
+        maximumFractionDigits: 2
+    }).format(val);
+    return `${formattedNum} ج.م`;
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return "غير محدد";
+    try {
+        const d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        return d.toLocaleDateString("ar-EG", {
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        });
+    } catch {
+        return dateStr;
+    }
+}
+
+async function getFileAsDataURL(filePath) {
+    if (!filePath) return "";
+    try {
+        return (await window.electronAPI.readFileAsDataURL(filePath)) || "";
+    } catch {
+        return "";
+    }
+}
+
+function checkSuppliersState() {
+    if (!els.noSuppliersAlert) return;
+    if (suppliers.length === 0) {
+        els.noSuppliersAlert.classList.remove("hidden");
+    } else {
+        els.noSuppliersAlert.classList.add("hidden");
+    }
+}
+
+/* ==========================================================================
+   Supplier Autocomplete Search (No Auto-Open on Form Open)
+   ========================================================================== */
+function initSupplierSearch() {
+    if (!els.supplierSearch || !els.supplierDropdown) return;
+
+    els.supplierSearch.addEventListener("input", (e) => {
+        const val = e.target.value.trim();
+        if (val) {
+            showSupplierSuggestions(val);
+        } else {
+            els.supplierDropdown.classList.remove("show");
+        }
     });
-    
-    // تحديث الواجهة
-    renderItemsList();
-    calculateTotalAmount();
-    
-    // مسح الحقول
-    els.productSelect.value = "";
-    els.quantity.value = "";
-    
-    showSuccess("تم إضافة المنتج بنجاح");
-} 
 
-function renderItemsList() { 
-    els.itemsList.innerHTML = items.map(((e, n) => `\n        <li class="flex justify-between items-center text-gray-800" data-item="${e.productId},${e.quantity}">\n            ${e.productName} - الكمية: ${e.quantity} - السعر: ${e.price.toFixed(2)} ج.م\n            <button type="button" class="text-red-500" onclick="removeItem(${n})">حذف</button>\n        </li>\n    `)).join("") 
-} 
-
-// تعريف دالة حذف المنتج في النطاق العام
-window.removeItem = function(e) { 
-    items.splice(e, 1); 
-    renderItemsList(); 
-    calculateTotalAmount(); 
-}; 
-
-async function openEditInvoiceModal(e) { const n = invoices.find((n => n._id === e)); if (!n) return; els.editingInvoiceId.value = e, els.formTitle.textContent = "تعديل الفاتورة"; const t = suppliers.find((e => e._id === n.supplierId)); if (t && (els.supplierSearch.value = `${t.name} (${t.phone})`, els.supplierName.value = t.name, els.supplierPhone.value = t.phone, els.paymentMethod.value = t.paymentMethod || "cash", "installment" === t.paymentMethod ? (els.paymentLabel.innerHTML = '\n                <i class="fas fa-money-check-alt text-primary"></i>\n                عدد الدفعات\n            ', els.installmentCount.style.display = "block", els.paymentDisplay.style.display = "none", els.installmentCount.value = n.installmentCount || 3) : (els.paymentLabel.innerHTML = '\n                <i class="fas fa-money-check-alt text-primary"></i>\n                نوع الدفع\n            ', els.installmentCount.style.display = "none", els.paymentDisplay.style.display = "block", els.paymentDisplay.value = "cash" === t.paymentMethod ? "كاش" : "آجل")), els.createdByName.value = n.createdByName || "", els.createdByPhone.value = n.createdByPhone || "", els.invoiceDate.value = n.date.split("T")[0], items = [...n.items], renderItemsList(), calculateTotalAmount(), els.notes.value = n.notes || "", n.image) try { const e = await getFileAsDataURL(n.image); e ? (els.imagePreviewImg.src = e, els.imagePreview.classList.remove("hidden")) : (els.imagePreviewImg.src = "", els.imagePreview.classList.add("hidden"), showError("خطأ", "تعذر تحميل صورة الفاتورة")) } catch (e) { els.imagePreviewImg.src = "", els.imagePreview.classList.add("hidden"), showError("خطأ", "تعذر تحميل صورة الفاتورة: " + e.message) } else els.imagePreview.classList.add("hidden") } async function saveInvoice() { 
-    const e = els.supplierName.value.trim(), 
-          n = els.supplierPhone.value.trim(), 
-          t = els.createdByName.value.trim(), 
-          i = els.createdByPhone.value.trim(), 
-          a = els.invoiceDate.value.trim(), 
-          s = calculateTotalAmount(), 
-          o = els.notes.value.trim(), 
-          l = els.paymentMethod.value, 
-          d = parseInt(els.installmentCount.value) || 3, 
-          r = els.invoiceImage.files[0]; 
-
-    let hasError = false;
-    let firstInvalid = null;
-
-    if (!els.supplierSearch.value.trim() || !e || !n) {
-        if (typeof window.markFieldInvalid === "function") {
-            window.markFieldInvalid(els.supplierSearch, "يرجى اختيار مورد من القائمة");
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#supplierSearch") && !e.target.closest("#supplierDropdown")) {
+            els.supplierDropdown.classList.remove("show");
         }
-        if (!firstInvalid) firstInvalid = els.supplierSearch;
-        hasError = true;
+    });
+}
+
+function showSupplierSuggestions(query = "") {
+    if (!els.supplierDropdown) return;
+
+    if (suppliers.length === 0) {
+        checkSuppliersState();
+        els.supplierDropdown.innerHTML = `
+            <div style="padding: 12px; text-align: center; color: #94a3b8; font-size: 0.85rem;">
+                لا يوجد موردين مسجلين بعد.
+            </div>
+        `;
+        els.supplierDropdown.classList.add("show");
+        return;
     }
 
-    if (!t) {
-        if (typeof window.markFieldInvalid === "function") {
-            window.markFieldInvalid(els.createdByName, "يرجى إدخال اسم منشئ الفاتورة");
+    const q = query.trim().toLowerCase();
+    const matches = suppliers.filter(s => {
+        const name = (s.name || "").toLowerCase();
+        const phone = (s.phone || "").toLowerCase();
+        return name.includes(q) || phone.includes(q);
+    });
+
+    if (matches.length === 0) {
+        els.supplierDropdown.innerHTML = `
+            <div style="padding: 12px; text-align: center; color: #94a3b8; font-size: 0.85rem;">
+                لم يتم العثور على مورد مطابق
+            </div>
+        `;
+    } else {
+        const paymentMap = { cash: "كاش", credit: "آجل", installment: "تقسيط" };
+        const displayed = matches.slice(0, 30);
+        els.supplierDropdown.innerHTML = displayed.map(s => `
+            <div class="autocomplete-item" onclick="selectSupplier('${s._id}')">
+                <div>
+                    <div class="autocomplete-item-name">
+                        <i class="fas fa-truck text-primary"></i>
+                        <span>${escapeHTML(s.name)}</span>
+                    </div>
+                    <div class="autocomplete-item-phone">
+                        <i class="fas fa-phone"></i> ${escapeHTML(s.phone || 'بدون هاتف')}
+                    </div>
+                </div>
+                <span class="badge-payment badge-${s.paymentMethod || 'cash'}">
+                    ${paymentMap[s.paymentMethod] || 'كاش'}
+                </span>
+            </div>
+        `).join("");
+    }
+
+    els.supplierDropdown.classList.add("show");
+}
+
+function selectSupplier(supplierId) {
+    const s = suppliers.find(item => item._id === supplierId);
+    if (!s) return;
+
+    els.selectedSupplierId.value = s._id;
+    els.supplierName.value = s.name;
+    els.supplierPhone.value = s.phone || "";
+    els.supplierSearch.value = `${s.name} (${s.phone || 'بدون هاتف'})`;
+
+    const method = s.paymentMethod || "cash";
+    if (els.paymentMethodSelect) {
+        els.paymentMethodSelect.value = method;
+    }
+    if (els.paymentMethodHidden) {
+        els.paymentMethodHidden.value = method;
+    }
+    handlePaymentMethodChange(method);
+
+    els.supplierDropdown.classList.remove("show");
+}
+
+/* ==========================================================================
+   Product Autocomplete & Search (Scalable for 10,000+ Products)
+   ========================================================================== */
+function initProductSearch() {
+    if (!els.productSearchInput || !els.productDropdown) return;
+
+    els.productSearchInput.addEventListener("input", (e) => {
+        const val = e.target.value.trim();
+        if (val) {
+            showProductSuggestions(val);
+        } else {
+            els.selectedProductId.value = "";
+            els.productDropdown.classList.remove("show");
         }
-        if (!firstInvalid) firstInvalid = els.createdByName;
-        hasError = true;
-    }
+    });
 
-    if (!i) {
-        if (typeof window.markFieldInvalid === "function") {
-            window.markFieldInvalid(els.createdByPhone, "يرجى إدخال رقم هاتف المنشئ");
+    els.productSearchInput.addEventListener("focus", () => {
+        const val = els.productSearchInput.value.trim();
+        if (val) {
+            showProductSuggestions(val);
         }
-        if (!firstInvalid) firstInvalid = els.createdByPhone;
-        hasError = true;
-    }
+    });
 
-    if (!a) {
-        if (typeof window.markFieldInvalid === "function") {
-            window.markFieldInvalid(els.invoiceDate, "يرجى تحديد تاريخ الفاتورة");
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#productSearchInput") && !e.target.closest("#productDropdown")) {
+            els.productDropdown.classList.remove("show");
         }
-        if (!firstInvalid) firstInvalid = els.invoiceDate;
-        hasError = true;
+    });
+}
+
+function showProductSuggestions(query = "") {
+    if (!els.productDropdown) return;
+
+    if (products.length === 0) {
+        els.productDropdown.innerHTML = `
+            <div style="padding: 12px; text-align: center; color: #94a3b8; font-size: 0.85rem;">
+                لا توجد منتجات مسجلة بالنظام بعد.
+            </div>
+        `;
+        els.productDropdown.classList.add("show");
+        return;
     }
 
-    if (items.length === 0) {
-        if (typeof window.markFieldInvalid === "function") {
-            window.markFieldInvalid(els.productSelect, "يرجى إضافة منتج واحد على الأقل للفاتورة");
+    const q = query.trim().toLowerCase();
+    const matches = products.filter(p => {
+        const name = (p.name || "").toLowerCase();
+        const barcode = (p.barcode || "").toLowerCase();
+        return name.includes(q) || barcode.includes(q);
+    });
+
+    if (matches.length === 0) {
+        els.productDropdown.innerHTML = `
+            <div style="padding: 12px; text-align: center; color: #94a3b8; font-size: 0.85rem;">
+                لم يتم العثور على منتج يطابق "${escapeHTML(query)}"
+            </div>
+        `;
+    } else {
+        const displayed = matches.slice(0, 30);
+        const hasMore = matches.length > 30;
+
+        let html = displayed.map(p => {
+            const price = (parseFloat(p.purchasePrice) || parseFloat(p.price) || 0).toFixed(2);
+            return `
+                <div class="autocomplete-item" onclick="selectProduct('${p._id}')">
+                    <div>
+                        <div class="autocomplete-item-name">
+                            <i class="fas fa-box text-primary"></i>
+                            <span>${escapeHTML(p.name)}</span>
+                        </div>
+                        ${p.barcode ? `
+                            <div class="autocomplete-item-phone">
+                                <i class="fas fa-barcode"></i> ${escapeHTML(p.barcode)}
+                            </div>
+                        ` : ''}
+                    </div>
+                    <div style="text-align: left;">
+                        <span style="font-weight: 800; color: #6d28d9; font-size: 0.88rem;">${price} ج.م</span>
+                    </div>
+                </div>
+            `;
+        }).join("");
+
+        if (hasMore) {
+            html += `
+                <div style="padding: 6px; text-align: center; font-size: 0.76rem; color: #94a3b8; background: #fafafa; border-top: 1px dashed #e2e8f0;">
+                    يوجد المزيد من النتائج المطابقة (${matches.length - 30}+)، اكتب اسم المنتج بدقة أكثر...
+                </div>
+            `;
         }
-        if (!firstInvalid) firstInvalid = els.productSelect;
-        hasError = true;
+
+        els.productDropdown.innerHTML = html;
     }
 
-    if (hasError) {
-        if (firstInvalid) firstInvalid.focus();
-        return void showError("بيانات غير مكتملة", "يرجى استكمال جميع الحقول المطلوبة باللون الأحمر.");
+    els.productDropdown.classList.add("show");
+}
+
+function selectProduct(productId) {
+    const prod = products.find(p => p._id === productId);
+    if (!prod) return;
+
+    if (els.selectedProductId) els.selectedProductId.value = prod._id;
+    if (els.productSearchInput) els.productSearchInput.value = prod.name;
+    if (els.productPrice) {
+        const price = (parseFloat(prod.purchasePrice) || parseFloat(prod.price) || 0).toFixed(2);
+        els.productPrice.value = price;
+    }
+    if (els.productQuantity) {
+        els.productQuantity.value = 1;
+        els.productQuantity.focus();
     }
 
-    const c = suppliers.find((t => t.name === e && t.phone === n)); 
-    if (!c) return void showError("خطأ", "المورد المحدد غير موجود بقاعدة البيانات."); 
-    const p = c._id; 
-    if (!p) return void showError("خطأ", "تعذر التعرف على المورد، يرجى إعادة اختياره."); 
-    let u = ""; 
-    const m = els.editingInvoiceId.value; 
-    if (m && (u = invoices.find((e => e._id === m)).image || ""), r) try { 
-        const e = "invoices/images"; 
-        u = await window.electronAPI.uploadFile({ arrayBuffer: await r.arrayBuffer(), name: r.name }, e); 
-        u = u.replace(/.*\\invoices\\images\\/i, "invoices/images/"); 
-        u = u.replace(/\\/g, "/"); 
-        Swal.fire({ title: `تم رفع الصورة بنجاح`, icon: "success", text: r.name, confirmButtonColor: "#3085d6", confirmButtonText: "موافق" }); 
-    } catch (e) { 
-        return void showError("خطأ في رفع الصورة", e.message); 
-    } 
-    const h = { supplierId: p, supplierName: e, supplierPhone: n, createdByName: t, createdByPhone: i, date: a, totalAmount: s, notes: o, image: u, items: items }; try { showLoading(!0); let e = c.dueAmount || 0; if (s > 0) { const e = (await window.electronAPI.getSettings())?.currentUser || "غير معروف", n = m ? invoices.find((e => e._id === m)).invoiceNumber : await window.electronAPI.getNextProductsPurchaseInvoiceNumber(), t = `مصروفات - فاتورة شراء منتجـات رقم ${n} (cash)`, i = await window.electronAPI.getTreasuryTransactions(); "cash" !== l || i.some((n => n.description === t && n.user === e)) || await window.electronAPI.addTreasuryTransaction({ date: (new Date).toISOString(), type: "expense", amount: s, description: t, user: e }) } if (m) { const e = invoices.find((e => e._id === m)), n = suppliers.find((n => n._id === e.supplierId)); for (const n of e.items) { const e = products.find((e => e._id === n.productId)); if (e) { const t = (e.quantity || 0) - n.quantity; await window.electronAPI.updateProduct(n.productId, { ...e, quantity: t }), e.quantity = t } } if (n && "installment" === n.paymentMethod) { const t = (await window.electronAPI.getInstallments(n._id)).filter((e => e.invoiceId === m)); for (const e of t) await window.electronAPI.deleteInstallment(e._id); const i = e.totalAmount; n.dueAmount -= i, await window.electronAPI.updateSupplier(n._id, { dueAmount: n.dueAmount }) } else n && "credit" === n.paymentMethod && (n.dueAmount -= e.totalAmount, await window.electronAPI.updateSupplier(n._id, { dueAmount: n.dueAmount })) } for (const e of items) { const n = products.find((n => n._id === e.productId)); if (n) { const t = (n.quantity || 0) + e.quantity; await window.electronAPI.updateProduct(e.productId, { ...n, quantity: t }), n.quantity = t } } if ("installment" === l) { 
-    const n = s / d; 
-    e = n * d; 
-    
-    // استخدام مواعيد الدفع المخصصة إذا كانت متوفرة
-    const customDates = getCustomInstallmentDates();
-    const dueDates = customDates.length === d ? customDates : [];
-    
-    if (dueDates.length === 0) {
-        // إذا لم تكن هناك مواعيد مخصصة، استخدم المواعيد الافتراضية
-        const t = new Date(a);
-        for (let e = 0; e < d; e++) {
-            t.setMonth(t.getMonth() + 1);
-            dueDates.push(t.toISOString().split("T")[0]);
+    if (els.productDropdown) els.productDropdown.classList.remove("show");
+}
+
+function addItemToInvoice() {
+    let productId = els.selectedProductId ? els.selectedProductId.value : "";
+    const searchVal = els.productSearchInput ? els.productSearchInput.value.trim() : "";
+    const quantity = parseInt(els.productQuantity.value) || 0;
+    const price = parseFloat(els.productPrice.value);
+
+    if (!productId && searchVal) {
+        const matched = products.find(p => p.name && p.name.trim().toLowerCase() === searchVal.toLowerCase());
+        if (matched) {
+            productId = matched._id;
+            els.selectedProductId.value = matched._id;
         }
     }
-    
-    for (let e = 0; e < d; e++) {
-        await window.electronAPI.addInstallment({ 
-            supplierId: p, 
-            amount: n, 
-            dueDate: dueDates[e], 
-            invoiceId: m || await window.electronAPI.getNextProductsPurchaseInvoiceNumber() 
+
+    if (!productId || !searchVal) {
+        showError("بيانات غير مكتملة", "يرجى اختيار / البحث عن منتج لإضافته للفاتورة.");
+        if (els.productSearchInput) els.productSearchInput.focus();
+        return;
+    }
+
+    if (quantity <= 0) {
+        showError("بيانات غير صحيحة", "يرجى إدخال كمية صحيحة (أكبر من 0).");
+        if (els.productQuantity) els.productQuantity.focus();
+        return;
+    }
+
+    if (isNaN(price) || price < 0) {
+        showError("بيانات غير صحيحة", "يرجى إدخال سعر الشراء بشكل صحيح.");
+        if (els.productPrice) els.productPrice.focus();
+        return;
+    }
+
+    const prod = products.find(p => p._id === productId);
+    if (!prod) {
+        showError("تنبيه", "المنتج المحدد غير موجود في قاعدة البيانات.");
+        return;
+    }
+
+    const existingIdx = items.findIndex(it => it.productId === productId);
+    if (existingIdx !== -1) {
+        items[existingIdx].quantity += quantity;
+        items[existingIdx].price = price;
+    } else {
+        items.push({
+            productId: prod._id,
+            productName: prod.name,
+            quantity: quantity,
+            price: price,
+            unit: prod.unit || "وحدة"
         });
     }
-} else "credit" === l && (e += s); if (m) { await window.electronAPI.updateProductsPurchaseInvoice(m, { ...h, installmentCount: d }); showSuccess("تم تحديث الفاتورة بنجاح") } else { const e = await window.electronAPI.addProductsPurchaseInvoice({ ...h, installmentCount: d }); showSuccess("تم إضافة الفاتورة بنجاح وتحديث المخزون") } if ("cash" !== l) { await window.electronAPI.updateSupplier(p, { dueAmount: e }); const n = suppliers.findIndex((e => e._id === p)); -1 !== n && (suppliers[n].dueAmount = e) } resetForm(); await loadInvoices(); await loadSuppliers() } catch (e) { showError("فشل في حفظ الفاتورة", e.message) } finally { showLoading(!1) } } function resetForm() { els.form.reset(), els.formTitle.textContent = "إضافة فاتورة جديدة", els.editingInvoiceId.value = "", items = [], renderItemsList(), els.totalAmount.value = "", els.imagePreview.classList.add("hidden"), els.imagePreviewImg.src = "", els.paymentLabel.innerHTML = '\n        <i class="fas fa-money-check-alt text-primary"></i>\n        نوع الدفع\n    ', els.installmentCount.style.display = "none", els.paymentDisplay.style.display = "block", els.paymentDisplay.value = "كاش", els.installmentDatesContainer.style.display = "none" } function cancelEdit() { resetForm() } async function confirmDeleteInvoice(e) { if (await Swal.fire({ title: "هل أنت متأكد؟", text: "سيتم حذف الفاتورة نهائيًا!", icon: "warning", showCancelButton: !0, confirmButtonText: "نعم، احذفها!", cancelButtonText: "إلغاء", confirmButtonColor: "#EF4444", cancelButtonColor: "#6B7280", reverseButtons: !0 }).then((e => e.isConfirmed))) try { showLoading(!0); const n = invoices.find((n => n._id === e)), t = suppliers.find((e => e._id === n.supplierId)); for (const e of n.items) { const n = products.find((n => n._id === e.productId)); if (n) { const t = (n.quantity || 0) - e.quantity; await window.electronAPI.updateProduct(e.productId, { ...n, quantity: t }), n.quantity = t } } if (t && "installment" === t.paymentMethod) { const i = (await window.electronAPI.getInstallments(t._id)).filter((n => n.invoiceId === e)); for (const e of i) await window.electronAPI.deleteInstallment(e._id); t.dueAmount -= n.totalAmount, await window.electronAPI.updateSupplier(t._id, { dueAmount: t.dueAmount }) } else t && "credit" === t.paymentMethod && (t.dueAmount -= n.totalAmount, await window.electronAPI.updateSupplier(t._id, { dueAmount: t.dueAmount })); await window.electronAPI.deleteProductsPurchaseInvoice(e), invoices = invoices.filter((n => n._id !== e)), showSuccess("تم حذف الفاتورة بنجاح"), renderInvoices(), await loadSuppliers() } catch (e) { showError("فشل في حذف الفاتورة", e.message) } finally { showLoading(!1) } } function holdInvoice() { const e = { supplierName: els.supplierName.value, supplierPhone: els.supplierPhone.value, createdByName: els.createdByName.value, createdByPhone: els.createdByPhone.value, items: [...items], totalAmount: calculateTotalAmount(), invoiceDate: els.invoiceDate.value, notes: els.notes.value, image: els.imagePreviewImg.src }; e.supplierName && e.supplierPhone && e.createdByName && e.createdByPhone && e.totalAmount && e.invoiceDate ? (heldInvoices.push(e), showAlert("تم تعليق الفاتورة بنجاح", "success"), resetForm()) : showAlert("يرجى ملء جميع الحقول المطلوبة قبل تعليق الفاتورة", "error") } function showQuickSalesReport() { const e = (new Date).toISOString().split("T")[0], n = { totalInvoices: invoices.length, totalAmount: invoices.reduce(((e, n) => e + (n.totalAmount || 0)), 0) }; Swal.fire({ title: "تقرير المشتريات السريع", html: `\n            <p><strong>التاريخ:</strong> ${e}</p>\n            <p><strong>عدد الفواتير:</strong> ${n.totalInvoices}</p>\n            <p><strong>إجمالي المشتريات:</strong> ${n.totalAmount.toFixed(2)} جنيه</p>\n        `, icon: "info", confirmButtonText: "إغلاق" }) } function showAlert(e, n) { Swal.fire({ title: "success" === n ? "نجاح!" : "خطأ!", text: e, icon: n, confirmButtonColor: "success" === n ? "#34D399" : "#EF4444" }) } function showLoading(e) { e ? Swal.fire({ title: "جاري المعالجة...", allowOutsideClick: !1, didOpen: () => Swal.showLoading() }) : Swal.close() } function showSuccess(e) { Swal.fire({ title: "تم بنجاح!", text: e, icon: "success", confirmButtonColor: "#34D399" }) } function showError(e, n) { Swal.fire({ title: e, text: n, icon: "error", confirmButtonColor: "#EF4444" }) } function suggestSupplier(e) { document.getElementById("supplierNameList").innerHTML = e.map((e => `\n        <option value="${e.name}">\n    `)).join("") } function suggestSupplierPhone(e) { document.getElementById("supplierPhoneList").innerHTML = e.map((e => `\n        <option value="${e.phone}">\n    `)).join("") } document.addEventListener("DOMContentLoaded", (async () => { 
-    await loadSuppliers(), loadProducts(), loadInvoices(), 
-    els.form.addEventListener("submit", (async e => { e.preventDefault(), saveInvoice() })), 
-    els.invoiceImage.addEventListener("change", (e => { 
-        const n = e.target.files[0]; 
-        if (n) { 
-            const e = new FileReader; 
-            e.onload = e => { els.imagePreviewImg.src = e.target.result, els.imagePreview.classList.remove("hidden") }, 
-            e.readAsDataURL(n) 
-        } else els.imagePreview.classList.add("hidden") 
-    })), 
-    els.supplierSearch.addEventListener("input", (() => { 
-        const e = els.supplierSearch.value.toLowerCase(); 
-        renderSupplierDatalist(suppliers.filter((n => n.name.toLowerCase().includes(e) || n.phone.includes(e)))) 
-    })), 
-    els.supplierSearch.addEventListener("change", (() => { 
-        const e = els.supplierSearch.value, n = suppliers.find((n => `${n.name} (${n.phone})` === e)); 
-        n ? (els.supplierName.value = n.name, els.supplierPhone.value = n.phone, els.paymentMethod.value = n.paymentMethod || "cash", "installment" === n.paymentMethod ? (els.paymentLabel.innerHTML = '\n                    <i class="fas fa-money-check-alt text-primary"></i>\n                    عدد الدفعات\n                ', els.installmentCount.style.display = "block", els.paymentDisplay.style.display = "none", els.installmentDatesContainer.style.display = "block", generateInstallmentDates()) : (els.paymentLabel.innerHTML = '\n                    <i class="fas fa-money-check-alt text-primary"></i>\n                    نوع الدفع\n                ', els.installmentCount.style.display = "none", els.paymentDisplay.style.display = "block", els.installmentDatesContainer.style.display = "none", els.paymentDisplay.value = "cash" === n.paymentMethod ? "كاش" : "آجل")) : (els.supplierName.value = "", els.supplierPhone.value = "", els.paymentMethod.value = "cash", els.paymentLabel.innerHTML = '\n                <i class="fas fa-money-check-alt text-primary"></i>\n                نوع الدفع\n            ', els.installmentCount.style.display = "none", els.paymentDisplay.style.display = "block", els.installmentDatesContainer.style.display = "none", els.paymentDisplay.value = "كاش") 
-    })), 
-    els.invoicesSearch.addEventListener("input", (() => { 
-        const e = els.invoicesSearch.value.toLowerCase(); 
-        renderFilteredInvoices(invoices.filter((n => n.supplierName?.toLowerCase().includes(e) || n.supplierPhone?.includes(e) || n.createdByName?.toLowerCase().includes(e) || n.totalAmount?.toString().includes(e)))) 
-    })),
-    
-    // إضافة أحداث لتوليد مواعيد الدفع
-    els.installmentCount.addEventListener("change", generateInstallmentDates),
-    els.invoiceDate.addEventListener("change", generateInstallmentDates),
-    
-    // إضافة أحداث لتوليد مواعيد الدفع
-    els.installmentCount.addEventListener("change", generateInstallmentDates),
-    els.invoiceDate.addEventListener("change", generateInstallmentDates)
-}))
 
-// دالة لتوليد مواعيد الدفع المخصصة
-function generateInstallmentDates() {
-    const count = parseInt(els.installmentCount.value) || 3;
-    const invoiceDate = els.invoiceDate.value;
-    
-    if (!invoiceDate) {
+    renderItemsTable();
+    calculateTotalAmount();
+
+    if (els.selectedProductId) els.selectedProductId.value = "";
+    if (els.productSearchInput) els.productSearchInput.value = "";
+    if (els.productQuantity) els.productQuantity.value = 1;
+    if (els.productPrice) els.productPrice.value = "";
+    if (els.productDropdown) els.productDropdown.classList.remove("show");
+    if (els.productSearchInput) els.productSearchInput.focus();
+}
+
+function removeItemFromInvoice(index) {
+    items.splice(index, 1);
+    renderItemsTable();
+    calculateTotalAmount();
+}
+
+function renderItemsTable() {
+    if (!els.itemsListBody) return;
+
+    if (items.length === 0) {
+        els.itemsListBody.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; color: #94a3b8; padding: 20px;">
+                    <i class="fas fa-cart-arrow-down" style="margin-left: 8px;"></i>
+                    لم يتم إضافة أي منتجات للفاتورة بعد
+                </td>
+            </tr>
+        `;
         return;
     }
-    
+
+    els.itemsListBody.innerHTML = items.map((item, idx) => {
+        const itemTotal = (item.quantity * item.price).toFixed(2);
+        return `
+            <tr>
+                <td style="font-weight: 700; color: #1e293b;">
+                    <i class="fas fa-box text-primary" style="margin-left: 8px;"></i>
+                    <span>${escapeHTML(item.productName)}</span>
+                </td>
+                <td>
+                    <span style="font-weight: 700;">${item.quantity}</span> ${escapeHTML(item.unit || 'وحدة')}
+                </td>
+                <td>${item.price.toFixed(2)} ج.م</td>
+                <td style="font-weight: 800; color: #6d28d9;">${itemTotal} ج.م</td>
+                <td style="text-align: center;">
+                    <button type="button" class="btn-remove-item" onclick="removeItemFromInvoice(${idx})" title="حذف المنتج">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+function calculateTotalAmount() {
+    const total = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+    if (els.totalAmount) {
+        els.totalAmount.value = total.toFixed(2);
+    }
+    const currentMethod = els.paymentMethodHidden?.value || els.paymentMethodSelect?.value || "cash";
+    if (currentMethod === "installment") {
+        generateInstallmentDates();
+    }
+    return total;
+}
+
+/* ==========================================================================
+   Payment Method & Installments / Credit Handling
+   ========================================================================== */
+function handlePaymentMethodChange(method) {
+    if (method === "installment") {
+        if (els.installmentCountGroup) els.installmentCountGroup.style.display = "block";
+        if (els.installmentDatesContainer) els.installmentDatesContainer.style.display = "block";
+        if (els.creditDueDateGroup) els.creditDueDateGroup.style.display = "none";
+        generateInstallmentDates();
+    } else if (method === "credit") {
+        if (els.installmentCountGroup) els.installmentCountGroup.style.display = "none";
+        if (els.installmentDatesContainer) els.installmentDatesContainer.style.display = "none";
+        if (els.creditDueDateGroup) {
+            els.creditDueDateGroup.style.display = "block";
+            if (els.creditDueDate && !els.creditDueDate.value) {
+                const baseDateStr = els.invoiceDate?.value || new Date().toISOString().split("T")[0];
+                const d = new Date(baseDateStr);
+                d.setDate(d.getDate() + 30);
+                els.creditDueDate.value = d.toISOString().split("T")[0];
+            }
+        }
+    } else {
+        // Cash
+        if (els.installmentCountGroup) els.installmentCountGroup.style.display = "none";
+        if (els.installmentDatesContainer) els.installmentDatesContainer.style.display = "none";
+        if (els.creditDueDateGroup) els.creditDueDateGroup.style.display = "none";
+    }
+}
+
+function generateInstallmentDates() {
+    if (!els.installmentDates) return;
+    const count = parseInt(els.installmentCount?.value) || 3;
+    const baseDateStr = els.invoiceDate?.value || new Date().toISOString().split("T")[0];
+    const total = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+    const installmentAmount = count > 0 ? (total / count).toFixed(2) : "0.00";
+
+    const baseDate = new Date(baseDateStr);
     const dates = [];
-    const baseDate = new Date(invoiceDate);
-    
+
     for (let i = 0; i < count; i++) {
         const dueDate = new Date(baseDate);
         dueDate.setMonth(dueDate.getMonth() + i + 1);
-        dates.push(dueDate.toISOString().split('T')[0]);
+        dates.push(dueDate.toISOString().split("T")[0]);
     }
-    
-    renderInstallmentDates(dates);
-}
 
-// دالة لعرض مواعيد الدفع
-function renderInstallmentDates(dates) {
-    if (!els.installmentDates) return;
-    
-    els.installmentDates.innerHTML = dates.map((date, index) => `
-        <div class="flex items-center gap-2 p-2 bg-gray-50 rounded">
-            <span class="text-sm font-medium">الدفعة ${index + 1}:</span>
-            <input type="date" 
-                   class="input input-sm input-bordered bg-transparent input-primary flex-1" 
-                   value="${date}" 
-                   data-installment-index="${index}"
-                   onchange="updateInstallmentDate(${index}, this.value)">
+    els.installmentDates.innerHTML = dates.map((date, idx) => `
+        <div class="installment-date-row">
+            <span class="installment-date-num">الدفعة ${idx + 1}:</span>
+            <input type="date" class="modal-input" style="flex: 1;" value="${date}" data-installment-idx="${idx}">
+            <span style="font-weight: 700; color: #059669; font-size: 0.85rem; min-width: 90px; text-align: left;">
+                ${installmentAmount} ج.م
+            </span>
         </div>
-    `).join('');
+    `).join("");
 }
 
-// دالة لتحديث موعد دفعة معينة
-function updateInstallmentDate(index, newDate) {
-    
-}
-
-// دالة للحصول على مواعيد الدفع المخصصة
 function getCustomInstallmentDates() {
     if (!els.installmentDates) return [];
-    
-    const dateInputs = els.installmentDates.querySelectorAll('input[type="date"]');
-    return Array.from(dateInputs).map(input => input.value).filter(date => date);
+    const inputs = els.installmentDates.querySelectorAll('input[type="date"]');
+    return Array.from(inputs).map(inp => inp.value).filter(Boolean);
 }
 
+/* ==========================================================================
+   Invoices Table & Main View
+   ========================================================================== */
+function handleInvoicesSearch(query) {
+    currentInvoicesSearch = (query || "").trim().toLowerCase();
+    applyInvoicesFilterAndRender();
+}
+
+function applyInvoicesFilterAndRender() {
+    let list = invoices;
+    if (currentInvoicesSearch) {
+        list = invoices.filter(inv => {
+            const num = (getInvoiceDisplayNumber(inv) || "").toLowerCase();
+            const supp = (inv.supplierName || "").toLowerCase();
+            const phone = (inv.supplierPhone || inv.createdByPhone || "").toLowerCase();
+            const creator = (inv.createdByName || "").toLowerCase();
+            const total = (inv.totalAmount || "").toString();
+            const date = (inv.date || "").toLowerCase();
+            return num.includes(currentInvoicesSearch) ||
+                   supp.includes(currentInvoicesSearch) ||
+                   phone.includes(currentInvoicesSearch) ||
+                   creator.includes(currentInvoicesSearch) ||
+                   total.includes(currentInvoicesSearch) ||
+                   date.includes(currentInvoicesSearch);
+        });
+    }
+    renderInvoicesTable(list);
+}
+
+async function renderInvoicesTable(listToRender) {
+    if (!els.list) return;
+
+    if (!listToRender.length) {
+        if (currentInvoicesSearch) {
+            els.list.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon-wrap"><i class="fas fa-search"></i></div>
+                    <h3>لا توجد نتائج بحث مطابقة</h3>
+                    <p>لم يتم العثور على أي فاتورة تطابق "${escapeHTML(currentInvoicesSearch)}"</p>
+                    <button onclick="clearInvoicesSearch()" class="add-invoice-btn-header" style="margin-top: 8px;">
+                        <i class="fas fa-times" style="margin-left: 6px;"></i> مسح البحث
+                    </button>
+                </div>
+            `;
+        } else {
+            els.list.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon-wrap"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <h3>لا توجد فواتير شراء مسجلة حالياً</h3>
+                    <p>إبدأ بتسجيل أول فاتورة مشتريات لتحديث المخزون ومتابعة الحسابات</p>
+                    <button onclick="openAddInvoiceModal()" class="add-invoice-btn-header" style="margin-top: 8px;">
+                        <i class="fas fa-plus-circle" style="margin-left: 6px;"></i> إضافة فاتورة جديدة
+                    </button>
+                </div>
+            `;
+        }
+        return;
+    }
+
+    const paymentMap = { cash: "كاش", credit: "آجل", installment: "تقسيط" };
+
+    const rows = await Promise.all(listToRender.map(async (inv) => {
+        const invNum = getInvoiceDisplayNumber(inv);
+        const supp = suppliers.find(s => s._id === inv.supplierId || s.name === inv.supplierName);
+        const method = inv.paymentMethod || (supp ? supp.paymentMethod : "cash") || "cash";
+        const total = parseFloat(inv.totalAmount) || 0;
+        const itemsCount = inv.items ? inv.items.length : 0;
+        const topItem = inv.items && inv.items[0] ? inv.items[0].productName : "";
+        const hasImage = Boolean(inv.image);
+
+        return `
+            <tr id="invoice-row-${inv._id}">
+                <td style="font-weight: 800; color: #6d28d9;">
+                    #${escapeHTML(invNum)}
+                </td>
+
+                <td>
+                    <div class="supplier-cell">
+                        <span class="supplier-main-name">
+                            <i class="fas fa-store-alt text-primary" style="margin-left: 8px;"></i>
+                            <span>${escapeHTML(inv.supplierName || 'غير محدد')}</span>
+                        </span>
+                        ${inv.supplierPhone ? `
+                            <span class="supplier-sub-phone">
+                                <i class="fas fa-phone-alt" style="margin-left: 6px;"></i>
+                                <span>${escapeHTML(inv.supplierPhone)}</span>
+                            </span>
+                        ` : ''}
+                    </div>
+                </td>
+
+                <td>
+                    <div class="badge-date">
+                        <i class="far fa-calendar-alt" style="margin-left: 8px;"></i>
+                        <span>${formatDate(inv.date)}</span>
+                    </div>
+                </td>
+
+                <td>
+                    <span class="products-pill-count" title="${escapeHTML(topItem)}">
+                        <i class="fas fa-boxes" style="margin-left: 8px;"></i>
+                        <span>${itemsCount} منتجات</span>
+                    </span>
+                </td>
+
+                <td>
+                    <span class="badge-payment badge-${method}">
+                        <i class="fas fa-credit-card" style="margin-left: 6px;"></i>
+                        <span>${paymentMap[method] || method}</span>
+                    </span>
+                </td>
+
+                <td class="total-amount-cell">
+                    ${formatCurrency(total)}
+                </td>
+
+                <td style="max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.82rem; color: #64748b;">
+                    ${escapeHTML(inv.notes || '--')}
+                </td>
+
+                <td>
+                    <div class="table-action-btns">
+                        <button class="btn-tbl-action btn-tbl-view" onclick="viewFullInvoiceDetails('${inv._id}')" title="عرض تفاصيل الفاتورة كاملة">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        ${hasImage ? `
+                            <button class="btn-tbl-action btn-tbl-image" onclick="previewInvoiceAttachment('${inv._id}')" title="عرض صورة الفاتورة المرفقة">
+                                <i class="fas fa-image"></i>
+                            </button>
+                        ` : ''}
+                        <button class="btn-tbl-action btn-tbl-print" onclick="printPurchaseInvoice('${inv._id}')" title="طباعة الفاتورة">
+                            <i class="fas fa-print"></i>
+                        </button>
+                        <button class="btn-tbl-action btn-tbl-edit" onclick="openEditInvoiceModal('${inv._id}')" title="تعديل الفاتورة">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                        <button class="btn-tbl-action btn-tbl-delete" onclick="confirmDeleteInvoice('${inv._id}')" title="حذف الفاتورة">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }));
+
+    els.list.innerHTML = `
+        <table class="invoices-table">
+            <thead>
+                <tr>
+                    <th style="width: 11%;">رقم الفاتورة</th>
+                    <th style="width: 19%;">المورد</th>
+                    <th style="width: 15%;">التاريخ</th>
+                    <th style="width: 11%;">المنتجات</th>
+                    <th style="width: 11%;">نوع الدفع</th>
+                    <th style="width: 13%;">الإجمالي</th>
+                    <th style="width: 10%;">ملاحظات</th>
+                    <th style="width: 18%; text-align: center;">الإجراءات</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows.join("")}
+            </tbody>
+        </table>
+    `;
+}
+
+function clearInvoicesSearch() {
+    if (els.invoicesSearch) els.invoicesSearch.value = "";
+    currentInvoicesSearch = "";
+    applyInvoicesFilterAndRender();
+}
+
+/* ==========================================================================
+   Full Invoice Details Modal (Eye Icon)
+   ========================================================================== */
+async function viewFullInvoiceDetails(invoiceId) {
+    const inv = invoices.find(i => i._id === invoiceId);
+    if (!inv) {
+        showError("خطأ", "الفاتورة غير موجودة.");
+        return;
+    }
+
+    const paymentMap = { cash: "كاش (دفع فوري)", credit: "آجل (مديونية مورد)", installment: "تقسيط (دفعات مجدولة)" };
+    const method = inv.paymentMethod || "cash";
+    const total = parseFloat(inv.totalAmount) || 0;
+    const invNum = getInvoiceDisplayNumber(inv);
+
+    let imageThumbHtml = "";
+    if (inv.image) {
+        const imgData = await getFileAsDataURL(inv.image);
+        if (imgData) {
+            imageThumbHtml = `
+                <div class="inv-image-attachment-box">
+                    <img src="${imgData}" class="inv-image-thumb-preview" alt="صورة الفاتورة" onclick="previewInvoiceAttachment('${inv._id}')" title="انقر لتكبير صورة الفاتورة">
+                    <div>
+                        <div style="font-weight: 700; font-size: 0.88rem; color: #1e293b;">صورة الفاتورة الورقية المرفقة</div>
+                        <div style="font-size: 0.78rem; color: #64748b;">انقر على الصورة لمعاينتها بحجم أوضح</div>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    const itemsRowsHtml = (inv.items || []).map((it, idx) => {
+        const itemTotal = ((it.quantity || 1) * (it.price || 0)).toFixed(2);
+        return `
+            <tr>
+                <td style="font-weight: 700;">${idx + 1}. ${escapeHTML(it.productName)}</td>
+                <td style="text-align: center;">${it.quantity} ${escapeHTML(it.unit || 'وحدة')}</td>
+                <td style="text-align: center;">${(it.price || 0).toFixed(2)} ج.م</td>
+                <td style="font-weight: 800; color: #6d28d9; text-align: left;">${itemTotal} ج.م</td>
+            </tr>
+        `;
+    }).join("");
+
+    const detailsModalHtml = `
+        <div class="invoice-details-view">
+            <!-- Header banner -->
+            <div class="inv-details-header-card">
+                <div class="inv-header-title">
+                    <div class="inv-header-icon">
+                        <i class="fas fa-file-invoice"></i>
+                    </div>
+                    <div>
+                        <h3 class="inv-header-num">فاتورة شراء #${escapeHTML(invNum)}</h3>
+                        <div class="inv-header-date">
+                            <i class="far fa-calendar-alt" style="margin-left: 6px;"></i>
+                            ${formatDate(inv.date)}
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <span class="badge-payment badge-${method}" style="font-size: 0.85rem; padding: 6px 14px;">
+                        <i class="fas fa-credit-card" style="margin-left: 6px;"></i>
+                        ${paymentMap[method] || method}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Meta Grid -->
+            <div class="inv-meta-grid">
+                <div class="inv-meta-card">
+                    <div class="inv-meta-icon">
+                        <i class="fas fa-truck"></i>
+                    </div>
+                    <div class="inv-meta-info">
+                        <span class="inv-meta-label">المورد</span>
+                        <span class="inv-meta-val">${escapeHTML(inv.supplierName || 'غير محدد')}</span>
+                    </div>
+                </div>
+
+                <div class="inv-meta-card">
+                    <div class="inv-meta-icon">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <div class="inv-meta-info">
+                        <span class="inv-meta-label">هاتف المورد</span>
+                        <span class="inv-meta-val">${escapeHTML(inv.supplierPhone || 'غير متوفر')}</span>
+                    </div>
+                </div>
+
+                <div class="inv-meta-card">
+                    <div class="inv-meta-icon">
+                        <i class="fas fa-user-edit"></i>
+                    </div>
+                    <div class="inv-meta-info">
+                        <span class="inv-meta-label">المسؤول عن الفاتورة</span>
+                        <span class="inv-meta-val">${escapeHTML(inv.createdByName || 'غير محدد')}</span>
+                    </div>
+                </div>
+
+                <div class="inv-meta-card">
+                    <div class="inv-meta-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="inv-meta-info">
+                        <span class="inv-meta-label">هاتف المسؤول</span>
+                        <span class="inv-meta-val">${escapeHTML(inv.createdByPhone || 'غير متوفر')}</span>
+                    </div>
+                </div>
+
+                ${method === 'credit' ? `
+                    <div class="inv-meta-card">
+                        <div class="inv-meta-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="inv-meta-info">
+                            <span class="inv-meta-label">تاريخ الاستحقاق الآجل</span>
+                            <span class="inv-meta-val" style="color: #6d28d9; font-weight: 800;">${inv.creditDueDate ? formatDate(inv.creditDueDate) : 'غير محدد'}</span>
+                        </div>
+                    </div>
+                    <div class="inv-meta-card">
+                        <div class="inv-meta-icon">
+                            <i class="fas fa-hand-holding-usd"></i>
+                        </div>
+                        <div class="inv-meta-info">
+                            <span class="inv-meta-label">حالة سداد الآجل</span>
+                            <span class="inv-meta-val">${inv.isPaid ? '<span style="color:#059669; font-weight:800;">تم السداد للمورد</span>' : '<span style="color:#dc2626; font-weight:800;">مستحق الدفع للمورد</span>'}</span>
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${method === 'installment' ? `
+                    <div class="inv-meta-card">
+                        <div class="inv-meta-icon">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div class="inv-meta-info">
+                            <span class="inv-meta-label">عدد الدفعات المجدولة</span>
+                            <span class="inv-meta-val" style="color: #6d28d9; font-weight: 800;">${inv.installmentCount || 3} دفعات شهرية</span>
+                        </div>
+                    </div>
+                    <div class="inv-meta-card">
+                        <div class="inv-meta-icon">
+                            <i class="fas fa-money-check-alt"></i>
+                        </div>
+                        <div class="inv-meta-info">
+                            <span class="inv-meta-label">قيمة القسط التقريبية</span>
+                            <span class="inv-meta-val" style="color: #059669; font-weight: 800;">${((total || 0) / (inv.installmentCount || 3)).toFixed(2)} ج.م / دفعة</span>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+
+            <!-- Items Table -->
+            <div class="inv-items-table-box">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 45%;">المنتج</th>
+                            <th style="width: 15%; text-align: center;">الكمية</th>
+                            <th style="width: 20%; text-align: center;">سعر الشراء</th>
+                            <th style="width: 20%; text-align: left;">المجموع</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${itemsRowsHtml || `<tr><td colspan="4" style="text-align: center; color: #94a3b8; padding: 16px;">لا توجد تفاصيل أصناف</td></tr>`}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Total Amount Box -->
+            <div class="inv-total-summary-box">
+                <span class="inv-total-label">
+                    <i class="fas fa-calculator" style="margin-left: 8px; color: #6d28d9;"></i>
+                    إجمالي الفاتورة النهائي:
+                </span>
+                <span class="inv-total-value">${formatCurrency(total)}</span>
+            </div>
+
+            <!-- Notes if any -->
+            ${inv.notes ? `
+                <div class="inv-notes-box">
+                    <strong><i class="fas fa-sticky-note" style="margin-left: 6px;"></i> ملاحظات:</strong> ${escapeHTML(inv.notes)}
+                </div>
+            ` : ''}
+
+            <!-- Image attachment preview if any -->
+            ${imageThumbHtml}
+        </div>
+    `;
+
+    Swal.fire({
+        html: detailsModalHtml,
+        width: "720px",
+        showCloseButton: true,
+        showCancelButton: true,
+        confirmButtonText: '<i class="fas fa-print" style="margin-left: 6px;"></i> طباعة الفاتورة',
+        confirmButtonColor: "#6d28d9",
+        cancelButtonText: '<i class="fas fa-times" style="margin-left: 6px;"></i> إغلاق',
+        cancelButtonColor: "#64748b",
+        focusConfirm: false,
+        customClass: {
+            popup: 'rounded-2xl shadow-2xl'
+        }
+    }).then((res) => {
+        if (res.isConfirmed) {
+            printPurchaseInvoice(inv._id);
+        }
+    });
+}
+
+/* ==========================================================================
+   Image Attachment Preview (Constrained size, Sleek modal)
+   ========================================================================== */
+async function previewInvoiceAttachment(invoiceId) {
+    const inv = invoices.find(i => i._id === invoiceId);
+    if (!inv || !inv.image) {
+        showError("تنبيه", "لا توجد صورة مرفقة مع هذه الفاتورة.");
+        return;
+    }
+
+    const invNum = getInvoiceDisplayNumber(inv);
+    showLoading(true);
+    const dataUrl = await getFileAsDataURL(inv.image);
+    showLoading(false);
+
+    if (dataUrl) {
+        Swal.fire({
+            title: `صورة الفاتورة #${invNum}`,
+            html: `
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center;">
+                    <div style="max-height: 52vh; width: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 14px; background: #f8fafc; border: 1.5px solid #ede9fe; padding: 8px;">
+                        <img src="${dataUrl}" alt="صورة الفاتورة" style="max-height: 48vh; max-width: 100%; object-fit: contain; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.06);">
+                    </div>
+                    <div style="font-size: 0.88rem; color: #64748b; font-weight: 600;">
+                        <i class="fas fa-store-alt" style="margin-left: 6px; color: #6d28d9;"></i>
+                        المورد: <span style="color: #1e293b; font-weight: 700;">${escapeHTML(inv.supplierName || 'غير محدد')}</span>
+                        <span style="margin: 0 8px; color: #cbd5e1;">|</span>
+                        <i class="far fa-calendar-alt" style="margin-left: 6px; color: #6d28d9;"></i>
+                        ${formatDate(inv.date)}
+                    </div>
+                </div>
+            `,
+            width: "600px",
+            confirmButtonText: '<i class="fas fa-times" style="margin-left: 6px;"></i> إغلاق',
+            confirmButtonColor: "#6d28d9",
+            customClass: {
+                popup: 'rounded-2xl shadow-2xl'
+            }
+        });
+    } else {
+        showError("تنبيه", "تعذر قراءة ملف صورة الفاتورة المرفق.");
+    }
+}
+
+/* ==========================================================================
+   Modal Operations (Add / Edit / Close)
+   ========================================================================== */
+function openAddInvoiceModal() {
+    editingInvoiceId = null;
+    resetInvoiceForm();
+
+    els.formTitle.textContent = "إضافة فاتورة شراء جديدة";
+    if (els.modalIcon) {
+        els.modalIcon.innerHTML = `<i class="fas fa-file-invoice"></i>`;
+    }
+
+    if (els.invoiceDate && !els.invoiceDate.value) {
+        els.invoiceDate.value = new Date().toISOString().split("T")[0];
+    }
+
+    checkSuppliersState();
+    els.modal.classList.add("open");
+    document.body.classList.add("modal-open-lock");
+}
+
+async function openEditInvoiceModal(invoiceId) {
+    const inv = invoices.find(item => item._id === invoiceId);
+    if (!inv) return;
+
+    editingInvoiceId = invoiceId;
+    resetInvoiceForm();
+    els.editingInvoiceId.value = invoiceId;
+
+    const invNum = getInvoiceDisplayNumber(inv);
+    els.formTitle.textContent = `تعديل فاتورة شراء #${invNum}`;
+    if (els.modalIcon) {
+        els.modalIcon.innerHTML = `<i class="fas fa-edit"></i>`;
+    }
+
+    els.selectedSupplierId.value = inv.supplierId || "";
+    els.supplierName.value = inv.supplierName || "";
+    els.supplierPhone.value = inv.supplierPhone || "";
+    els.supplierSearch.value = `${inv.supplierName || ''} (${inv.supplierPhone || ''})`;
+
+    els.createdByName.value = inv.createdByName || "";
+    els.createdByPhone.value = inv.createdByPhone || "";
+    if (inv.date) {
+        els.invoiceDate.value = inv.date.split("T")[0];
+    }
+
+    const supp = suppliers.find(s => s._id === inv.supplierId || s.name === inv.supplierName);
+    const method = inv.paymentMethod || (supp ? supp.paymentMethod : "cash") || "cash";
+    if (els.paymentMethodSelect) els.paymentMethodSelect.value = method;
+    if (els.paymentMethodHidden) els.paymentMethodHidden.value = method;
+    handlePaymentMethodChange(method);
+
+    if (method === "credit" && inv.creditDueDate && els.creditDueDate) {
+        els.creditDueDate.value = inv.creditDueDate;
+    }
+
+    if (method === "installment" && inv.installmentCount && els.installmentCount) {
+        els.installmentCount.value = inv.installmentCount;
+        generateInstallmentDates();
+    }
+
+    items = Array.isArray(inv.items) ? JSON.parse(JSON.stringify(inv.items)) : [];
+    renderItemsTable();
+    calculateTotalAmount();
+
+    els.notes.value = inv.notes || "";
+
+    if (inv.image) {
+        const imgData = await getFileAsDataURL(inv.image);
+        if (imgData) {
+            els.imagePreviewImg.src = imgData;
+            els.imagePreview.classList.remove("hidden");
+            els.invoiceImageDropzone.classList.add("hidden");
+        }
+    }
+
+    els.modal.classList.add("open");
+    document.body.classList.add("modal-open-lock");
+}
+
+function closeInvoiceModal() {
+    els.modal.classList.remove("open");
+    document.body.classList.remove("modal-open-lock");
+    resetInvoiceForm();
+}
+
+function handleModalOverlayClick(e) {
+    if (e.target === els.modal) {
+        closeInvoiceModal();
+    }
+}
+
+function resetInvoiceForm() {
+    if (els.form) els.form.reset();
+    if (els.editingInvoiceId) els.editingInvoiceId.value = "";
+    if (els.selectedSupplierId) els.selectedSupplierId.value = "";
+    if (els.supplierSearch) els.supplierSearch.value = "";
+    if (els.supplierDropdown) els.supplierDropdown.classList.remove("show");
+
+    if (els.selectedProductId) els.selectedProductId.value = "";
+    if (els.productSearchInput) els.productSearchInput.value = "";
+    if (els.productDropdown) els.productDropdown.classList.remove("show");
+
+    items = [];
+    renderItemsTable();
+    if (els.totalAmount) els.totalAmount.value = "";
+
+    if (els.imagePreview) els.imagePreview.classList.add("hidden");
+    if (els.imagePreviewImg) els.imagePreviewImg.src = "";
+    if (els.invoiceImageDropzone) els.invoiceImageDropzone.classList.remove("hidden");
+
+    if (els.installmentCountGroup) els.installmentCountGroup.style.display = "none";
+    if (els.installmentDatesContainer) els.installmentDatesContainer.style.display = "none";
+    if (els.installmentDates) els.installmentDates.innerHTML = "";
+    if (els.creditDueDateGroup) els.creditDueDateGroup.style.display = "none";
+    if (els.creditDueDate) els.creditDueDate.value = "";
+    if (els.paymentMethodSelect) els.paymentMethodSelect.value = "cash";
+    if (els.paymentMethodHidden) els.paymentMethodHidden.value = "cash";
+}
+
+/* ==========================================================================
+   Image Handling
+   ========================================================================== */
+function handleInvoiceImageChange(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            els.imagePreviewImg.src = event.target.result;
+            els.imagePreview.classList.remove("hidden");
+            els.invoiceImageDropzone.classList.add("hidden");
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function removeInvoiceImage() {
+    els.invoiceImage.value = "";
+    els.imagePreviewImg.src = "";
+    els.imagePreview.classList.add("hidden");
+    els.invoiceImageDropzone.classList.remove("hidden");
+}
+
+/* ==========================================================================
+   Save & Delete Purchase Invoice
+   ========================================================================== */
+async function saveInvoice() {
+    const supplierId = els.selectedSupplierId ? els.selectedSupplierId.value : "";
+    const supplierName = els.supplierName ? els.supplierName.value.trim() : "";
+    const supplierPhone = els.supplierPhone ? els.supplierPhone.value.trim() : "";
+    const createdByName = els.createdByName ? els.createdByName.value.trim() : "";
+    const createdByPhone = els.createdByPhone ? els.createdByPhone.value.trim() : "";
+    const invoiceDate = els.invoiceDate ? els.invoiceDate.value.trim() : "";
+    const paymentMethod = els.paymentMethodHidden?.value || els.paymentMethodSelect?.value || "cash";
+    const installmentCount = parseInt(els.installmentCount ? els.installmentCount.value : 3) || 3;
+    const creditDueDate = els.creditDueDate ? els.creditDueDate.value.trim() : "";
+    const notes = els.notes ? els.notes.value.trim() : "";
+    const totalAmount = calculateTotalAmount();
+    const imageFile = els.invoiceImage && els.invoiceImage.files ? els.invoiceImage.files[0] : null;
+
+    // Specific Arabic Validations
+    if (!supplierName || !supplierPhone) {
+        showError("بيانات غير مكتملة", "يرجى اختيار مورد من القائمة أولاً.");
+        if (els.supplierSearch) els.supplierSearch.focus();
+        return;
+    }
+    if (!createdByName) {
+        showError("بيانات غير مكتملة", "يرجى إدخال اسم منشئ الفاتورة (المسؤول).");
+        if (els.createdByName) els.createdByName.focus();
+        return;
+    }
+    if (!createdByPhone) {
+        showError("بيانات غير مكتملة", "يرجى إدخال رقم هاتف منشئ الفاتورة.");
+        if (els.createdByPhone) els.createdByPhone.focus();
+        return;
+    }
+    if (!invoiceDate) {
+        showError("بيانات غير مكتملة", "يرجى تحديد تاريخ الفاتورة.");
+        if (els.invoiceDate) els.invoiceDate.focus();
+        return;
+    }
+    if (paymentMethod === "credit" && !creditDueDate) {
+        showError("بيانات غير مكتملة", "يرجى تحديد تاريخ استحقاق المبلغ الآجل للمورد.");
+        if (els.creditDueDate) els.creditDueDate.focus();
+        return;
+    }
+    if (items.length === 0) {
+        showError("فاتورة فارغة", "يرجى إضافة منتج واحد على الأقل لجدول الفاتورة قبل الحفظ.");
+        if (els.productSearchInput) els.productSearchInput.focus();
+        return;
+    }
+
+    const supplier = suppliers.find(s => (supplierId && s._id === supplierId) || (s.name === supplierName && s.phone === supplierPhone));
+    if (!supplier) {
+        showError("تنبيه", "تعذر العثور على المورد بقاعدة البيانات، يرجى إعادة اختياره من القائمة.");
+        return;
+    }
+
+    try {
+        showLoading(true);
+        if (els.saveInvoiceBtn) els.saveInvoiceBtn.disabled = true;
+
+        let uploadedImagePath = "";
+        const isEditing = Boolean(editingInvoiceId);
+        const existingInv = isEditing ? invoices.find(i => i._id === editingInvoiceId) : null;
+
+        if (imageFile) {
+            const arrayBuffer = await imageFile.arrayBuffer();
+            uploadedImagePath = await window.electronAPI.uploadFile({
+                arrayBuffer,
+                name: imageFile.name
+            }, "invoices/images");
+        } else if (existingInv) {
+            uploadedImagePath = existingInv.image || "";
+        }
+
+        // Generate clean reasonable invoice number
+        let invoiceNumber = "";
+        if (isEditing) {
+            invoiceNumber = existingInv.invoiceNumber || getInvoiceDisplayNumber(existingInv);
+        } else {
+            try {
+                const seqNum = await window.electronAPI.getNextProductsPurchaseInvoiceNumber();
+                invoiceNumber = `PUR-${String(seqNum || 1).padStart(4, "0")}`;
+            } catch {
+                invoiceNumber = `PUR-${String(invoices.length + 1).padStart(4, "0")}`;
+            }
+        }
+
+        const isPaid = (paymentMethod === "cash");
+
+        const invoicePayload = {
+            invoiceNumber,
+            supplierId: supplier._id,
+            supplierName: supplier.name,
+            supplierPhone: supplier.phone,
+            createdByName,
+            createdByPhone,
+            date: invoiceDate,
+            paymentMethod,
+            installmentCount: paymentMethod === "installment" ? installmentCount : undefined,
+            creditDueDate: paymentMethod === "credit" ? creditDueDate : undefined,
+            isPaid,
+            totalAmount,
+            notes,
+            image: uploadedImagePath,
+            items: items
+        };
+
+        // If Cash: log Treasury Expense
+        if (totalAmount > 0 && paymentMethod === "cash") {
+            try {
+                const settings = await window.electronAPI.getSettings();
+                const currentUser = settings?.currentUser || createdByName || "مسؤول النظام";
+                const desc = `مصروفات - فاتورة شراء منتجات رقم ${invoiceNumber} (cash)`;
+
+                const existingTransactions = await window.electronAPI.getTreasuryTransactions();
+                const alreadyLogged = existingTransactions.some(t => t.description === desc);
+                if (!alreadyLogged) {
+                    await window.electronAPI.addTreasuryTransaction({
+                        date: new Date().toISOString(),
+                        type: "expense",
+                        amount: totalAmount,
+                        description: desc,
+                        user: currentUser
+                    });
+                }
+            } catch (treasuryErr) {
+                console.warn("Treasury logging notice:", treasuryErr);
+            }
+        }
+
+        // Inventory Stock Update
+        if (isEditing) {
+            for (const oldItem of existingInv.items || []) {
+                const prod = products.find(p => p._id === oldItem.productId);
+                if (prod) {
+                    const newQty = (prod.quantity || 0) - oldItem.quantity;
+                    await window.electronAPI.updateProduct(oldItem.productId, { ...prod, quantity: newQty });
+                    prod.quantity = newQty;
+                }
+            }
+        }
+
+        for (const newItem of items) {
+            const prod = products.find(p => p._id === newItem.productId);
+            if (prod) {
+                const newQty = (prod.quantity || 0) + newItem.quantity;
+                await window.electronAPI.updateProduct(newItem.productId, { ...prod, quantity: newQty });
+                prod.quantity = newQty;
+            }
+        }
+
+        // Installments & Supplier Due Debt Handling
+        let newDueAmount = supplier.dueAmount || 0;
+
+        if (isEditing) {
+            const oldInstallments = await window.electronAPI.getInstallments(supplier._id);
+            const invInstallments = oldInstallments.filter(inst => inst.invoiceId === editingInvoiceId || inst.invoiceId === invoiceNumber);
+            for (const inst of invInstallments) {
+                await window.electronAPI.deleteInstallment(inst._id);
+            }
+            if (existingInv.paymentMethod === "installment" || (existingInv.paymentMethod === "credit" && !existingInv.isPaid)) {
+                newDueAmount = Math.max(0, newDueAmount - (existingInv.totalAmount || 0));
+            }
+        }
+
+        if (paymentMethod === "installment") {
+            const perInstallment = totalAmount / installmentCount;
+            newDueAmount += totalAmount;
+
+            const customDueDates = getCustomInstallmentDates();
+            const dueDates = customDueDates.length === installmentCount ? customDueDates : [];
+
+            if (dueDates.length === 0) {
+                const baseD = new Date(invoiceDate);
+                for (let i = 0; i < installmentCount; i++) {
+                    baseD.setMonth(baseD.getMonth() + 1);
+                    dueDates.push(baseD.toISOString().split("T")[0]);
+                }
+            }
+
+            for (let i = 0; i < installmentCount; i++) {
+                await window.electronAPI.addInstallment({
+                    supplierId: supplier._id,
+                    amount: perInstallment,
+                    dueDate: dueDates[i],
+                    invoiceId: invoiceNumber,
+                    status: "pending"
+                });
+            }
+        } else if (paymentMethod === "credit") {
+            newDueAmount += totalAmount;
+        }
+
+        if (paymentMethod !== "cash") {
+            await window.electronAPI.updateSupplier(supplier._id, { dueAmount: newDueAmount });
+            supplier.dueAmount = newDueAmount;
+        }
+
+        // Save to Database
+        if (isEditing) {
+            await window.electronAPI.updateProductsPurchaseInvoice(editingInvoiceId, invoicePayload);
+            showSuccess("تم تحديث فاتورة الشراء بنجاح");
+        } else {
+            await window.electronAPI.addProductsPurchaseInvoice(invoicePayload);
+            showSuccess("تم إضافة فاتورة الشراء بنجاح وتحديث المخزون");
+        }
+
+        closeInvoiceModal();
+        await loadInvoices();
+        await loadSuppliers();
+        await loadProducts();
+
+    } catch (err) {
+        showError("فشل في حفظ الفاتورة", err.message || "حدث خطأ غير متوقع");
+    } finally {
+        showLoading(false);
+        if (els.saveInvoiceBtn) els.saveInvoiceBtn.disabled = false;
+    }
+}
+
+async function confirmDeleteInvoice(invoiceId) {
+    const inv = invoices.find(i => i._id === invoiceId);
+    if (!inv) return;
+
+    const invNum = getInvoiceDisplayNumber(inv);
+    const result = await Swal.fire({
+        title: "هل أنت متأكد؟",
+        text: `سيتم حذف فاتورة الشراء #${invNum} وإعادة ضبط المخزون!`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "نعم، احذفها!",
+        cancelButtonText: "إلغاء",
+        confirmButtonColor: "#EF4444",
+        cancelButtonColor: "#64748b",
+        reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+        try {
+            showLoading(true);
+
+            for (const item of inv.items || []) {
+                const prod = products.find(p => p._id === item.productId);
+                if (prod) {
+                    const newQty = Math.max(0, (prod.quantity || 0) - item.quantity);
+                    await window.electronAPI.updateProduct(item.productId, { ...prod, quantity: newQty });
+                    prod.quantity = newQty;
+                }
+            }
+
+            const supplier = suppliers.find(s => s._id === inv.supplierId || s.name === inv.supplierName);
+            if (supplier) {
+                if (inv.paymentMethod === "installment") {
+                    const allInst = await window.electronAPI.getInstallments(supplier._id);
+                    const matchedInst = allInst.filter(inst => inst.invoiceId === invoiceId || inst.invoiceId === inv.invoiceNumber || inst.invoiceId === invNum);
+                    for (const inst of matchedInst) {
+                        await window.electronAPI.deleteInstallment(inst._id);
+                    }
+                    supplier.dueAmount = Math.max(0, (supplier.dueAmount || 0) - inv.totalAmount);
+                    await window.electronAPI.updateSupplier(supplier._id, { dueAmount: supplier.dueAmount });
+                } else if (inv.paymentMethod === "credit") {
+                    supplier.dueAmount = Math.max(0, (supplier.dueAmount || 0) - inv.totalAmount);
+                    await window.electronAPI.updateSupplier(supplier._id, { dueAmount: supplier.dueAmount });
+                }
+            }
+
+            await window.electronAPI.deleteProductsPurchaseInvoice(invoiceId);
+            showSuccess("تم حذف الفاتورة بنجاح");
+            await loadInvoices();
+            await loadSuppliers();
+            await loadProducts();
+
+        } catch (err) {
+            showError("فشل في حذف الفاتورة", err.message);
+        } finally {
+            showLoading(false);
+        }
+    }
+}
+
+/* ==========================================================================
+   Print Purchase Invoice (Compact 72mm Thermal POS Format)
+   ========================================================================== */
+async function printPurchaseInvoice(invoiceId) {
+    const inv = invoices.find(i => i._id === invoiceId);
+    if (!inv) {
+        showError("خطأ", "الفاتورة غير موجودة");
+        return;
+    }
+
+    try {
+        const settings = await window.electronAPI.getSettings();
+        const storeName = settings?.storeName || "اسم المحل";
+        const storeLocation = settings?.storeLocation || "";
+        const storePhones = settings?.phoneNumbers?.join(" - ") || "";
+        const logo = settings?.logo || "";
+        const invNum = getInvoiceDisplayNumber(inv);
+
+        const paymentMap = { cash: "كاش", credit: "آجل", installment: "تقسيط" };
+        const paymentMethodArabic = paymentMap[inv.paymentMethod] || inv.paymentMethod || "كاش";
+
+        const formattedDate = new Date(inv.date || inv.createdAt || Date.now()).toLocaleString("ar-EG", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+
+        const items = Array.isArray(inv.items) ? inv.items : [];
+
+        const receiptHtml = `<html lang="ar" dir="rtl"><head><meta charset="UTF-8"><style>@page{margin:0;size:auto;}body{font-family:'Tajawal',sans-serif;margin:0 auto;padding:4px;text-align:center;font-size:11px;width:72mm;max-width:72mm;box-sizing:border-box;color:#000;border:1px solid #000;border-radius:5px;background:#fff;direction:rtl;}.header img{max-width:40px;max-height:40px;margin:0 auto 3px;border:1px solid #000;border-radius:50%;object-fit:cover;display:block;}.header h1{font-size:12px;margin:3px 0;font-weight:bold;}.header p,.info-section p{margin:1px 0;font-size:9px;}.divider{margin:3px 0;font-size:7px;color:#555;letter-spacing:-1px;overflow:hidden;white-space:nowrap;}.info-section{margin-bottom:3px;text-align:right;font-size:9px;}.info-row{display:flex;justify-content:space-between;margin:1px 0;font-size:9px;}table{width:100%;margin:5px 0;font-size:9px;border-collapse:collapse;}th,td{border:1px solid #000;padding:3px 2px;text-align:center;}th{background-color:#f0f0f0;font-weight:bold;}.totals{margin-top:2px;font-size:9px;text-align:right;}.totals p{margin:2px 0;}.grand-total{font-weight:bold;font-size:11px;border:1px solid #000;border-radius:5px;padding:3px;margin-top:3px;display:flex;justify-content:center;align-items:center;background:#f9f9f9;}.footer{margin-top:3px;font-size:8px;}</style></head><body><div class="header">${logo ? `<img src="${logo}" alt="Logo">` : ""}<h1>${escapeHTML(storeName)}</h1>${storeLocation ? `<p>${escapeHTML(storeLocation)}</p>` : ""}${storePhones ? `<p>${escapeHTML(storePhones)}</p>` : ""}<p class="divider">------------------------------------------------------------------------</p><p>فاتورة شراء منتجات #${escapeHTML(invNum)}</p><p>التاريخ: ${formattedDate}</p></div><p class="divider">-------------------------------------------------------------------------</p><div class="info-section"><div class="info-row"><span><strong>المورد:</strong> ${escapeHTML(inv.supplierName || "غير محدد")}</span>${inv.supplierPhone ? `<span><strong>هاتف:</strong> ${escapeHTML(inv.supplierPhone)}</span>` : ""}</div><div class="info-row"><span><strong>المسؤول:</strong> ${escapeHTML(inv.createdByName || "غير محدد")}</span>${inv.createdByPhone ? `<span><strong>هاتف:</strong> ${escapeHTML(inv.createdByPhone)}</span>` : ""}</div><div class="info-row"><span><strong>طريقة الدفع:</strong> ${escapeHTML(paymentMethodArabic)}</span>${inv.paymentMethod === 'credit' && inv.creditDueDate ? `<span><strong>استحقاق:</strong> ${formatDate(inv.creditDueDate)}</span>` : ''}${inv.paymentMethod === 'installment' && inv.installmentCount ? `<span><strong>أقساط:</strong> ${inv.installmentCount} شهرية</span>` : ''}</div></div><table><thead><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>${items.map(it => `<tr><td style="text-align:right;">${escapeHTML(it.productName)}</td><td>${it.quantity}</td><td>${(it.price || 0).toFixed(2)}</td><td style="font-weight:bold;">${((it.quantity || 1) * (it.price || 0)).toFixed(2)}</td></tr>`).join("")}</tbody></table><div class="totals"><p class="grand-total">الإجمالي النهائي: ${(Number(inv.totalAmount) || 0).toFixed(2)} ج.م</p>${inv.notes ? `<p><strong>ملاحظات:</strong> ${escapeHTML(inv.notes)}</p>` : ""}</div><div class="footer"><p class="divider">-----------------------------------------------------------------------------------</p><p>نظام Managely لإدارة فواتير الشراء</p></div></body></html>`;
+
+        const printResult = await window.electronAPI.printInvoiceToPOS(receiptHtml, invNum, "mini");
+        if (printResult && printResult.success) {
+            showSuccess("تم إرسال الفاتورة للطباعة الحرارية بنجاح.");
+        } else {
+            const pdfPath = await window.electronAPI.printInvoiceToPDF(receiptHtml, invNum, "mini");
+            showSuccess(pdfPath ? `تم تصدير الفاتورة بنجاح كملف PDF في:\n${pdfPath}` : "تم تصدير الفاتورة كملف PDF بنجاح.");
+        }
+    } catch (e) {
+        showError("خطأ أثناء الطباعة", e.message);
+    }
+}
+
+/* ==========================================================================
+   Alert Helpers
+   ========================================================================== */
+function showLoading(show) {
+    if (show) {
+        Swal.fire({
+            title: "جاري المعالجة...",
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+    } else {
+        Swal.close();
+    }
+}
+
+function showSuccess(msg) {
+    Swal.fire({
+        title: "تم بنجاح!",
+        text: msg,
+        icon: "success",
+        confirmButtonColor: "#6d28d9"
+    });
+}
+
+function showError(title, msg) {
+    let friendlyText = msg;
+    if (typeof msg === "string") {
+        friendlyText = msg.replace(/^Error:\s*/i, "").replace(/^TypeError:\s*/i, "");
+    }
+    Swal.fire({
+        title: title || "تنبيه",
+        text: friendlyText || "حدث خطأ أثناء العملية، يرجى المحاولة مرة أخرى.",
+        icon: "error",
+        confirmButtonColor: "#EF4444"
+    });
+}
+
+function escapeHTML(str) {
+    if (!str) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+/* ==========================================================================
+   Initialization
+   ========================================================================== */
+document.addEventListener("DOMContentLoaded", async () => {
+    initSupplierSearch();
+    initProductSearch();
+
+    if (els.form) {
+        els.form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            saveInvoice();
+        });
+    }
+
+    if (els.invoiceDate) {
+        els.invoiceDate.addEventListener("change", () => {
+            const currentMethod = els.paymentMethodHidden?.value || els.paymentMethodSelect?.value || "cash";
+            if (currentMethod === "installment") {
+                generateInstallmentDates();
+            } else if (currentMethod === "credit" && els.creditDueDate) {
+                const baseDateStr = els.invoiceDate.value || new Date().toISOString().split("T")[0];
+                const d = new Date(baseDateStr);
+                d.setDate(d.getDate() + 30);
+                els.creditDueDate.value = d.toISOString().split("T")[0];
+            }
+        });
+    }
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && els.modal && els.modal.classList.contains("open")) {
+            closeInvoiceModal();
+        }
+    });
+
+    await Promise.all([
+        loadSuppliers(),
+        loadProducts(),
+        loadInvoices()
+    ]);
+});
+
+// Window globals for inline HTML event handlers
+window.openAddInvoiceModal = openAddInvoiceModal;
+window.openEditInvoiceModal = openEditInvoiceModal;
+window.closeInvoiceModal = closeInvoiceModal;
+window.handleModalOverlayClick = handleModalOverlayClick;
+window.handleInvoicesSearch = handleInvoicesSearch;
+window.clearInvoicesSearch = clearInvoicesSearch;
+window.selectSupplier = selectSupplier;
+window.selectProduct = selectProduct;
+window.showProductSuggestions = showProductSuggestions;
+window.handlePaymentMethodChange = handlePaymentMethodChange;
+window.generateInstallmentDates = generateInstallmentDates;
+window.addItemToInvoice = addItemToInvoice;
+window.removeItemFromInvoice = removeItemFromInvoice;
+window.handleInvoiceImageChange = handleInvoiceImageChange;
+window.removeInvoiceImage = removeInvoiceImage;
+window.previewInvoiceAttachment = previewInvoiceAttachment;
+window.viewFullInvoiceDetails = viewFullInvoiceDetails;
 window.printPurchaseInvoice = printPurchaseInvoice;
+window.confirmDeleteInvoice = confirmDeleteInvoice;

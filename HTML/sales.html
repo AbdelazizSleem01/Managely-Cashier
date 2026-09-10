@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="../styles/sales.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
+
 </head>
 
 <body class="bg-gray-50 min-h-screen" data-page="sales">
@@ -123,22 +123,64 @@
         </nav>
     </div>
 
-    <div class="main-content">
-        <div class="container mx-auto">
-            <h1 class="page-title text-3xl font-bold text-center mb-8 ">سجل المبيعات</h1>
+    <div class="main-content pt-18 mb-10">
+        <div class="container mx-auto px-4 py-6 ">
+            <!-- Unified Page Header -->
+            <div class="page-header">
+                <div class="header-top">
+                    <div class="page-title-group">
+                        <div class="page-icon-badge">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <h1>سجل المبيعات</h1>
+                            <p>متابعة وتفاصيل الفواتير والعمليات البيعية وتصدير التقارير</p>
+                        </div>
+                    </div>
 
-            <div class="card p-6 mb-8">
-                <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
-                    <input type="text" id="searchInput" placeholder="ابحث عن فاتورة، عميل، أو منتج..."
-                        class="search-input" oninput="handleSearch()" />
-                    <button onclick="exportToExcel()" class="btn-primary">
+                    <div class="header-stats">
+                        <div class="stat-pill stat-pill-sales">
+                            <i class="fas fa-coins"></i>
+                            <div class="stat-info">
+                                <span class="stat-label">إجمالي المبيعات</span>
+                                <span class="stat-value" id="totalSalesAmount">0.00 ج.م</span>
+                            </div>
+                        </div>
+                        <div class="stat-pill stat-pill-count">
+                            <i class="fas fa-receipt"></i>
+                            <div class="stat-info">
+                                <span class="stat-label">عدد الفواتير</span>
+                                <span class="stat-value" id="totalInvoicesCount">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-pill stat-pill-returns">
+                            <i class="fas fa-arrows-rotate"></i>
+                            <div class="stat-info">
+                                <span class="stat-label">المرتجعات</span>
+                                <span class="stat-value" id="totalReturnsCount">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Single Line Controls Bar -->
+                <div class="header-controls">
+                    <div class="header-search-wrap">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="searchInput" placeholder="ابحث عن رقم فاتورة، اسم عميل، هاتف، أو منتج..."
+                            oninput="handleSearch()" autocomplete="off" />
+                    </div>
+                    <button onclick="exportToExcel()" class="btn-export-excel" id="exportExcelBtn">
                         <i class="fas fa-file-excel"></i>
-                        تصدير إلى Excel
+                        <span>تصدير إلى Excel</span>
                     </button>
                 </div>
-                
-                <div class="table-container">
-                    <table class="table">
+            </div>
+
+            <!-- Sales Table Card Container -->
+            <div class="sales-card-container">
+                <div class="sales-table-wrap">
+                    <table class="sales-table">
                         <thead>
                             <tr>
                                 <th>رقم الفاتورة</th>
@@ -147,13 +189,13 @@
                                 <th>الإجمالي</th>
                                 <th>اسم العميل</th>
                                 <th>رقم الهاتف</th>
-                                <th>إجراءات</th>
+                                <th style="text-align: center;">إجراءات</th>
                             </tr>
                         </thead>
                         <tbody id="salesTable">
                             <!-- Immediate synchronous rendering from cache before paint -->
                             <script>
-                                (function() {
+                                (function () {
                                     try {
                                         const cachedSettings = localStorage.getItem("managely_store_settings");
                                         if (cachedSettings) {
@@ -172,39 +214,51 @@
                                         if (cached) {
                                             const sales = JSON.parse(cached);
                                             if (Array.isArray(sales) && sales.length > 0) {
+                                                const totalAmt = sales.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
+                                                const totalRet = sales.filter(s => s.hasReturn).length;
+                                                const elAmt = document.getElementById("totalSalesAmount");
+                                                const elCnt = document.getElementById("totalInvoicesCount");
+                                                const elRet = document.getElementById("totalReturnsCount");
+                                                if (elAmt) elAmt.textContent = totalAmt.toFixed(2) + " ج.م";
+                                                if (elCnt) elCnt.textContent = sales.length.toLocaleString("ar-EG");
+                                                if (elRet) elRet.textContent = totalRet.toLocaleString("ar-EG");
+
                                                 const tbody = document.getElementById("salesTable");
                                                 if (tbody) {
                                                     tbody.innerHTML = sales.slice(0, 10).map(s => {
                                                         const items = Array.isArray(s.items) ? s.items : [];
                                                         const formattedDate = new Date(s.date).toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
                                                         const itemsHtml = items.map(item => `
-                                                            <div class="product-item">
-                                                                <span class="product-name">${item.name || "منتج غير محدد"}</span>
-                                                                <span class="product-quantity">${item.quantity || 0} × ${(item.price || 0).toFixed(2)} ج</span>
+                                                            <div class="product-item-chip">
+                                                                <span class="prod-name" title="${item.name || 'منتج غير محدد'}">${item.name || "منتج غير محدد"}</span>
+                                                                <span class="prod-qty-price">${item.quantity || 0} × ${(item.price || 0).toFixed(2)} ج</span>
                                                             </div>
                                                         `).join("");
 
                                                         return `
-                                                            <tr class="hover:bg-gray-50">
-                                                                <td class="font-medium text-black">${s.invoiceNumber || "--"} ${s.hasReturn ? '<span class="text-red-500 font-bold">[مرتجع]</span>' : ''}</td>
-                                                                <td>${formattedDate}</td>
-                                                                <td class="text-right">
-                                                                    <div class="flex flex-col gap-2">
-                                                                        ${itemsHtml}
+                                                            <tr>
+                                                                <td>
+                                                                    <div style="font-weight: 800; color: var(--primary-color);">
+                                                                        #${s.invoiceNumber || "--"}
+                                                                        ${s.hasReturn ? '<span class="badge-returned"><i class="fas fa-rotate-left"></i> مرتجع</span>' : ''}
                                                                     </div>
                                                                 </td>
-                                                                <td class="total-amount">${(s.total || 0).toFixed(2)} ج</td>
-                                                                <td>${s.customerName || "--"}</td>
-                                                                <td>${s.customerPhone || "--"}</td>
+                                                                <td style="color: #64748b; font-size: 0.85rem;">${formattedDate}</td>
                                                                 <td>
-                                                                    <div class="flex items-center justify-center gap-2">
-                                                                        <button onclick="printSale('${s._id}')" class="btn-print" title="طباعة الفاتورة">
+                                                                    <div class="row-product-list">
+                                                                        ${itemsHtml || '<span style="color:#94a3b8; font-size:0.8rem;">لا توجد عناصر</span>'}
+                                                                    </div>
+                                                                </td>
+                                                                <td><span class="total-amount-tag">${(Number(s.total) || 0).toFixed(2)} ج.م</span></td>
+                                                                <td style="font-weight: 600;">${s.customerName || "--"}</td>
+                                                                <td style="direction: ltr; text-align: right; color: #64748b; font-size: 0.85rem;">${s.customerPhone || "--"}</td>
+                                                                <td>
+                                                                    <div class="table-action-btns">
+                                                                        <button onclick="printSale('${s._id}')" class="btn-tbl-action btn-tbl-print" title="طباعة الفاتورة">
                                                                             <i class="fas fa-print"></i>
-                                                                            طباعة
                                                                         </button>
-                                                                        <button onclick="deleteSale('${s._id}')" class="btn-danger" title="حذف">
-                                                                            <i class="fas fa-trash"></i>
-                                                                            حذف
+                                                                        <button onclick="deleteSale('${s._id}')" class="btn-tbl-action btn-tbl-delete" title="حذف الفاتورة">
+                                                                            <i class="fas fa-trash-can"></i>
                                                                         </button>
                                                                     </div>
                                                                 </td>
@@ -214,21 +268,21 @@
                                                 }
                                             }
                                         }
-                                    } catch(e) {}
+                                    } catch (e) { }
                                 })();
                             </script>
                         </tbody>
                     </table>
                 </div>
                 <!-- Sales Pagination -->
-                <div id="salesPagination"></div>
+                <div id="salesPagination" style="padding: 16px;"></div>
             </div>
 
             <!-- زر العودة للرئيسية -->
-            <div class="text-center mt-6">
-                <a href="index.html" class="btn btn-outline btn-primary text-white">
-                    <p class="text-white">العودة للرئيسية</p>
-                    <i class="fas fa-arrow-left ml-2  text-white"></i>
+            <div class="back-link-wrap">
+                <a href="index.html" class="btn-back-home">
+                    <i class="fas fa-arrow-right"></i>
+                    <span>العودة للرئيسية</span>
                 </a>
             </div>
         </div>
@@ -251,12 +305,13 @@
     </div>
 
     <!-- Floating Calculator Button -->
-    <button id="floatingCalcButton" class="btn btn-circle btn-primary shadow-lg calc-button" onclick="openCalculatorPopup()">
+    <button id="floatingCalcButton" class="btn btn-circle btn-primary shadow-lg calc-button"
+        onclick="openCalculatorPopup()">
         <div class="tooltip" data-tip="آلة حاسبة">
             <i class="fas fa-calculator text-xl"></i>
         </div>
     </button>
-    
+
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <script type="module" src="../js/calculator.js"></script>
     <script type="module" src="../js/shared.js"></script>
@@ -269,4 +324,5 @@
         window.printSale = printSale;
     </script>
 </body>
+
 </html>

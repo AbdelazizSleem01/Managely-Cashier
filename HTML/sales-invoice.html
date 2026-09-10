@@ -138,7 +138,7 @@
 <body class="min-h-screen bg-gray-50" data-page="invoice-page">
     <div id="sidebar-container"></div>
 
-    <div class="main-content min-h-screen px-4 py-8">
+    <div class="main-content pt-10 min-h-screen px-4 py-8">
         <div class="max-w-7xl mx-auto space-y-6">
             <!-- بطاقة الفاتورة الرئيسية -->
             <div class="print-container bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
@@ -322,12 +322,14 @@
                         <div class="lg:col-span-7 bg-slate-50 p-5 rounded-2xl border border-gray-200 space-y-4">
                             <!-- عداد الأصناف والقطع -->
                             <div class="flex flex-wrap items-center gap-3">
-                                <div style="display:inline-flex;align-items:center;gap:6px;background:#ede9fe;border:1.5px solid #c4b5fd;color:#5b21b6;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600;">
+                                <div
+                                    style="display:inline-flex;align-items:center;gap:6px;background:#ede9fe;border:1.5px solid #c4b5fd;color:#5b21b6;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600;">
                                     <i class="fas fa-boxes-stacked" style="color:#7c3aed;"></i>
                                     <span>عدد الأصناف:</span>
                                     <span id="itemsCount" class="font-bold">0</span>
                                 </div>
-                                <div style="display:inline-flex;align-items:center;gap:6px;background:#dcfce7;border:1.5px solid #86efac;color:#15803d;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600;">
+                                <div
+                                    style="display:inline-flex;align-items:center;gap:6px;background:#dcfce7;border:1.5px solid #86efac;color:#15803d;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600;">
                                     <i class="fas fa-layer-group" style="color:#16a34a;"></i>
                                     <span>إجمالي القطع:</span>
                                     <span id="totalUnitsCount" class="font-bold">0</span>
@@ -372,7 +374,9 @@
                                         <div
                                             class="flex justify-between items-center text-xs text-gray-500 font-medium">
                                             <span>الباقي للعميل:</span>
-                                            <span id="changeStatusBadge" style="background:#f3f4f6;color:#6b7280;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:600;">في الانتظار</span>
+                                            <span id="changeStatusBadge"
+                                                style="background:#f3f4f6;color:#6b7280;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:600;">في
+                                                الانتظار</span>
                                         </div>
                                         <div class="text-2xl font-black text-gray-400 py-1" id="changeAmount">
                                             0.00 ج.م

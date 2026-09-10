@@ -17,9 +17,8 @@ input:focus, select:focus, textarea:focus, .input:focus, .select:focus, .textare
 }
 
 /* --- Global Custom Select / Dropdown Styling --- */
-select,
-.select,
-.filter-select,
+select:not(.filter-select),
+.select:not(.filter-select),
 .form-control select,
 .form-input select,
 .swal2-select {
@@ -67,18 +66,16 @@ select.select-primary,
 }
 
 /* Hover state */
-select:hover:not(:disabled),
-.select:hover:not(:disabled),
-.filter-select:hover:not(:disabled),
+select:hover:not(:disabled):not(.filter-select),
+.select:hover:not(:disabled):not(.filter-select),
 .form-control select:hover:not(:disabled) {
     border-color: hsl(var(--p, 259 94% 51%) / 1) !important;
     box-shadow: 0 0 0 2px rgba(96, 1, 227, 0.15) !important;
 }
 
 /* Focus state */
-select:focus,
-.select:focus,
-.filter-select:focus,
+select:focus:not(.filter-select),
+.select:focus:not(.filter-select),
 .form-control select:focus,
 .form-input select:focus,
 .swal2-select:focus {
@@ -337,3 +334,13 @@ select[data-custom-select-initialized="true"] {
 
 
 
+.pt-10{
+    padding-top: 40px;
+}
+.pt-18{
+    padding-top: 65px;
+}
+
+.w-42{
+    width: 10rem;
+}

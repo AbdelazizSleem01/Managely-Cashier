@@ -1,61 +1,126 @@
 let categories = [];
+let allProducts = [];
+let currentCategoryFilter = "";
 
-export async function renderCategories() {
-    const t = document.getElementById("categories");
-    if (t) try {
-        categories = await window.electronAPI.getCategories();
-        if (!categories || 0 === categories.length) {
-            return void (t.innerHTML = '<p class="text-center text-gray-500 py-8">لا توجد فئات مسجلة حالياً.</p>');
-        }
-        const e = await window.electronAPI.getProducts();
-        t.innerHTML = categories.map((t => {
-            const n = t.productsCount || e.filter((e => {
-                const n = String(e.category || "").trim(), r = String(t.name || "").trim();
-                return n === r;
-            })).length;
-            return `
-                <div class="card bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 rounded-xl overflow-hidden">
-                    <div class="card-body p-5">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-2 space-x-reverse">
-                                <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                                    <i class="fas fa-tag"></i>
-                                </div>
-                                <h3 class="card-title text-lg font-semibold text-gray-800">${t.name || "بدون اسم"}</h3>
-                            </div>
-                            <div class="card-actions">
-                                <div class="flex gap-2">
-                                    <button class="btn btn-circle btn-sm btn-outline btn-error hover:bg-red-600 hover:text-white" 
-                                            onclick="deleteCategory('${t._id}')"
-                                            data-tip="حذف الفئة">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                    <button class="btn btn-circle btn-sm btn-outline btn-warning hover:bg-yellow-500 hover:text-white" 
-                                            onclick="editCategory('${t._id}')"
-                                            data-tip="تعديل الفئة">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-3 text-sm text-gray-500">
-                            <span class="inline-block px-2 py-1 bg-gray-100 rounded-full">
-                                ${n} منتج${1 === n ? "" : "ات"}
-                            </span>
-                        </div>
+export function updateCategoryStats(cats, prods) {
+    const totalCatEl = document.getElementById("totalCategoriesCount");
+    const totalProdEl = document.getElementById("totalCategorizedProducts");
+
+    if (totalCatEl) {
+        totalCatEl.textContent = (cats.length || 0).toLocaleString("ar-EG");
+    }
+
+    if (totalProdEl) {
+        const catNames = new Set(cats.map(c => String(c.name || "").trim().toLowerCase()));
+        const categorizedCount = prods.filter(p => {
+            const pCat = String(p.category || "").trim().toLowerCase();
+            return pCat && catNames.has(pCat);
+        }).length;
+        totalProdEl.textContent = categorizedCount.toLocaleString("ar-EG");
+    }
+}
+
+export function formatCategoryCard(cat, products) {
+    const prodCount = cat.productsCount !== undefined ? cat.productsCount : products.filter(p => {
+        const n = String(p.category || "").trim().toLowerCase();
+        const r = String(cat.name || "").trim().toLowerCase();
+        return n === r;
+    }).length;
+
+    return `
+        <div class="category-card">
+            <div class="category-card-top">
+                <div class="category-badge-group">
+                    <div class="category-icon-box">
+                        <i class="fas fa-tag"></i>
+                    </div>
+                    <div>
+                        <h3 class="category-title">${cat.name || "فئة غير محددة"}</h3>
                     </div>
                 </div>
-            `;
-        })).join("");
-    } catch (e) {
-        t.innerHTML = '<p class="text-center text-red-500 py-8">تعذر تحميل الفئات حالياً، يرجى المحاولة لاحقاً.</p>';
+                <div class="category-actions">
+                    <button class="category-action-btn edit" onclick="editCategory('${cat._id}')" title="تعديل الفئة">
+                        <i class="fas fa-pen-to-square"></i>
+                    </button>
+                    <button class="category-action-btn delete" onclick="deleteCategory('${cat._id}')" title="حذف الفئة">
+                        <i class="fas fa-trash-can"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="category-card-bottom">
+                <span class="category-count-pill">
+                    <i class="fas fa-box" style="color: var(--primary-color);"></i>
+                    <span>يحتوي على: <strong>${prodCount.toLocaleString("ar-EG")}</strong> منتج</span>
+                </span>
+            </div>
+        </div>
+    `;
+}
+
+export function renderCategoriesList(catsToRender) {
+    const container = document.getElementById("categories");
+    if (!container) return;
+
+    if (!catsToRender || catsToRender.length === 0) {
+        container.innerHTML = `
+            <div class="empty-categories">
+                <i class="fas fa-tags"></i>
+                <p>${currentCategoryFilter ? "لا توجد فئات مطابقة لكلمة البحث" : "لا توجد فئات مسجلة حالياً"}</p>
+                <small style="color: #94a3b8; display: block; margin-top: 6px;">يمكنك إضافة فئة جديدة باستخدام النموذج أعلاه</small>
+            </div>
+        `;
+        return;
     }
+
+    container.innerHTML = catsToRender.map(c => formatCategoryCard(c, allProducts)).join("");
+}
+
+export async function renderCategories() {
+    const container = document.getElementById("categories");
+    if (!container) return;
+
+    try {
+        const [cats, prods] = await Promise.all([
+            window.electronAPI.getCategories(),
+            window.electronAPI.getProducts()
+        ]);
+
+        categories = Array.isArray(cats) ? cats : [];
+        allProducts = Array.isArray(prods) ? prods : [];
+
+        updateCategoryStats(categories, allProducts);
+
+        const filtered = currentCategoryFilter
+            ? categories.filter(c => (c.name || "").toLowerCase().includes(currentCategoryFilter.toLowerCase()))
+            : categories;
+
+        renderCategoriesList(filtered);
+    } catch (e) {
+        console.error("Error loading categories:", e);
+        if (container) {
+            container.innerHTML = `
+                <div class="empty-categories" style="border-color: #fecaca; color: #dc2626;">
+                    <i class="fas fa-triangle-exclamation" style="color: #dc2626;"></i>
+                    <p>تعذر تحميل الفئات حالياً، يرجى المحاولة لاحقاً</p>
+                </div>
+            `;
+        }
+    }
+}
+
+export function handleCategorySearch(query) {
+    currentCategoryFilter = (query || "").trim();
+    const filtered = currentCategoryFilter
+        ? categories.filter(c => (c.name || "").toLowerCase().includes(currentCategoryFilter.toLowerCase()))
+        : categories;
+    renderCategoriesList(filtered);
 }
 
 export async function addCategory() {
     const inputEl = document.getElementById("categoryName");
-    const t = inputEl ? inputEl.value.trim() : "";
-    if (!t) {
+    const val = inputEl ? inputEl.value.trim() : "";
+    if (!val) {
         if (typeof window.markFieldInvalid === "function" && inputEl) {
             window.markFieldInvalid(inputEl, "يرجى إدخال اسم الفئة للمتابعة");
             inputEl.focus();
@@ -64,140 +129,191 @@ export async function addCategory() {
             icon: "warning",
             title: "تنبيه",
             text: "يرجى إدخال اسم الفئة للمتابعة.",
-            confirmButtonText: "حسناً"
+            confirmButtonText: "حسناً",
+            confirmButtonColor: "#6d28d9"
         });
     }
     try {
         const existing = await window.electronAPI.getCategories();
-        if (existing.some(e => e.name.toLowerCase() === t.toLowerCase())) {
+        if (existing.some(e => e.name.toLowerCase() === val.toLowerCase())) {
             return void Swal.fire({
                 icon: "warning",
                 title: "فئة مسجلة مسبقاً",
-                text: "اسم الفئة موجود بالفعل، يرجى اختيار اسم آخر."
+                text: "اسم الفئة موجود بالفعل، يرجى اختيار اسم آخر.",
+                confirmButtonColor: "#6d28d9",
+                confirmButtonText: "حسناً"
             });
         }
-        await window.electronAPI.addCategory({ name: t });
-        document.getElementById("categoryName").value = "";
-        renderCategories();
+        await window.electronAPI.addCategory({ name: val });
+        if (inputEl) inputEl.value = "";
+        await renderCategories();
         if (typeof renderCategoryOptions === "function") renderCategoryOptions();
         Swal.fire({
             icon: "success",
             title: "تم الحفظ بنجاح",
-            text: "تمت إضافة الفئة الجديدة بنجاح."
+            text: "تمت إضافة الفئة الجديدة بنجاح.",
+            confirmButtonColor: "#059669",
+            confirmButtonText: "حسناً"
         });
     } catch (e) {
         Swal.fire({
             icon: "error",
             title: "تنبيه",
-            text: "تعذر حفظ الفئة، يرجى المحاولة مرة أخرى."
+            text: "تعذر حفظ الفئة، يرجى المحاولة مرة أخرى.",
+            confirmButtonColor: "#ef4444",
+            confirmButtonText: "حسناً"
         });
     }
 }
 
-export async function editCategory(t) {
+let lastFocusedCategoryElement = null;
+
+export function openEditCategoryModal(id) {
+    const target = categories.find(e => e._id === id);
+    if (!target) {
+        return void Swal.fire({
+            icon: "error",
+            title: "تنبيه",
+            text: "تعذر العثور على بيانات الفئة المطلوبة.",
+            confirmButtonColor: "#ef4444",
+            confirmButtonText: "حسناً"
+        });
+    }
+
+    const modal = document.getElementById("editCategoryModal");
+    const idInput = document.getElementById("editCategoryId");
+    const nameInput = document.getElementById("editCategoryInput");
+    const main = document.querySelector(".main-content");
+
+    if (modal && idInput && nameInput) {
+        lastFocusedCategoryElement = document.activeElement;
+        idInput.value = id;
+        nameInput.value = target.name || "";
+        if (main) main.setAttribute("inert", "");
+        modal.classList.add("open");
+        setTimeout(() => {
+            nameInput.focus();
+            nameInput.select();
+        }, 150);
+    }
+}
+
+export function closeEditCategoryModal() {
+    const modal = document.getElementById("editCategoryModal");
+    const main = document.querySelector(".main-content");
+    if (modal) {
+        modal.classList.remove("open");
+        if (main) main.removeAttribute("inert");
+        if (lastFocusedCategoryElement) lastFocusedCategoryElement.focus();
+    }
+}
+
+export function handleCategoryModalOverlayClick(e) {
+    if (e.target === document.getElementById("editCategoryModal")) {
+        closeEditCategoryModal();
+    }
+}
+
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+        const modal = document.getElementById("editCategoryModal");
+        if (modal && modal.classList.contains("open")) {
+            closeEditCategoryModal();
+        }
+    }
+});
+
+export async function submitEditCategory() {
+    const idInput = document.getElementById("editCategoryId");
+    const nameInput = document.getElementById("editCategoryInput");
+    if (!idInput || !nameInput) return;
+
+    const id = idInput.value;
+    const newName = nameInput.value.trim();
+
+    if (!newName) {
+        nameInput.focus();
+        return void Swal.fire({
+            icon: "warning",
+            title: "تنبيه",
+            text: "يرجى إدخال اسم الفئة للمتابعة.",
+            confirmButtonColor: "#6d28d9",
+            confirmButtonText: "حسناً"
+        });
+    }
+
     try {
-        const e = categories.find(e => e._id === t);
-        if (!e) {
+        const existing = await window.electronAPI.getCategories();
+        if (existing.some(c => c._id !== id && c.name.toLowerCase() === newName.toLowerCase())) {
             return void Swal.fire({
-                icon: "error",
-                title: "تنبيه",
-                text: "تعذر العثور على بيانات الفئة المطلوبة."
+                icon: "warning",
+                title: "فئة مسجلة مسبقاً",
+                text: "اسم الفئة موجود بالفعل، يرجى اختيار اسم آخر.",
+                confirmButtonColor: "#6d28d9",
+                confirmButtonText: "حسناً"
             });
         }
+
+        await window.electronAPI.updateCategory(id, { name: newName });
+        closeEditCategoryModal();
+        await renderCategories();
+        if (typeof renderCategoryOptions === "function") renderCategoryOptions();
+
         Swal.fire({
-            title: "تعديل الفئة",
-            html: `
-                <div class="form-control text-right">
-                    <label class="label"><span class="label-text text-primary font-semibold">اسم الفئة</span></label>
-                    <input id="editCategoryName" class="input input-bordered input-primary bg-transparent w-full text-black" value="${e.name}">
-                </div>
-            `,
-            showCancelButton: true,
-            confirmButtonText: "حفظ التعديل",
-            cancelButtonText: "إلغاء",
-            buttonsStyling: false,
-            customClass: {
-                confirmButton: "btn btn-primary mx-2 text-white",
-                cancelButton: "btn btn-ghost mx-2"
-            },
-            preConfirm: () => {
-                const name = document.getElementById("editCategoryName").value.trim();
-                if (!name) {
-                    Swal.showValidationMessage("يرجى إدخال اسم الفئة");
-                    return false;
-                }
-                return name;
-            }
-        }).then(async res => {
-            if (res.isConfirmed && res.value) {
-                const newName = res.value;
-                const existing = await window.electronAPI.getCategories();
-                if (existing.some(c => c._id !== t && c.name.toLowerCase() === newName.toLowerCase())) {
-                    return void Swal.fire({
-                        icon: "warning",
-                        title: "فئة مسجلة مسبقاً",
-                        text: "اسم الفئة موجود بالفعل، يرجى اختيار اسم آخر."
-                    });
-                }
-                try {
-                    await window.electronAPI.updateCategory(t, { name: newName });
-                    renderCategories();
-                    if (typeof renderCategoryOptions === "function") renderCategoryOptions();
-                    Swal.fire({
-                        icon: "success",
-                        title: "تم التعديل",
-                        text: "تم تعديل اسم الفئة بنجاح."
-                    });
-                } catch (err) {
-                    Swal.fire({
-                        icon: "error",
-                        title: "تنبيه",
-                        text: "تعذر تعديل الفئة حالياً، يرجى المحاولة لاحقاً."
-                    });
-                }
-            }
+            icon: "success",
+            title: "تم التعديل",
+            text: "تم تعديل اسم الفئة بنجاح.",
+            timer: 1500,
+            showConfirmButton: false
         });
-    } catch (t) {
+    } catch (err) {
         Swal.fire({
             icon: "error",
             title: "تنبيه",
-            text: "تعذر استرجاع بيانات الفئة."
+            text: "تعذر تعديل الفئة حالياً، يرجى المحاولة لاحقاً.",
+            confirmButtonColor: "#ef4444",
+            confirmButtonText: "حسناً"
         });
     }
 }
 
-export async function deleteCategory(t) {
+export function editCategory(id) {
+    openEditCategoryModal(id);
+}
+
+export async function deleteCategory(id) {
     Swal.fire({
         title: "تأكيد حذف الفئة",
         text: "هل تريد بالتأكيد حذف هذه الفئة وجميع المنتجات المرتبطة بها؟",
         icon: "warning",
         showCancelButton: true,
         cancelButtonText: "إلغاء",
-        confirmButtonText: "نعم، احذف",
-        buttonsStyling: false,
-        customClass: {
-            confirmButton: "btn btn-error mx-2 text-white",
-            cancelButton: "btn btn-ghost mx-2"
-        }
-    }).then(async e => {
-        if (e.isConfirmed) {
+        confirmButtonText: "نعم، احذف الفئة",
+        confirmButtonColor: "#dc2626",
+        cancelButtonColor: "#64748b"
+    }).then(async res => {
+        if (res.isConfirmed) {
             try {
-                await window.electronAPI.deleteCategory(t);
-                const prods = (await window.electronAPI.getProducts()).filter(p => p.category === t);
+                await window.electronAPI.deleteCategory(id);
+                const prods = (await window.electronAPI.getProducts()).filter(p => p.category === id);
                 for (const p of prods) await window.electronAPI.deleteProduct(p._id);
-                renderCategories();
+                await renderCategories();
                 if (typeof renderCategoryOptions === "function") renderCategoryOptions();
                 if (typeof renderProducts === "function") renderProducts();
                 Swal.fire({
                     icon: "success",
                     title: "تم الحذف",
-                    text: "تم حذف الفئة بنجاح."
+                    text: "تم حذف الفئة والمنتجات التابعة لها بنجاح.",
+                    confirmButtonColor: "#059669",
+                    confirmButtonText: "حسناً"
                 });
             } catch (err) {
                 Swal.fire({
                     icon: "error",
                     title: "تنبيه",
-                    text: "تعذر حذف الفئة، يرجى المحاولة لاحقاً."
+                    text: "تعذر حذف الفئة، يرجى المحاولة لاحقاً.",
+                    confirmButtonColor: "#ef4444",
+                    confirmButtonText: "حسناً"
                 });
             }
         }
@@ -211,3 +327,4 @@ if ("categories" === document.body.getAttribute("data-page")) {
 window.addCategory = addCategory;
 window.deleteCategory = deleteCategory;
 window.editCategory = editCategory;
+window.handleCategorySearch = handleCategorySearch;

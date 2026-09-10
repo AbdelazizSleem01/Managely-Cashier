@@ -1,0 +1,551 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+
+:root {
+    --primary-color: #6d28d9;
+    --primary-hover: #5b21b6;
+    --primary-light: #ede9fe;
+    --primary-glow: rgba(109, 40, 217, 0.15);
+    --accent-color: #4f46e5;
+    --card-bg: #ffffff;
+    --text-main: #1e1b4b;
+    --text-muted: #64748b;
+    --border-color: #ede9fe;
+    --success-bg: #ecfdf5;
+    --success-text: #059669;
+    --danger-bg: #fef2f2;
+    --danger-text: #dc2626;
+    --warning-bg: #fffbeb;
+    --warning-text: #d97706;
+}
+
+body {
+    background: linear-gradient(135deg, #f0f4ff 0%, #f8fafc 100%);
+    min-height: 100vh;
+    font-family: 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+}
+
+.main-content {
+    transition: margin-right 0.3s ease;
+    padding-bottom: 70px;
+}
+
+.main-content.sidebar-open {
+    margin-right: 250px;
+}
+
+/* RTL Icon Margins */
+i {
+    vertical-align: middle;
+}
+
+label i,
+.label i,
+.section-title i,
+.badge i,
+.btn-printer-act i,
+.btn-back-home i,
+.status-pill i,
+.header-status-pill i {
+    margin-left: 8px !important;
+    margin-right: 0 !important;
+}
+
+.guide-item-icon i {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Page Header */
+.page-header {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 20px rgba(109, 40, 217, 0.05);
+    border: 1.5px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.page-title-group {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.page-icon-badge {
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(109, 40, 217, 0.12);
+    flex-shrink: 0;
+}
+
+.page-title-group h1 {
+    color: var(--primary-color);
+    font-size: 1.7rem;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.page-title-group p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 4px 0 0;
+    font-weight: 500;
+}
+
+.header-status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 18px;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    background: #ede9fe;
+    color: var(--primary-color);
+    border: 1.5px solid #ddd6fe;
+}
+
+.header-status-pill.ready {
+    background: #ecfdf5;
+    color: #059669;
+    border-color: #a7f3d0;
+}
+
+.header-status-pill.empty {
+    background: #fffbeb;
+    color: #d97706;
+    border-color: #fde68a;
+}
+
+/* Two-column Layout */
+.printer-settings-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+@media (min-width: 1024px) {
+    .printer-settings-layout {
+        grid-template-columns: 1.6fr 1fr;
+    }
+}
+
+/* Primary Card */
+.settings-panel-card {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1.5px solid var(--border-color);
+    box-shadow: 0 4px 20px rgba(109, 40, 217, 0.05);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-card-header {
+    padding: 20px 24px;
+    background: #f8fafc;
+    border-bottom: 1.5px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.panel-card-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+}
+
+.panel-card-body {
+    padding: 24px;
+    flex: 1;
+}
+
+/* Printer Cards List */
+.printer-cards-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.printer-card {
+    border: 2px solid #e2e8f0;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    position: relative;
+}
+
+.printer-card:hover {
+    border-color: #c4b5fd;
+    background: #faf8ff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(109, 40, 217, 0.06);
+}
+
+.printer-card.selected {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, #ffffff 0%, #fbf9ff 100%);
+    box-shadow: 0 8px 24px rgba(109, 40, 217, 0.12);
+}
+
+.printer-card-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+}
+
+.printer-card-radio {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--primary-color);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.printer-card-icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: #f1f5f9;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.printer-card.selected .printer-card-icon-box {
+    background: var(--primary-light);
+    color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(109, 40, 217, 0.2);
+}
+
+.printer-online-dot {
+    position: absolute;
+    bottom: -2px;
+    left: -2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #10b981;
+    border: 2px solid #ffffff;
+}
+
+.printer-card-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.printer-card-name {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.printer-card-desc {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.printer-card-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+.badge-printer-default {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.badge-printer-app-default {
+    background: #ede9fe;
+    color: var(--primary-color);
+    border: 1px solid #ddd6fe;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+/* Empty or Loading State */
+.printer-empty-state,
+.printer-loading-state {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-muted);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.spinner-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Action Buttons */
+.panel-card-footer {
+    padding: 20px 24px;
+    background: #f8fafc;
+    border-top: 1.5px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-printer-act {
+    height: 46px !important;
+    padding: 0 22px !important;
+    border-radius: 12px !important;
+    font-size: 0.95rem !important;
+    font-weight: 700 !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    transition: all 0.2s ease !important;
+    border: none !important;
+    font-family: inherit !important;
+    white-space: nowrap !important;
+}
+
+.btn-save-default {
+    background: linear-gradient(135deg, #6d28d9, #4f46e5) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(109, 40, 217, 0.3) !important;
+}
+
+.btn-save-default:hover:not(:disabled) {
+    background: linear-gradient(135deg, #5b21b6, #4338ca) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 18px rgba(109, 40, 217, 0.4) !important;
+}
+
+.btn-save-default:disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn-test-print {
+    background: #ffffff !important;
+    border: 1.5px solid #c4b5fd !important;
+    color: var(--primary-color) !important;
+}
+
+.btn-test-print:hover:not(:disabled) {
+    background: #fbf9ff !important;
+    border-color: var(--primary-color) !important;
+    transform: translateY(-2px) !important;
+}
+
+.btn-refresh-printers {
+    background: #ffffff !important;
+    border: 1.5px solid #e2e8f0 !important;
+    color: #475569 !important;
+}
+
+.btn-refresh-printers:hover {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Secondary Guide Cards */
+.guide-card {
+    background: #ffffff;
+    border-radius: 20px;
+    border: 1.5px solid var(--border-color);
+    box-shadow: 0 4px 20px rgba(109, 40, 217, 0.05);
+    padding: 24px;
+    margin-bottom: 20px;
+}
+
+.guide-card-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.guide-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.guide-item {
+    display: flex;
+    align-items: center !important;
+    gap: 14px;
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 14px 16px;
+    border: 1.5px solid #edf2f7;
+    transition: all 0.2s ease;
+}
+
+.guide-item:hover {
+    background: #ffffff;
+    border-color: #c4b5fd;
+    box-shadow: 0 4px 12px rgba(109, 40, 217, 0.05);
+}
+
+.guide-item-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #ede9fe;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+    margin: 0 !important;
+}
+
+.guide-item-text {
+    font-size: 0.86rem;
+    line-height: 1.5;
+    color: #475569;
+    flex: 1;
+}
+
+.guide-item-text strong {
+    color: var(--text-main);
+    display: block;
+    margin-bottom: 3px;
+    font-size: 0.92rem;
+    font-weight: 800;
+}
+
+/* Active Printer Info Box */
+.active-printer-box {
+    background: linear-gradient(135deg, #ede9fe 0%, #ddd6fe 100%);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 20px;
+    border: 1.5px solid #c4b5fd;
+    color: var(--text-main);
+}
+
+.active-printer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.active-printer-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #5b21b6;
+}
+
+.active-printer-name {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: #2e1065;
+    margin-bottom: 4px;
+}
+
+.active-printer-meta {
+    font-size: 0.8rem;
+    color: #6b21a8;
+    font-weight: 600;
+}
+
+/* Back Link */
+.btn-back-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #ffffff;
+    border: 1.5px solid #ddd6fe;
+    color: var(--primary-color);
+    padding: 10px 22px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.92rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(109, 40, 217, 0.05);
+}
+
+.btn-back-home:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(109, 40, 217, 0.2);
+}

@@ -8,524 +8,388 @@
   <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" />
   <link rel="stylesheet" href="../styles/output.css" />
   <link rel="stylesheet" href="../styles/home.css" />
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="../styles/products.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-  <style>
-    @import url("https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap");
-
-    body {
-      font-family: "Tajawal", sans-serif;
-      padding-bottom: 35px;
-    }
-
-    .main-content {
-      padding: 0 20px;
-    }
-
-    .barcode {
-      width: 100%;
-      max-width: 240px;
-      height: auto;
-      display: block;
-      margin: 0 auto;
-      padding: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      background-color: #f9f9f9;
-    }
-
-    #barcodePreview {
-      margin-top: 10px;
-      border-radius: 5px;
-      width: 240px;
-    }
-
-    .my-3 {
-      margin-top: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .page-title {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .card {
-      border-radius: 16px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      transition: all 0.3s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-    }
-
-    .input,
-    .select,
-    .textarea {
-      border-radius: 8px;
-      transition: all 0.3s ease;
-    }
-
-    .input:focus,
-    .select:focus,
-    .textarea:focus {
-      transform: scale(1.02);
-      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-    }
-
-    .btn {
-      border-radius: 8px;
-      transition: all 0.3s ease;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-    }
-
-    #reader {
-      width: 100%;
-      max-width: 300px;
-      margin: 10px auto;
-      display: none;
-    }
-
-    .mb-12 {
-      margin-bottom: 12px;
-    }
-
-    /* تحسينات للجدول */
-    .table th {
-      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .table tr:hover {
-      background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-    }
-
-    /* تحسينات للإحصائيات */
-    .stats-card {
-      transition: all 0.3s ease;
-      border-radius: 16px;
-      color: #424242;
-    }
-
-    .stats-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-    }
-
-    /* تحسينات لأزرار الفلترة */
-    .select,
-    .input {
-      border-radius: 8px;
-      transition: all 0.3s ease;
-    }
-
-    .select:focus,
-    .input:focus {
-      transform: scale(1.02);
-      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-    }
-
-    /* تحسينات للأزرار */
-    .btn {
-      border-radius: 8px;
-      transition: all 0.3s ease;
-      font-weight: 500;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
-
-    .btn-circle {
-      border-radius: 50%;
-      width: 2.5rem;
-      height: 2.5rem;
-    }
-
-    /* تحسينات للبحث */
-    #productsSearch {
-      border-radius: 25px;
-      padding-left: 2.5rem;
-      padding-right: 2.5rem;
-    }
-
-    #productsSearch:focus {
-      border-color: #4f46e5;
-      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-    }
-
-    .bg-green-500 {
-      background-color: #00b100e3;
-    }
-
-    .bg-yellow-500 {
-      background-color: #bc8d00;
-    }
-
-    /* تنسيقات نموذج إضافة منتج لضمان وجود الكمية والباركود في سطر واحد ومساحات متناسقة */
-    .product-form-container {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .form-row-2col {
-      display: flex;
-      gap: 1rem;
-      width: 100%;
-    }
-
-    .form-row-2col>div {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .form-row-qty-barcode {
-      display: flex;
-      gap: 1rem;
-      width: 100%;
-      align-items: flex-start;
-    }
-
-    .form-row-qty-barcode .qty-col {
-      width: 28%;
-      min-width: 140px;
-      flex-shrink: 0;
-    }
-
-    .form-row-qty-barcode .barcode-col {
-      flex: 1;
-      min-width: 0;
-    }
-
-    @media (max-width: 768px) {
-
-      .form-row-2col,
-      .form-row-qty-barcode {
-        flex-direction: column;
-      }
-
-      .form-row-qty-barcode .qty-col {
-        width: 100%;
-      }
-    }
-  </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen pb-14" data-page="products">
+<body data-page="products">
+  <!-- Sidebar Container -->
   <div id="sidebar-container"></div>
-  <div class="main-content">
-    <div class="container mx-auto px-4 py-8 min-h-screen">
-      <h1 class="font-bold text-center mb-8 page-title">إدارة المنتجات</h1>
-      <div class="card bg-white shadow-xl p-6 mb-8">
-        <h2 class="text-2xl font-semibold mb-4 text-gray-800">
-          إضافة منتج جديد
-        </h2>
-        <div class="product-form-container mb-6">
-          <!-- السطر الأول: اسم المنتج والسعر -->
-          <div class="form-row-2col">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">اسم المنتج <span
-                  class="required-star">*</span></label>
-              <input type="text" id="productName" class="input input-bordered bg-transparent input-primary w-full"
-                placeholder="اسم المنتج" />
+
+  <main class="main-content pt-10">
+    <div class="p-6 max-w-7xl mx-auto">
+      <!-- Page Header -->
+      <div class="page-header">
+        <div class="header-top">
+          <div class="page-title-group">
+            <div class="page-icon-badge">
+              <i class="fas fa-boxes-stacked"></i>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">السعر <span
-                  class="required-star">*</span></label>
-              <input type="number" id="productPrice" class="input input-bordered bg-transparent input-primary w-full"
-                placeholder="السعر" />
+              <h1>إدارة المنتجات</h1>
+              <p>إدارة المخزون، الأسعار، الباركودات، وتتبع توفر المنتجات</p>
             </div>
           </div>
 
-          <!-- السطر الثاني: سعر الشراء والفئة -->
-          <div class="form-row-2col">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">سعر الشراء</label>
-              <input type="number" id="productPurchasePrice"
-                class="input input-bordered bg-transparent input-primary w-full" placeholder="سعر الشراء" />
+          <!-- Header Stats -->
+          <div class="header-stats">
+            <div class="stat-pill stat-pill-total" onclick="resetFilters()" style="cursor: pointer;"
+              title="عرض كل المنتجات">
+              <i class="fas fa-cubes"></i>
+              <div class="stat-info">
+                <span class="stat-label">إجمالي المنتجات</span>
+                <span id="totalProductsCount" class="stat-value">0</span>
+              </div>
+            </div>
+            <div class="stat-pill stat-pill-instock" onclick="quickFilterStock('inStock')" style="cursor: pointer;"
+              title="تصفية: المتوفر">
+              <i class="fas fa-check-circle"></i>
+              <div class="stat-info">
+                <span class="stat-label">متوفر</span>
+                <span id="inStockCount" class="stat-value" style="color: #059669;">0</span>
+              </div>
+            </div>
+            <div class="stat-pill stat-pill-lowstock" onclick="quickFilterStock('lowStock')" style="cursor: pointer;"
+              title="تصفية: منخفض">
+              <i class="fas fa-exclamation-triangle"></i>
+              <div class="stat-info">
+                <span class="stat-label">منخفض</span>
+                <span id="lowStockCount" class="stat-value" style="color: #d97706;">0</span>
+              </div>
+            </div>
+            <div class="stat-pill stat-pill-outofstock" onclick="quickFilterStock('outOfStock')"
+              style="cursor: pointer;" title="تصفية: نفذ">
+              <i class="fas fa-times-circle"></i>
+              <div class="stat-info">
+                <span class="stat-label">نفذ</span>
+                <span id="outOfStockCount" class="stat-value" style="color: #dc2626;">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Header Controls (Search + Filters + Add Button in a Single Organized Row) -->
+        <div class="header-controls">
+          <div class="header-search-and-filters">
+            <div class="search-box-wrap">
+              <i class="fas fa-search search-icon"></i>
+              <input type="text" id="productsSearch" class="search-input"
+                placeholder="ابحث بالاسم، الباركود، أو الوصف..." oninput="filterProducts()">
+              <button onclick="clearSearch()" id="clearSearchBtn" class="clear-search-btn hidden" title="مسح البحث">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+
+            <div class="w-42">
+              <select id="categoryFilter" class="filter-select " onchange="filterProducts()">
+                <option value="">جميع الفئات</option>
+              </select>
+            </div>
+
+            <div class="w-42">
+              <select id="stockFilter" class="filter-select" onchange="filterProducts()">
+                <option value="">جميع المخزون</option>
+                <option value="inStock">متوفر</option>
+                <option value="lowStock">منخفض</option>
+                <option value="outOfStock">نفذ</option>
+              </select>
+            </div>
+
+            <button onclick="resetFilters()" class="btn-reset-filter" title="إعادة تعيين الفلاتر">
+              <i class="fas fa-undo-alt"></i>
+              <span>إعادة تعيين</span>
+            </button>
+          </div>
+
+          <button class="add-product-btn-header" onclick="openAddProductModal()">
+            <i class="fas fa-plus-circle"></i>
+            <span>إضافة منتج جديد</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Products Card & Table -->
+      <div class="products-card-container">
+        <div id="products"></div>
+      </div>
+
+      <!-- Back to Home Link -->
+      <div class="back-link-wrap">
+        <a href="index.html" class="btn-back-home">
+          <i class="fas fa-arrow-right"></i>
+          <span>العودة للرئيسية</span>
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== Add / Edit Product Modal ===== -->
+  <div id="productModal" class="modal-overlay" onclick="handleModalOverlayClick(event)">
+    <div class="custom-modal-box product-modal-box">
+      <div class="modal-scroll-inner">
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <div class="modal-title">
+            <div class="modal-title-icon" id="modalIcon">
+              <i class="fas fa-plus-circle"></i>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">الفئة <span
+              <h3 id="formTitle">إضافة منتج جديد</h3>
+              <p id="formSubtitle" class="modal-subtitle">أدخل تفاصيل المنتج، الأسعار، والمخزون بدقة</p>
+            </div>
+          </div>
+          <button class="modal-close" onclick="closeProductModal()" title="إغلاق">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <form id="productForm" onsubmit="event.preventDefault(); saveProduct();">
+          <input type="hidden" id="editingProductId">
+
+          <!-- Row 1: Name & Category (Spacious 2 columns) -->
+          <div class="form-grid-2">
+            <div class="field-group">
+              <label for="productName"><i class="fas fa-tag"></i> اسم المنتج <span
                   class="required-star">*</span></label>
-              <select id="productCategory" class="select select-bordered select-primary bg-transparent w-full">
+              <input type="text" id="productName" class="modal-input" placeholder="مثال: مشروب غازي 250 مل" required>
+            </div>
+
+            <div class="field-group">
+              <label for="productCategory"><i class="fas fa-layer-group"></i> الفئة <span
+                  class="required-star">*</span></label>
+              <select id="productCategory" class="modal-select" required>
                 <option value="">اختار الفئة</option>
               </select>
             </div>
           </div>
 
-          <!-- السطر الثالث: الوصف وصورة المنتج معاً -->
-          <div class="form-row-2col">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">الوصف</label>
-              <textarea id="productDescription" class="textarea textarea-primary bg-transparent w-full h-[88px]"
-                placeholder="وصف المنتج"></textarea>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">صورة المنتج (اختياري)</label>
-              <!-- صندوق الرفع الأنيق المطابق لشعار المحل -->
-              <label for="productImageInput" id="productImageUploadBox" class="product-upload-box">
-                <div class="product-upload-icon">
-                  <i class="fas fa-upload"></i>
-                </div>
-                <div class="product-upload-text">
-                  <span class="product-upload-title">اختر صورة المنتج</span>
-                  <span class="product-upload-hint">PNG, JPG, JPEG (حتى 5 ميجابايت)</span>
-                </div>
-              </label>
-
-              <!-- حاوية المعاينة بعد اختيار الصورة (مخفية افتراضياً حتى يتم اختيار صورة) -->
-              <div id="productImagePreviewContainer" class="product-preview-container" style="display: none;">
-                <!-- زر حذف الصورة على اليسار في RTL -->
-                <button type="button" id="removeProductImageBtn" onclick="removeProductImage()"
-                  class="product-preview-delete-btn" title="إزالة الصورة">
-                  <i class="fas fa-trash-can"></i>
-                </button>
-
-                <!-- زر تغيير الصورة في المنتصف -->
-                <label for="productImageInput" class="product-preview-change-btn">
-                  <span>تغيير الصورة</span>
-                  <i class="fas fa-arrows-rotate text-sm"></i>
-                </label>
-
-                <!-- صورة المنتج المصغرة على اليمين في RTL -->
-                <div class="product-preview-thumb">
-                  <img id="productImagePreview" src="" alt="صورة المنتج" />
-                </div>
-                <span id="productImageFileName" class="hidden"></span>
-              </div>
-
-              <input type="file" id="productImageInput" accept="image/*" class="hidden"
-                onchange="previewProductImage(event)" />
-            </div>
-          </div>
-
-          <!-- السطر الرابع: الكمية والباركود في سطر واحد متناسق -->
-          <div class="form-row-qty-barcode">
-            <div class="qty-col">
-              <label class="block text-sm font-medium text-gray-700 mb-1">الكمية <span
+          <!-- Row 2: Prices & Stock (Spacious 3 columns) -->
+          <div class="form-grid-3">
+            <div class="field-group">
+              <label for="productPrice"><i class="fas fa-money-bill-wave"></i> سعر البيع (ج.م) <span
                   class="required-star">*</span></label>
-              <input type="number" id="productQuantity" class="input input-bordered bg-transparent input-primary w-full"
-                placeholder="الكمية" />
+              <input type="number" id="productPrice" step="any" min="0" class="modal-input" placeholder="0.00" required>
             </div>
-            <div class="barcode-col">
-              <label class="block text-sm font-medium text-gray-700 mb-1">الباركود (اختياري)</label>
-              <div class="flex w-full gap-2 items-center BC-div">
-                <input type="text" id="productBarcode"
-                  class="input input-bordered bg-transparent input-primary flex-1 min-w-[120px]"
-                  placeholder="الباركود (اختياري)" />
-                <button type="button" onclick="generateAndRenderBarcode()"
-                  class="btn btn-primary px-3 h-[42px] min-h-[42px] shrink-0" title="توليد باركود تلقائي">
-                  <i class="fas fa-barcode"></i>
-                  <span class="mr-1 text-xs">توليد</span>
-                </button>
-                <div class="w-36 shrink-0">
-                  <select id="scanMethod" class="select select-bordered select-primary bg-transparent w-full">
-                    <option value="camera">مسح بالكاميرا</option>
-                    <option value="scanner">مسح بالسكانر</option>
-                  </select>
-                </div>
-                <button type="button" onclick="startScanning()"
-                  class="btn btn-info px-3 h-[42px] min-h-[42px] text-white shrink-0" title="بدء المسح">
-                  <i class="fas fa-camera"></i>
-                  <span class="mr-1 text-xs">مسح</span>
-                </button>
-              </div>
-              <div id="barcodePreview"></div>
-              <div id="reader"></div>
+
+            <div class="field-group">
+              <label for="productPurchasePrice"><i class="fas fa-shopping-cart"></i> سعر الشراء (ج.م)</label>
+              <input type="number" id="productPurchasePrice" step="any" min="0" class="modal-input" placeholder="0.00">
+            </div>
+
+            <div class="field-group">
+              <label for="productQuantity"><i class="fas fa-boxes-stacked"></i> الكمية بالمخزون <span
+                  class="required-star">*</span></label>
+              <input type="number" id="productQuantity" min="0" class="modal-input" placeholder="0" value="1" required>
             </div>
           </div>
-        </div>
-        <button onclick="addProduct()" class="btn btn-primary">
-          إضافة المنتج
-        </button>
-      </div>
-    </div>
-    <div class="card bg-white shadow-xl p-6 mb-8">
-      <div class="flex flex-row flex-wrap lg:flex-nowrap items-center justify-between gap-4 mb-6 w-full"
-        style="overflow: visible;">
-        <h2 class="text-xl lg:text-2xl font-bold text-primary whitespace-nowrap shrink-0">قائمة المنتجات</h2>
-        <div class="flex items-center gap-3 flex-1 min-w-0 justify-end flex-nowrap" style="gap: 12px;">
-          <div class="relative flex-1 max-w-xs min-w-[150px]">
-            <i
-              class="fas fa-search absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs"></i>
-            <input type="text" id="productsSearch"
-              class="input input-bordered input-primary bg-transparent w-full h-[42px] pr-8 pl-8 text-sm"
-              placeholder="ابحث في المنتجات..." />
-            <button onclick="clearSearch()" id="clearSearchBtn"
-              class="btn btn-ghost btn-xs absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500 hidden"
-              title="مسح البحث">
+
+          <!-- Row 3: Barcode Section -->
+          <div class="barcode-box-card">
+            <div class="barcode-card-header">
+              <label class="barcode-card-label">
+                <i class="fas fa-barcode"></i>
+                <span>كود الباركود ومسح الكاميرا / السكانر (اختياري)</span>
+              </label>
+              <div id="barcodePreview" class="barcode-preview-container" title="معاينة الباركود"></div>
+            </div>
+
+            <!-- Line 1: Barcode Input + Auto Generate Button -->
+            <div class="barcode-row-item">
+              <input type="text" id="productBarcode" class="modal-input barcode-input-flex"
+                placeholder="أدخل كود الباركود يدوياً أو قم بتوليده"
+                oninput="renderBarcode(this.value, 'barcodePreview')">
+              <button type="button" onclick="generateAndRenderBarcode()" class="btn-barcode-action btn-barcode-gen"
+                title="توليد باركود تلقائي">
+                <i class="fas fa-wand-magic-sparkles"></i>
+                <span>توليد تلقائي</span>
+              </button>
+            </div>
+
+            <!-- Line 2: Scan Method Dropdown + Scan Button right next to it -->
+            <div class="barcode-row-item">
+              <select id="scanMethod" class="modal-select barcode-select-flex">
+                <option value="camera">مسح بالكاميرا (الكاميرا المدمجة / الويب)</option>
+                <option value="scanner">مسح بجهاز السكانر (قارئ الباركود)</option>
+              </select>
+              <button type="button" onclick="startScanning()" class="btn-barcode-action btn-barcode-scan"
+                title="بدء عملية المسح">
+                <i class="fas fa-camera"></i>
+                <span>بدء المسح</span>
+              </button>
+            </div>
+
+            <div id="reader" style="display: none; width: 100%; max-width: 320px; margin: 10px auto;"></div>
+          </div>
+
+          <!-- Row 4: Image Upload -->
+          <div class="field-group">
+            <label><i class="fas fa-image"></i> صورة المنتج (اختياري)</label>
+            <input type="file" id="productImageInput" accept="image/*" class="hidden"
+              onchange="previewProductImage(event)">
+
+            <label for="productImageInput" id="productImageUploadBox" class="file-dropzone-box">
+              <div class="dropzone-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+              <p class="dropzone-title">انقر أو اسحب لاختيار صورة المنتج</p>
+              <span class="dropzone-hint">صيغ مدعومة: PNG, JPG, JPEG (حد أقصى 5 ميجابايت)</span>
+            </label>
+
+            <div id="productImagePreviewContainer" class="preview-card" style="display: none;">
+              <div style="display: flex; align-items: center; gap: 14px;">
+                <img id="productImagePreview" class="preview-img-thumb" src="" alt="صورة المنتج">
+                <div>
+                  <span id="productImageFileName"
+                    style="font-size: 0.88rem; font-weight: 700; color: #1e1b4b; display: block;"></span>
+                  <span style="font-size: 0.75rem; color: #059669; font-weight: 600;"><i
+                      class="fas fa-check-circle"></i> تم تحديد الصورة بنجاح</span>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <label for="productImageInput" class="btn-change-file">
+                  <i class="fas fa-arrows-rotate"></i> تغيير
+                </label>
+                <button type="button" class="btn-remove-file" onclick="removeProductImage()">
+                  <i class="fas fa-trash-alt"></i> حذف
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row 5: Description -->
+          <div class="field-group">
+            <label for="productDescription"><i class="fas fa-align-right"></i> وصف المنتج وملاحظات (اختياري)</label>
+            <textarea id="productDescription" class="modal-textarea"
+              placeholder="أدخل أية تفاصيل، مواصفات أو ملاحظات خاصة بالمنتج..."></textarea>
+          </div>
+
+          <!-- Modal Actions -->
+          <div class="modal-footer">
+            <button type="submit" id="saveProductBtn" class="btn-save-modal">
+              <i class="fas fa-save"></i>
+              <span>حفظ المنتج</span>
+            </button>
+            <button type="button" class="btn-cancel-modal" onclick="closeProductModal()">
               <i class="fas fa-times"></i>
+              <span>إلغاء</span>
             </button>
           </div>
-          <div class="product-filter-select-wrapper"
-            style="width: 148px; min-width: 148px; max-width: 148px; flex-shrink: 0;">
-            <select id="categoryFilter" class="select select-bordered select-primary bg-transparent text-primary w-full"
-              onchange="filterProducts()">
-              <option value="">جميع الفئات</option>
-            </select>
-          </div>
-          <div class="product-filter-select-wrapper"
-            style="width: 148px; min-width: 148px; max-width: 148px; flex-shrink: 0;">
-            <select id="stockFilter" class="select select-bordered select-primary bg-transparent text-primary w-full"
-              onchange="filterProducts()">
-              <option value="">جميع المخزون</option>
-              <option value="inStock">متوفر</option>
-              <option value="lowStock">منخفض</option>
-              <option value="outOfStock">نفذ</option>
-            </select>
-          </div>
-          <button onclick="resetFilters()"
-            class="btn btn-outline btn-error shrink-0 whitespace-nowrap h-[42px] min-h-[42px] px-3 text-xs"
-            title="إعادة تعيين الفلاتر">
-            <i class="fas fa-undo-alt ml-1"></i>
-            إعادة تعيين
-          </button>
-        </div>
+        </form>
       </div>
-
-      <!-- إحصائيات سريعة -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-gradient-to-r from-primary to-primary-focus rounded-xl p-6 text-white stats-card shadow-lg">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm opacity-90 text-white mb-1">
-                إجمالي المنتجات
-              </p>
-              <p class="text-3xl text-white font-bold" id="totalProductsCount">
-                0
-              </p>
-            </div>
-            <div class="bg-white bg-opacity-20 p-3 rounded-full fas-pro">
-              <i class="fas fa-boxes text-2xl text-white"></i>
-            </div>
-          </div>
-        </div>
-        <div class="bg-green-500 rounded-xl p-6 text-white stats-card shadow-lg">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm opacity-90 mb-1">متوفر</p>
-              <p class="text-3xl text-white font-bold" id="inStockCount">0</p>
-            </div>
-            <div class="bg-white bg-opacity-20 p-3 rounded-full text-green-500">
-              <i class="fas fa-check-circle text-2xl  text-white"></i>
-            </div>
-          </div>
-        </div>
-        <div class="bg-yellow-500 rounded-xl p-6 text-white stats-card shadow-lg">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm opacity-90 mb-1">منخفض</p>
-              <p class="text-3xl text-white font-bold" id="lowStockCount">
-                0
-              </p>
-            </div>
-            <div class="bg-white bg-opacity-20 p-3 rounded-full text-yellow-500">
-              <i class="fas fa-exclamation-triangle text-2xl  text-white"></i>
-            </div>
-          </div>
-        </div>
-        <div class="bg-red-500 rounded-xl p-6 text-white stats-card shadow-lg">
-          <div class="flex items-center justify-between">
-            <div>
-              <p class="text-sm opacity-90 mb-1">نفذ</p>
-              <p class="text-3xl text-white font-bold" id="outOfStockCount">
-                0
-              </p>
-            </div>
-            <div class="bg-white bg-opacity-20 p-3 rounded-full text-red-500">
-              <i class="fas fa-times-circle text-2xl  text-white"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div id="products" class="overflow-x-auto"></div>
-    </div>
-    <div class="mt-6 text-center">
-      <a href="index.html" class="btn btn-outline btn-primary">العودة للرئيسية</a>
     </div>
   </div>
+
+  <!-- ===== Barcode Print Dedicated Modal ===== -->
+  <div id="printBarcodeModal" class="modal-overlay" onclick="handleBarcodeModalOverlayClick(event)">
+    <div class="custom-modal-box barcode-print-modal-box">
+      <div class="modal-scroll-inner">
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <div class="modal-title">
+            <div class="modal-title-icon" style="background: #ecfdf5; color: #059669;">
+              <i class="fas fa-barcode"></i>
+            </div>
+            <div>
+              <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #1e1b4b;">طباعة ملصق الباركود</h3>
+              <p id="barcodeModalProductSubtitle" class="modal-subtitle">
+                تخصيص ملصق الباركود والطباعة الحرارية
+              </p>
+            </div>
+          </div>
+          <button class="modal-close" onclick="closePrintBarcodeModal()" title="إغلاق">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Live Barcode Sticker Preview Card -->
+        <div class="barcode-sticker-live-preview">
+          <div class="sticker-card">
+            <div id="stickerStoreName" class="sticker-store-name">اسم المتجر</div>
+            <div id="stickerProductName" class="sticker-prod-name">اسم المنتج</div>
+            <div class="sticker-svg-wrap">
+              <svg id="stickerBarcodeSvg" class="sticker-barcode-svg"></svg>
+            </div>
+            <div id="stickerBarcodeText" class="sticker-code-text">000000000000</div>
+            <div id="stickerPrice" class="sticker-price">0.00 ج.م</div>
+          </div>
+        </div>
+
+        <!-- Options Form -->
+        <form id="printBarcodeForm" onsubmit="event.preventDefault(); executeBarcodePrint();">
+          <input type="hidden" id="printBarcodeProductId">
+
+          <!-- Checkbox Options Cards -->
+          <div class="print-options-grid">
+            <label class="custom-checkbox-card">
+              <input type="checkbox" id="modalIncludeStoreName" checked onchange="updateBarcodeStickerPreview()">
+              <span class="custom-check-box"><i class="fas fa-check"></i></span>
+              <div class="checkbox-text">
+                <span class="checkbox-title">إضافة اسم المتجر</span>
+                <span class="checkbox-desc" id="modalStoreNameText">المتجر</span>
+              </div>
+            </label>
+
+            <label class="custom-checkbox-card">
+              <input type="checkbox" id="modalIncludeProductName" checked onchange="updateBarcodeStickerPreview()">
+              <span class="custom-check-box"><i class="fas fa-check"></i></span>
+              <div class="checkbox-text">
+                <span class="checkbox-title">إضافة اسم المنتج</span>
+                <span class="checkbox-desc" id="modalProductNameText">اسم المنتج</span>
+              </div>
+            </label>
+
+            <label class="custom-checkbox-card">
+              <input type="checkbox" id="modalIncludePrice" checked onchange="updateBarcodeStickerPreview()">
+              <span class="custom-check-box"><i class="fas fa-check"></i></span>
+              <div class="checkbox-text">
+                <span class="checkbox-title">إضافة السعر</span>
+                <span class="checkbox-desc" id="modalPriceText">0.00 ج.م</span>
+              </div>
+            </label>
+          </div>
+
+          <!-- Copies & POS Setting -->
+          <div class="print-details-row">
+            <div class="field-group" style="flex: 1; margin-bottom: 0;">
+              <label for="modalPrintCopies"><i class="fas fa-copy"></i> عدد النسخ المطلوبة</label>
+              <input type="number" id="modalPrintCopies" class="modal-input" value="1" min="1" max="500" required>
+            </div>
+
+            <div class="field-group" style="flex: 1.3; margin-bottom: 0;">
+              <label><i class="fas fa-print"></i> نوع الطباعة</label>
+              <label class="pos-toggle-card">
+                <input type="checkbox" id="modalPrintToPOS">
+                <span class="custom-check-box"><i class="fas fa-check"></i></span>
+                <span style="font-size: 0.88rem; font-weight: 700; color: #1e1b4b;">طابعة باركود حرارية / كاشير
+                  (POS)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Modal Footer Actions -->
+          <div class="modal-footer" style="margin-top: 20px;">
+            <button type="submit" id="executeBarcodePrintBtn" class="btn-print-action">
+              <i class="fas fa-print"></i>
+              <span>طباعة الباركود</span>
+            </button>
+            <button type="button" class="btn-cancel-modal" onclick="closePrintBarcodeModal()">
+              <i class="fas fa-times"></i>
+              <span>إلغاء</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Container -->
   <div id="footer-container" class="z-10"></div>
+
+  <!-- Scripts -->
   <script type="module" src="../js/calculator.js"></script>
   <script type="module" src="../js/shared.js"></script>
   <script type="module" src="../js/products.js"></script>
-</body>
-
-<div id="footer-container" class="z-10"></div>
-
-</html>
-
-
-<!-- دوال واجهة المستخدم لصفحة المنتجات -->
-<script>
-  function toggleProductStudio(forceOpen = null) {
-    const studio = document.getElementById("addProductStudio");
-    const icon = document.getElementById("toggleStudioIcon");
-    const text = document.getElementById("toggleStudioText");
-    if (!studio) return;
-
-    const isHidden = forceOpen !== null ? !forceOpen : studio.classList.contains("hidden");
-    if (isHidden) {
-      studio.classList.remove("hidden");
-      if (icon) icon.className = "fas fa-minus text-xs ml-1";
-      if (text) text.textContent = "إخفاء لوحة الإضافة";
-      studio.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      studio.classList.add("hidden");
-      if (icon) icon.className = "fas fa-plus text-xs ml-1";
-      if (text) text.textContent = "إضافة منتج جديد";
-    }
-  }
-
-  function quickFilterStock(status) {
-    const stockFilter = document.getElementById("stockFilter");
-    if (stockFilter) {
-      stockFilter.value = status;
-      if (typeof filterProducts === "function") {
-        filterProducts();
-      }
-    }
-  }
-
-  function resetAddProductForm() {
-    const ids = [
-      "productName",
-      "productPrice",
-      "productPurchasePrice",
-      "productCategory",
-      "productQuantity",
-      "productBarcode",
-      "productDescription"
-    ];
-    ids.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.value = "";
-    });
-    if (typeof removeProductImage === "function") {
-      removeProductImage();
-    }
-    const bp = document.getElementById("barcodePreview");
-    if (bp) bp.innerHTML = "";
-  }
-</script>
-
-<script type="module" src="../js/calculator.js"></script>
-<script type="module" src="../js/shared.js"></script>
-<script type="module" src="../js/products.js"></script>
 </body>
 
 </html>

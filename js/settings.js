@@ -1,14 +1,15 @@
 let phoneFieldsCount = 0;
 
-export function addPhoneNumberField() {
+export function addPhoneNumberField(val = "") {
     phoneFieldsCount++;
     const container = document.getElementById("phoneNumbers");
+    if (!container) return;
     const div = document.createElement("div");
-    div.classList.add("flex", "items-center", "gap-2");
+    div.classList.add("phone-item-row");
     div.innerHTML = `
-        <input id="phoneNumber${phoneFieldsCount}" type="text" class="input input-primary bg-transparent my-2 text-black w-full" placeholder="أدخل رقم الهاتف">
-        <button type="button" onclick="removePhoneNumberField(this)" class="btn btn-error btn-sm">
-            <i class="fas fa-trash"></i>
+        <input id="phoneNumber${phoneFieldsCount}" type="text" value="${val}" placeholder="أدخل رقم هاتف المحل / الواتساب">
+        <button type="button" onclick="removePhoneNumberField(this)" class="btn-remove-phone" title="حذف هذا الرقم">
+            <i class="fas fa-trash-can"></i>
         </button>
     `;
     container.appendChild(div);
@@ -133,10 +134,22 @@ export async function loadSettings() {
         const placeholder = document.getElementById("logoPlaceholder");
         const emailInput = document.getElementById("newEmail");
         const passInput = document.getElementById("newPassword");
+        const statusBadge = document.getElementById("storeStatusBadge");
 
         if (!settings) settings = {};
 
-        if (!settings.storeName || !settings.storeLocation || !settings.phoneNumbers || !Array.isArray(settings.phoneNumbers) || settings.phoneNumbers.length === 0) {
+        const isComplete = settings.storeName && settings.storeLocation && Array.isArray(settings.phoneNumbers) && settings.phoneNumbers.length > 0;
+        if (statusBadge) {
+            if (isComplete) {
+                statusBadge.textContent = "مكتملة";
+                statusBadge.style.color = "#059669";
+            } else {
+                statusBadge.textContent = "غير مكتملة";
+                statusBadge.style.color = "#d97706";
+            }
+        }
+
+        if (!isComplete) {
             Swal.fire({
                 title: "مرحباً بك!",
                 text: "يرجى استكمال بيانات المحل (الاسم، العنوان، وأرقام الهاتف) قبل البدء في استخدام البرنامج.",
@@ -151,21 +164,16 @@ export async function loadSettings() {
         if (locEl) locEl.value = settings.storeLocation || "";
 
         const phoneContainer = document.getElementById("phoneNumbers");
-        if (phoneContainer && settings.phoneNumbers && Array.isArray(settings.phoneNumbers)) {
+        if (phoneContainer) {
             phoneContainer.innerHTML = "";
             phoneFieldsCount = 0;
-            settings.phoneNumbers.forEach(p => {
-                phoneFieldsCount++;
-                const div = document.createElement("div");
-                div.classList.add("flex", "items-center", "gap-2");
-                div.innerHTML = `
-                    <input id="phoneNumber${phoneFieldsCount}" type="text" class="input input-primary my-2 bg-transparent w-full text-black" value="${p}">
-                    <button type="button" onclick="removePhoneNumberField(this)" class="btn btn-error btn-sm">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                `;
-                phoneContainer.appendChild(div);
-            });
+            if (settings.phoneNumbers && Array.isArray(settings.phoneNumbers) && settings.phoneNumbers.length > 0) {
+                settings.phoneNumbers.forEach(p => {
+                    addPhoneNumberField(p);
+                });
+            } else {
+                addPhoneNumberField();
+            }
         }
 
         if (settings.logo && preview && placeholder) {
@@ -263,6 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function initUpdaterSettingsSection() {
     const versionBadge = document.getElementById("appCurrentVersionBadge");
+    const headerVer = document.getElementById("headerAppVersion");
     const statusText = document.getElementById("updateStatusText");
     const statusIcon = document.getElementById("updateStatusIcon");
     const btnCheck = document.getElementById("btnCheckUpdateManual");
@@ -273,8 +282,9 @@ async function initUpdaterSettingsSection() {
 
     try {
         const ver = await window.electronAPI.updater.getVersion();
-        if (ver && versionBadge) {
-            versionBadge.textContent = `v${ver}`;
+        if (ver) {
+            if (versionBadge) versionBadge.textContent = `v${ver}`;
+            if (headerVer) headerVer.textContent = `v${ver}`;
         }
     } catch (e) {
         console.warn("Failed to get app version:", e);

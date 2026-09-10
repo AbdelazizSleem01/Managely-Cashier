@@ -1,226 +1,567 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="light">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الصفحة الرئيسية - كاشير</title>
+    <title>لوحة التحكم الرئيسية - مانيجلي كاشير</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
     <link href="../styles/output.css" rel="stylesheet">
     <link href="../styles/home.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-
-    <style>
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 3rem;
-        }
-        .shortcut-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        .shortcut-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-        .shortcut-badge {
-            background: #3b82f6;
-            color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 0.5rem;
-            font-size: 0.75rem;
-            margin-top: 0.5rem;
-            
-        }
-        .stat-card {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-        .stat-icon {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: #4f46e5;
-        }
-        .page-title {
-            background: linear-gradient(90deg, #4f46e5, #7c3aed);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-    </style>
 </head>
+
 <body data-page="home">
     <div id="sidebar-container"></div>
-    <div class="main-content">
-        <div class="container mx-auto px-4 py-8">
-            <h1 class="text-4xl font-bold text-center mb-8 page-title">الصفحة الرئيسية</h1>
-            
-            <!-- قسم الاختصارات -->
-            <div class="mb-12">
-                <h2 class="text-2xl font-semibold text-primary mb-6 gap-2 flex items-center">
-                    <i class="fas fa-bolt ml-2"></i>اختصارات سريعة
-                </h2>
-                <div class="grid-container">
-                    <a href="./sales-invoice.html" class="shortcut-btn btn-outline btn-primary pb-6">
-                        <i class="fas fa-receipt"></i> فاتورة بيع
-                        <span class="shortcut-badge">F10</span>
+
+    <div class="main-content pt-10">
+        <div class="container mx-auto px-4 py-6 max-w-7xl">
+
+            <!-- 1. Smart Hero Welcome & Live Clock Banner (Light Header) -->
+            <div class="home-hero-card">
+                <div class="home-hero-content">
+                    <div class="home-hero-main">
+                        <div class="home-hero-greeting-wrap">
+                            <span id="heroGreetingBadge" class="home-hero-greeting-badge">
+                                <i class="fas fa-sun"></i>
+                                <span id="heroGreetingText">صباح الخير </span>
+                            </span>
+                        </div>
+                        <h1 id="heroStoreName" class="home-hero-title">نظام مانيجلي لإدارة المبيعات</h1>
+                        <p class="home-hero-subtitle">لوحة تحكم ذكية وشاملة لإدارة نقاط البيع، المخزون، الحسابات اليومية
+                            والتقارير الفورية </p>
+                    </div>
+
+                    <div class="home-hero-right">
+                        <div class="home-live-clock-card">
+                            <div id="liveHomeTime" class="home-live-time">00:00:00 ص</div>
+                            <div id="liveHomeDate" class="home-live-date">جارٍ تحميل التاريخ...</div>
+                        </div>
+                        <div class="home-hero-actions">
+                            <a href="./sales-invoice.html" class="btn-hero-primary">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>فاتورة جديدة (F10)</span>
+                            </a>
+                            <a href="./products.html" class="btn-hero-secondary">
+                                <i class="fas fa-box-open"></i>
+                                <span>المنتجات (F9)</span>
+                            </a>
+                            <a href="./treasury.html" class="btn-hero-secondary">
+                                <i class="fas fa-wallet"></i>
+                                <span>الخزنة (F12)</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Smart Shortcuts Hub (12 Cards) -->
+            <div class="home-shortcuts-section">
+                <div class="home-section-header">
+                    <h2 class="home-section-title">
+                        <div class="page-icon-badge sm">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <span>مركز الوصول السريع للعمليات</span>
+                    </h2>
+                    <span class="home-section-badge">12 قسماً رئيسياً</span>
+                </div>
+
+                <div class="home-shortcuts-grid">
+                    <!-- 1. Sales Invoice -->
+                    <a href="./sales-invoice.html" class="home-shortcut-card sc-pos">
+                        <div class="shortcut-icon-wrap">
+                            <i class="fas fa-cash-register"></i>
+                        </div>
+                        <div class="shortcut-content">
+                            <div class="shortcut-title">
+                                <span>فاتورة بيع</span>
+                                <span class="shortcut-kbd">F10</span>
+                            </div>
+                            <p class="shortcut-subtitle">إصدار وطباعة فواتير الكاشير</p>
+                        </div>
                     </a>
-                    <a href="./products.html" class="shortcut-btn btn-outline btn-success">
-                        <i class="fas fa-box"></i> إدارة المنتجات
-                        <span class="shortcut-badge">F9</span>
+
+                    <!-- 2. Sales Log -->
+                    <a href="./sales.html" class="home-shortcut-card sc-sales">
+                        <div class="shortcut-icon-wrap">
+                            <i class="fas fa-receipt"></i>
+                        </div>
+                        <div class="shortcut-content">
+                            <div class="shortcut-title">
+                                <span>سجل المبيعات</span>
+                                <span class="shortcut-kbd">F6</span>
+                            </div>
+                            <p class="shortcut-subtitle">عرض وإدارة فواتير البيع</p>
+                        </div>
                     </a>
-                    <a href="./treasury.html" class="shortcut-btn btn-outline btn-info">
-                        <i class="fas fa-wallet"></i> الخزنة
-                        <span class="shortcut-badge">F12</span>
+
+                    <!-- 3. Products -->
+                    <a href="./products.html" class="home-shortcut-card sc-products">
+                        <div class="shortcut-icon-wrap">
+                            <i class="fas fa-box-open"></i>
+                        </div>
+                        <div class="shortcut-content">
+                            <div class="shortcut-title">
+                                <span>إدارة المنتجات</span>
+                                <span class="shortcut-kbd">F9</span>
+                            </div>
+                            <p class="shortcut-subtitle">المخزون والأسعار والباركود</p>
+                        </div>
                     </a>
-                    <a href="./categories.html" class="shortcut-btn btn-outline btn-accent">
-                        <i class="fas fa-tags"></i> الفئات
-                        <span class="shortcut-badge">Ctrl+T</span>
+
+                    <!-- 4. Categories -->
+                    <a href="./categories.html" class="home-shortcut-card sc-categories">
+                        <div class="shortcut-icon-wrap">
+                            <i class="fas fa-tags"></i>
+                        </div>
+                        <div class="shortcut-content">
+                            <div class="shortcut-title">
+                                <span>إدارة الفئات</span>
+                                <span class="shortcut-kbd">Ctrl+T</span>
+                            </div>
+                            <p class="shortcut-subtitle">تصنيف وترتيب الأقسام</p>
+                        </div>
                     </a>
-                    <a href="./customers.html" class="shortcut-btn btn-outline btn-secondary">
-                        <i class="fas fa-users"></i> العملاء
-                        <span class="shortcut-badge">F4</span>
+
+                    <!-- 5. Treasury -->
+                    <a href="./treasury.html" class="home-shortcut-card sc-treasury">
+                        <div class="shortcut-icon-wrap">
+                            <i class="fas fa-vault"></i>
+                        </div>
+                        <div class="shortcut-content">
+                            <div class="shortcut-title">
+                                <span>الخزنة والحسابات</span>
+                                <span class="shortcut-kbd">F12</span>
+                            </div>
+                            <p class="shortcut-subtitle">النقدية والإيرادات والمصروفات</p>
+                        </div>
                     </a>
-                    <a href="./settings.html" class="shortcut-btn btn-outline btn-warning">
-                        <i class="fas fa-cog"></i> الإعدادات
-                        <span class="shortcut-badge">Ctrl+S</span>
+
+                    <!-- 6. Purchases -->
+                    <a href="./purchase-invoices.html" class="home-shortcut-card sc-purchases">
+                        <div class="shortcut-icon-wrap">
+                            <i class="fas fa-cart-flatbed"></i>
+                        </div>
+                        <div class="shortcut-content">
+                            <div class="shortcut-title">
+                                <span>المشتريات</span>
+                                <span class="shortcut-kbd">F7</span>
+                            </div>
+                            <p class="shortcut-subtitle">تسجيل فواتير الشراء اليومية</p>
+                        </div>
                     </a>
-                    <a href="./suppliers.html" class="shortcut-btn btn-outline btn-error">
-                        <i class="fas fa-truck"></i> الموردين
-                        <span class="shortcut-badge">Ctrl+P</span>
+
+                    <!-- 7. Product Purchase Invoices -->
+                    <a href="./ProductsPurchaseInvoices.html" class="home-shortcut-card sc-purchase-invoices">
+                        <div class="shortcut-icon-wrap">
+                            <i class="fas fa-truck-ramp-box"></i>
+                        </div>
+                        <div class="shortcut-content">
+                            <div class="shortcut-title">
+                                <span>فواتير الشراء</span>
+                                <span class="shortcut-kbd">F8</span>
+                            </div>
+                            <p class="shortcut-subtitle">إدارة فواتير التوريد والمخازن</p>
+                        </div>
                     </a>
-                    <a href="./ProductsPurchaseInvoices.html" class="shortcut-btn btn-outline btn-success">
-                        <i class="fas fa-file-invoice"></i> فواتير الشراء
-                        <span class="shortcut-badge">F8</span>
+
+                    <!-- 8. Returns -->
+                    <a href="./returns.html" class="home-shortcut-card sc-returns">
+                        <div class="shortcut-icon-wrap">
+                            <i class="fas fa-arrow-rotate-left"></i>
+                        </div>
+                        <div class="shortcut-content">
+                            <div class="shortcut-title">
+                                <span>المرتجعات</span>
+                                <span class="shortcut-kbd">F3</span>
+                            </div>
+                            <p class="shortcut-subtitle">استرجاع المنتجات والمبالغ</p>
+                        </div>
                     </a>
-                    <a href="./purchase-invoices.html" class="shortcut-btn btn-outline btn-info">
-                        <i class="fas fa-file-invoice-dollar"></i> المشتريات
-                        <span class="shortcut-badge">F7</span>
+
+                    <!-- 9. Customers -->
+                    <a href="./customers.html" class="home-shortcut-card sc-customers">
+                        <div class="shortcut-icon-wrap">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="shortcut-content">
+                            <div class="shortcut-title">
+                                <span>دليل العملاء</span>
+                                <span class="shortcut-kbd">F4</span>
+                            </div>
+                            <p class="shortcut-subtitle">بيانات وحسابات العملاء</p>
+                        </div>
                     </a>
-                    <a href="./sales.html" class="shortcut-btn btn-outline btn-primary">
-                        <i class="fas fa-shopping-cart"></i> المبيعات
-                        <span class="shortcut-badge">F6</span>
+
+                    <!-- 10. Suppliers -->
+                    <a href="./suppliers.html" class="home-shortcut-card sc-suppliers">
+                        <div class="shortcut-icon-wrap">
+                            <i class="fas fa-truck-field"></i>
+                        </div>
+                        <div class="shortcut-content">
+                            <div class="shortcut-title">
+                                <span>الموردين والأقساط</span>
+                                <span class="shortcut-kbd">Ctrl+P</span>
+                            </div>
+                            <p class="shortcut-subtitle">متابعة حسابات الموردين</p>
+                        </div>
                     </a>
-                    <a href="./statistics.html" class="shortcut-btn btn-outline btn-accent">
-                        <i class="fas fa-chart-line"></i> التقارير
-                        <span class="shortcut-badge">F5</span>
+
+                    <!-- 11. Statistics & Reports -->
+                    <a href="./statistics.html" class="home-shortcut-card sc-reports">
+                        <div class="shortcut-icon-wrap">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="shortcut-content">
+                            <div class="shortcut-title">
+                                <span>التقارير والإحصائيات</span>
+                                <span class="shortcut-kbd">F5</span>
+                            </div>
+                            <p class="shortcut-subtitle">تحليلات المبيعات والأرباح</p>
+                        </div>
                     </a>
-                    <a href="./returns.html" class="shortcut-btn btn-outline btn-accent">
-                        <i class="fas fa-arrows-rotate"></i> مرتجع
-                        <span class="shortcut-badge">F3</span>
+
+                    <!-- 12. Settings -->
+                    <a href="./settings.html" class="home-shortcut-card sc-settings">
+                        <div class="shortcut-icon-wrap">
+                            <i class="fas fa-sliders"></i>
+                        </div>
+                        <div class="shortcut-content">
+                            <div class="shortcut-title">
+                                <span>إعدادات النظام</span>
+                                <span class="shortcut-kbd">Ctrl+S</span>
+                            </div>
+                            <p class="shortcut-subtitle">الطابعة، النسخ الاحتياطي، النظام</p>
+                        </div>
                     </a>
                 </div>
             </div>
 
-            <!-- قسم المنتجات فقط (بدون سلة) -->
-            <div class="block gap-8 mt-12">
-                <div class="w-full">
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                            <h2 class="text-2xl font-semibold text-primary flex items-center shrink-0 whitespace-nowrap" style="white-space: nowrap; flex-shrink: 0;">
-                                <i class="fas fa-boxes ml-2"></i>المنتجات المتاحة
-                            </h2>
-                            <div class="flex items-center gap-4 w-full md:w-auto">
-                                <input id="searchInput"
-                                    class="input input-primary w-full md:w-64 bg-white"
-                                    placeholder="ابحث عن منتج...">
-                                <div id="filter" class="flex items-center w-full md:w-64">
-                                    <select id="filterCategory" onchange="filterProducts()"
-                                        class="select select-primary text-primary bg-transparent w-full">
-                                        <option value="" disabled selected>كل المنتجات</option>
-                                    </select>
-                                </div>
+            <!-- 3. Interactive Product Catalog & Live Stock Radar (Moved Up) -->
+            <div class="home-catalog-box">
+                <div class="catalog-top-bar">
+                    <div class="flex items-center gap-3">
+                        <div class="page-icon-badge">
+                            <i class="fas fa-boxes-stacked"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-gray-800 m-0">معرض المنتجات والمخزون الحي</h2>
+                            <p class="text-xs text-gray-500 m-0">عرض المنتجات المتاحة والكميات والأسعار الحالية</p>
+                        </div>
+                        <span id="totalProductsBadge" class="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full mr-2">0 منتج</span>
+                    </div>
+
+                    <div class="catalog-search-wrap">
+                        <i class="fas fa-search"></i>
+                        <input id="searchInput" type="text" class="catalog-search-input" placeholder="ابحث عن منتج أو باركود...">
+                    </div>
+                </div>
+
+                <!-- Category Filter Pills -->
+                <div id="categoryPillsContainer" class="category-pills-container mb-4">
+                    <button type="button" class="category-pill-btn active" onclick="setCategoryFilter('')">
+                        <i class="fas fa-layer-group"></i>
+                        <span>كل المنتجات</span>
+                    </button>
+                    <!-- Category pills loaded dynamically -->
+                </div>
+
+                <!-- Hidden legacy select to keep JS event handlers compatible if called externally -->
+                <div id="filter" class="hidden">
+                    <select id="filterCategory" onchange="filterProducts()">
+                        <option value="" selected>كل المنتجات</option>
+                    </select>
+                </div>
+
+                <!-- Products Grid -->
+                <div id="products" class="home-products-grid">
+                    <!-- Loaded dynamically by js/home.js -->
+                </div>
+
+                <!-- No Products Placeholder -->
+                <div id="noProducts" class="hidden p-12 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200 mt-4">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400 text-2xl">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-700 mb-1">لا توجد منتجات مطابقة للبحث</h3>
+                    <p class="text-sm text-gray-500 mb-4">جرب البحث بكلمات أخرى أو اختر فئة مختلفة</p>
+                    <a href="./products.html" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 text-white font-bold text-sm hover:bg-purple-700 transition-all">
+                        <i class="fas fa-plus"></i>
+                        <span>إضافة منتج جديد</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 4. Live KPI Stat Cards Grid (Moved Down) -->
+            <div class="home-kpi-section mb-10">
+                <div class="home-section-header">
+                    <h2 class="home-section-title">
+                        <div class="page-icon-badge sm">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <span>مؤشرات وأداء اليوم</span>
+                    </h2>
+                    <span class="home-section-badge">ملخص العمليات</span>
+                </div>
+
+                <div class="home-kpi-grid">
+                    <!-- Sales KPI -->
+                    <div class="home-kpi-card sales">
+                        <div class="home-kpi-header">
+                            <div class="home-kpi-icon-wrap">
+                                <i class="fas fa-receipt"></i>
+                            </div>
+                            <span class="home-kpi-pill">اليوم</span>
+                        </div>
+                        <div>
+                            <div class="home-kpi-label">مبيعات اليوم</div>
+                            <div id="dailySales" class="home-kpi-value">0</div>
+                            <div class="home-kpi-hint">
+                                <i class="fas fa-chart-line text-emerald-500"></i>
+                                <span>عمليات بيع مسجلة</span>
                             </div>
                         </div>
-                        <div id="products" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-                        <div id="noProducts" class="no-results hidden">
-                            <i class="fas fa-box-open text-4xl mb-3 text-gray-400"></i>
-                            <p class="text-lg">لا توجد منتجات متاحة</p>
-                            <p class="text-sm text-gray-500 mt-1">قم بإضافة منتجات جديدة لعرضها هنا</p>
+                    </div>
+
+                    <!-- Revenue KPI -->
+                    <div class="home-kpi-card revenue">
+                        <div class="home-kpi-header">
+                            <div class="home-kpi-icon-wrap">
+                                <i class="fas fa-money-bill-trend-up"></i>
+                            </div>
+                            <span class="home-kpi-pill">صافي المبيعات</span>
+                        </div>
+                        <div>
+                            <div class="home-kpi-label">إيرادات اليوم</div>
+                            <div id="dailyRevenue" class="home-kpi-value">0.00 جنيه</div>
+                            <div class="home-kpi-hint">
+                                <i class="fas fa-arrow-trend-up text-emerald-600"></i>
+                                <span>إجمالي تحصيلات اليوم</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Treasury KPI -->
+                    <div class="home-kpi-card treasury">
+                        <div class="home-kpi-header">
+                            <div class="home-kpi-icon-wrap">
+                                <i class="fas fa-vault"></i>
+                            </div>
+                            <span class="home-kpi-pill">الرصيد الفعلي</span>
+                        </div>
+                        <div>
+                            <div class="home-kpi-label">رصيد الخزنة الحالي</div>
+                            <div id="homeTreasuryBalance" class="home-kpi-value">0.00 جنيه</div>
+                            <div class="home-kpi-hint">
+                                <i class="fas fa-shield-halved text-cyan-600"></i>
+                                <span>المتاح بالدرج والخزينة</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Low Stock KPI -->
+                    <div class="home-kpi-card stock cursor-pointer" onclick="filterLowStockProducts()" title="انقر لتصفية المنتجات المنخفضة">
+                        <div class="home-kpi-header">
+                            <div class="home-kpi-icon-wrap">
+                                <i class="fas fa-triangle-exclamation"></i>
+                            </div>
+                            <span class="home-kpi-pill">تنبيه المخزون</span>
+                        </div>
+                        <div>
+                            <div class="home-kpi-label">منتجات منخفضة</div>
+                            <div id="lowStock" class="home-kpi-value">0</div>
+                            <div class="home-kpi-hint">
+                                <i class="fas fa-boxes-packing text-amber-500"></i>
+                                <span>بحاجة لإعادة التوريد</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- قسم الإحصائيات السريعة -->
-            <div class="statistics mt-12">
-                <h2 class="text-2xl font-semibold text-primary mb-6 gap-2 flex items-center">
-                    <i class="fas fa-chart-pie ml-2"></i>نظرة سريعة
-                </h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="stat-card w-full">
-                        <i class="fas fa-shopping-cart stat-icon"></i>
-                        <h3 class="text-lg font-bold mb-2 text-black">المبيعات اليوم</h3>
-                        <p id="dailySales" class="text-2xl font-bold text-gray-800">0</p>
+            <!-- 5. Recent Sales Activity & Store Highlights -->
+            <div class="home-insights-grid">
+                <!-- Recent Invoices -->
+                <div class="home-insights-card">
+                    <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div class="page-icon-badge sm">
+                                <i class="fas fa-clock-rotate-left"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-base m-0">أحدث فواتير اليوم</h3>
+                                <p class="text-xs text-gray-500 m-0">آخر العمليات التي تمت على نقطة البيع</p>
+                            </div>
+                        </div>
+                        <a href="./sales.html" class="text-xs font-bold text-purple-600 hover:text-purple-800 flex items-center gap-1">
+                            <span>عرض الكل</span>
+                            <i class="fas fa-arrow-left"></i>
+                        </a>
                     </div>
-                    <div class="stat-card w-full">
-                        <i class="fas fa-money-bill-wave stat-icon"></i>
-                        <h3 class="text-lg font-bold mb-2 text-black">الإيرادات اليوم</h3>
-                        <p id="dailyRevenue" class="text-2xl font-bold text-gray-800">0.00 جنيه</p>
+
+                    <div id="recentInvoicesContainer" class="recent-invoices-list">
+                        <!-- Loaded dynamically -->
                     </div>
-                    <div class="stat-card w-full">
-                        <i class="fas fa-exclamation-triangle stat-icon"></i>
-                        <h3 class="text-lg font-bold mb-2 text-black">منتجات منخفضة</h3>
-                        <p id="lowStock" class="text-2xl font-bold text-gray-800">0</p>
-                        <p class="text-sm text-gray-500 mt-1">بحاجة لإعادة تخزين</p>
+                </div>
+
+                <!-- Store Tips & Shortcuts Guide -->
+                <div class="home-insights-card">
+                    <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                        <div class="flex items-center gap-3">
+                            <div class="page-icon-badge sm">
+                                <i class="fas fa-wand-magic-sparkles"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-gray-800 text-base m-0">نصائح وإرشادات التشغيل</h3>
+                                <p class="text-xs text-gray-500 m-0">لتحقيق أقصى سرعة وأداء في نقطة البيع</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="store-tips-wrap">
+                        <div class="store-tip-item">
+                            <i class="fas fa-keyboard"></i>
+                            <div class="store-tip-text">
+                                <h4>استخدم أزرار F10 و F9</h4>
+                                <p>يمكنك فتح شاشة البيع بضغطة زر <strong class="text-purple-700 font-bold">F10</strong> مباشرة دون لمس الماوس.</p>
+                            </div>
+                        </div>
+                        <div class="store-tip-item">
+                            <i class="fas fa-barcode"></i>
+                            <div class="store-tip-text">
+                                <h4>قارئ الباركود التلقائي</h4>
+                                <p>عند توجيه الباركود يضاف الصنف فوراً إلى الفاتورة ويتم احتساب الإجمالي تلقائياً.</p>
+                            </div>
+                        </div>
+                        <div class="store-tip-item">
+                            <i class="fas fa-cloud-arrow-up"></i>
+                            <div class="store-tip-text">
+                                <h4>النسخ الاحتياطي الدوري</h4>
+                                <p>احرص على أخذ نسخة احتياطية من قاعدة البيانات أسبوعياً من شاشة الإعدادات.</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- قسم التسويق والمميزات -->
-            <div class="mt-16 bg-gradient-to-r from-indigo-100 to-purple-100 rounded-xl p-8 shadow-lg">
-                <h2 class="text-3xl font-bold text-center text-indigo-800 mb-8">مرحبًا بك في نظام الكاشير المتكامل!</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mb-10">
-                    <div class="bg-white p-6 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300">
-                        <i class="fas fa-bolt text-4xl text-yellow-500 mb-4"></i>
-                        <h3 class="text-xl font-bold mb-2 text-black">سرعة وأداء</h3>
-                        <p class="text-gray-600">واجهة سهلة وسريعة لإنجاز عمليات البيع في ثوانٍ.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300">
-                        <i class="fas fa-chart-bar text-4xl text-green-500 mb-4"></i>
-                        <h3 class="text-xl font-bold mb-2 text-black">تقارير وتقارير</h3>
-                        <p class="text-gray-600">تقارير مفصلة عن المبيعات، المخزون، والعملاء لاتخاذ أفضل القرارات.</p>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300">
-                        <i class="fas fa-shield-alt text-4xl text-blue-500 mb-4"></i>
-                        <h3 class="text-xl font-bold mb-2 text-black">أمان وموثوقية</h3>
-                        <p class="text-gray-600">بياناتك في أمان تام مع نظام ترخيص ونسخ احتياطي آمن.</p>
-                    </div>
-                </div>
-                <div class="text-center">
-                    <img src="../assets/images/pay.png" alt="نظام الكاشير" class="mx-auto rounded-lg shadow-md mb-6">
-                    <p class="text-xl text-gray-700 font-semibold">ابدأ رحلتك معنا لتحقيق كفاءة أعلى وأرباح أكبر!</p>
-                </div>
-            </div>
         </div>
     </div>
 
-    <!-- حقل مخفي للسكانر (للصفحة الرئيسية فقط إذا حابب تستخدمه هنا) -->
-    <div class="fixed bottom-4 left-4 z-50 hidden">
-        <div class="tooltip tooltip-right" data-tip="فتح الماسح الضوئي">
-            <button class="btn btn-circle btn-primary shadow-lg"
-                onclick="document.getElementById('barcodeScannerInput').focus()"
-                title="فتح الماسح الضوئي" aria-label="فتح الماسح الضوئي">
-                <i class="fas fa-barcode"></i>
-            </button>
+    <!-- Floating Keyboard Shortcuts Helper Button -->
+    <button id="btnOpenShortcutsModal" type="button" class="floating-shortcuts-btn" onclick="openShortcutsModal()" title="دليل اختصارات الكيبورد (F1)">
+        <i class="fas fa-keyboard"></i>
+        <span>دليل الاختصارات (F1)</span>
+    </button>
+
+    <!-- Keyboard Shortcuts Guide Modal -->
+    <div id="shortcutsModal" class="modal-overlay" onclick="handleShortcutsOverlayClick(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-keyboard"></i>
+                    <span>دليل اختصارات لوحة المفاتيح السريعة</span>
+                </div>
+                <button type="button" class="modal-close" onclick="closeShortcutsModal()" title="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="shortcuts-table-grid">
+                <!-- Group 1: Sales & POS -->
+                <div class="shortcuts-group-card">
+                    <div class="shortcuts-group-title">
+                        <i class="fas fa-cash-register"></i>
+                        <span>المبيعات والكاشير</span>
+                    </div>
+                    <div class="shortcut-row">
+                        <span class="shortcut-row-label">فاتورة بيع جديدة</span>
+                        <span class="shortcut-kbd">F10</span>
+                    </div>
+                    <div class="shortcut-row">
+                        <span class="shortcut-row-label">سجل المبيعات</span>
+                        <span class="shortcut-kbd">F6</span>
+                    </div>
+                    <div class="shortcut-row">
+                        <span class="shortcut-row-label">إدارة المرتجعات</span>
+                        <span class="shortcut-kbd">F3</span>
+                    </div>
+                    <div class="shortcut-row">
+                        <span class="shortcut-row-label">دليل العملاء</span>
+                        <span class="shortcut-kbd">F4</span>
+                    </div>
+                </div>
+
+                <!-- Group 2: Inventory & Purchasing -->
+                <div class="shortcuts-group-card">
+                    <div class="shortcuts-group-title">
+                        <i class="fas fa-boxes-stacked"></i>
+                        <span>المخزون والمشتريات</span>
+                    </div>
+                    <div class="shortcut-row">
+                        <span class="shortcut-row-label">إدارة المنتجات</span>
+                        <span class="shortcut-kbd">F9</span>
+                    </div>
+                    <div class="shortcut-row">
+                        <span class="shortcut-row-label">إدارة الفئات</span>
+                        <span class="shortcut-kbd">Ctrl + T</span>
+                    </div>
+                    <div class="shortcut-row">
+                        <span class="shortcut-row-label">المشتريات اليومية</span>
+                        <span class="shortcut-kbd">F7</span>
+                    </div>
+                    <div class="shortcut-row">
+                        <span class="shortcut-row-label">فواتير التوريد</span>
+                        <span class="shortcut-kbd">F8</span>
+                    </div>
+                </div>
+
+                <!-- Group 3: Finance & Settings -->
+                <div class="shortcuts-group-card">
+                    <div class="shortcuts-group-title">
+                        <i class="fas fa-vault"></i>
+                        <span>الحسابات والإعدادات</span>
+                    </div>
+                    <div class="shortcut-row">
+                        <span class="shortcut-row-label">الخزنة والحسابات</span>
+                        <span class="shortcut-kbd">F12</span>
+                    </div>
+                    <div class="shortcut-row">
+                        <span class="shortcut-row-label">إدارة الموردين</span>
+                        <span class="shortcut-kbd">Ctrl + P</span>
+                    </div>
+                    <div class="shortcut-row">
+                        <span class="shortcut-row-label">التقارير والإحصائيات</span>
+                        <span class="shortcut-kbd">F5</span>
+                    </div>
+                    <div class="shortcut-row">
+                        <span class="shortcut-row-label">إعدادات النظام</span>
+                        <span class="shortcut-kbd">Ctrl + S</span>
+                    </div>
+                </div>
+
+                <!-- Group 4: General Shortcuts -->
+                <div class="shortcuts-group-card">
+                    <div class="shortcuts-group-title">
+                        <i class="fas fa-circle-info"></i>
+                        <span>أزرار عامة</span>
+                    </div>
+                    <div class="shortcut-row">
+                        <span class="shortcut-row-label">فتح دليل الاختصارات</span>
+                        <span class="shortcut-kbd">F1</span>
+                    </div>
+                    <div class="shortcut-row">
+                        <span class="shortcut-row-label">البحث عن منتج</span>
+                        <span class="shortcut-kbd">/</span>
+                    </div>
+                    <div class="shortcut-row">
+                        <span class="shortcut-row-label">الآلة الحاسبة</span>
+                        <span class="shortcut-kbd">زر عائم</span>
+                    </div>
+                </div>
+            </div>
         </div>
-        <input type="text" id="barcodeScannerInput" class="opacity-0 absolute" oninput="handleBarcodeScan(this.value)"
-            autofocus>
     </div>
 
     <div id="footer-container" class="z-10"></div>
@@ -228,4 +569,5 @@
     <script type="module" src="../js/shared.js"></script>
     <script type="module" src="../js/home.js"></script>
 </body>
+
 </html>

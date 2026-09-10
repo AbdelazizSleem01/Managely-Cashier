@@ -85,11 +85,21 @@ function selectInvoice(saleId) {
 
         // عرض تفاصيل الفاتورة
         invoiceInfo.innerHTML = `
-            <div class="grid grid-cols-2 gap-4 text-sm">
-                <div><strong>رقم الفاتورة:</strong> ${sale.invoiceNumber}</div>
-                <div><strong>التاريخ:</strong> ${new Date(sale.date).toLocaleDateString('ar-EG')}</div>
-                <div><strong>العميل:</strong> ${sale.customerName || 'غير محدد'}</div>
-                <div><strong>إجمالي الفاتورة:</strong> ${sale.total?.toFixed(2) || '0'} جنيه</div>
+            <div class="invoice-info-item">
+                <span class="invoice-info-label"><i class="fas fa-barcode"></i> رقم الفاتورة</span>
+                <span class="invoice-info-val">${sale.invoiceNumber}</span>
+            </div>
+            <div class="invoice-info-item">
+                <span class="invoice-info-label"><i class="fas fa-calendar-alt"></i> تاريخ الفاتورة</span>
+                <span class="invoice-info-val">${new Date(sale.date).toLocaleDateString('ar-EG')}</span>
+            </div>
+            <div class="invoice-info-item">
+                <span class="invoice-info-label"><i class="fas fa-user"></i> اسم العميل</span>
+                <span class="invoice-info-val">${sale.customerName || 'عميل نقدي'}</span>
+            </div>
+            <div class="invoice-info-item">
+                <span class="invoice-info-label"><i class="fas fa-coins"></i> إجمالي الفاتورة</span>
+                <span class="invoice-info-val" style="color: var(--primary-color);">${sale.total?.toFixed(2) || '0'} ج.م</span>
             </div>
         `;
 
@@ -97,7 +107,7 @@ function selectInvoice(saleId) {
         if (sale && sale.items && sale.items.length > 0) {
             productsContainer.innerHTML = sale.items.map((item, index) => `
                 <div class="product-item" data-product-id="${item._id}">
-                    <div class="flex items-center">
+                    <div class="product-item-left">
                         <input type="checkbox" 
                                id="product-${index}" 
                                class="checkbox checkbox-primary" 
@@ -108,26 +118,26 @@ function selectInvoice(saleId) {
                         <div class="product-info">
                             <div class="product-name">${item.name}</div>
                             <div class="product-details">
-                                السعر: ${item.price?.toFixed(2) || '0'} جنيه | 
-                                الكمية في الفاتورة: ${item.quantity} | 
-                                الإجمالي: ${(item.price * item.quantity)?.toFixed(2) || '0'} جنيه
+                                <span>السعر: <strong>${item.price?.toFixed(2) || '0'} ج.م</strong></span> | 
+                                <span>الكمية بالفاتورة: <strong>${item.quantity}</strong></span> | 
+                                <span>الإجمالي: <strong>${(item.price * item.quantity)?.toFixed(2) || '0'} ج.م</strong></span>
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <label class="text-sm text-gray-600">كمية المرتجع:</label>
+                    <div class="product-item-right">
+                        <label class="text-sm font-bold text-gray-700">الكمية:</label>
                         <input type="number" 
-                               class="quantity-input bg-white" 
+                               class="quantity-input" 
                                min="0" 
                                max="${item.quantity}" 
                                value="0" 
                                disabled
                                data-product-id="${item._id}"
                                placeholder="0">
-                        <button class="btn btn-xs btn-outline btn-primary" 
+                        <button class="btn-max-qty" 
                                 onclick="setMaxQuantity('${item._id}', ${item.quantity})"
                                 title="تحديد الكمية الكاملة">
-                            <i class="fas fa-maximize"></i>
+                            <i class="fas fa-arrows-to-dot"></i> الكل
                         </button>
                     </div>
                 </div>

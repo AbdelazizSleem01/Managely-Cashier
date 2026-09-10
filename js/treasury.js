@@ -73,18 +73,17 @@ function renderCurrentTransactionsPage() {
     pageItems.forEach(t => {
         const tr = document.createElement("tr");
         let badgeClass, textClass, iconClass;
-        tr.className = "hover:bg-primary/5 transition-colors duration-200";
         
         if (t.type === "revenue") {
-            badgeClass = "badge-success bg-success/10 text-success";
+            badgeClass = "badge-tx revenue";
             textClass = "text-success font-bold";
             iconClass = "fa-arrow-up text-success";
         } else if (t.type === "expense") {
-            badgeClass = "badge-error bg-error/10 text-error";
+            badgeClass = "badge-tx expense";
             textClass = "text-error font-bold";
             iconClass = "fa-arrow-down text-error";
         } else if (t.type === "returned") {
-            badgeClass = "badge-warning bg-warning/10 text-warning";
+            badgeClass = "badge-tx returned";
             textClass = "text-warning font-bold";
             iconClass = "fa-undo text-warning";
         }
@@ -92,39 +91,39 @@ function renderCurrentTransactionsPage() {
         tr.innerHTML = `
             <td class="font-medium text-right">
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" class="print-checkbox" data-id="${t._id}">
+                    <input type="checkbox" class="print-checkbox rounded border-gray-300 text-purple-600 focus:ring-purple-500 w-4 h-4 cursor-pointer" data-id="${t._id}">
                     <i class="fas ${iconClass}"></i>
-                    ${new Date(t.date).toLocaleString("ar-EG")}
+                    <span>${new Date(t.date).toLocaleString("ar-EG")}</span>
                 </div>
             </td>
             <td class='text-right'>
-                <span class="badge ${badgeClass} gap-1">
+                <span class="${badgeClass}">
                     ${t.type === "revenue" ? "إيراد" : t.type === "expense" ? "مصروف" : "مرتجع"}
                 </span>
             </td>
-            <td class="${textClass} text-right">
-                ${parseFloat(t.amount).toFixed(2)} <span class="text-sm">جنيه</span>
+            <td class="${textClass} text-right" style="font-weight: 800; font-size: 0.95rem;">
+                ${parseFloat(t.amount).toFixed(2)} <span class="text-xs">جنيه</span>
             </td>
-            <td class="max-w-xs truncate text-right" title="${t.description || "لا يوجد وصف"}">
+            <td class="max-w-xs truncate text-right font-medium" title="${t.description || "لا يوجد وصف"}">
                 ${t.description || '<span class="text-gray-400">لا يوجد وصف</span>'}
             </td>
             <td class='text-right'>
                 <div class="flex items-center gap-2">
-                    <div class="avatar placeholder">
-                        <div class="bg-neutral text-neutral-content rounded-full w-8">
-                            <span class="text-lg">${t.user ? t.user.charAt(0) : "?"}</span>
-                        </div>
+                    <div style="width: 28px; height: 28px; border-radius: 50%; background: #ede9fe; color: #6d28d9; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem;">
+                        <span>${t.user ? t.user.charAt(0) : "?"}</span>
                     </div>
-                    ${t.user || '<span class="text-gray-400">غير معروف</span>'}
+                    <span class="font-bold text-gray-700 text-xs">${t.user || '<span class="text-gray-400">غير معروف</span>'}</span>
                 </div>
             </td>
             <td class="text-right">
-                <button class="btn btn-sm btn-warning edit-btn" data-id="${t._id}" title="تعديل">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-sm btn-error delete-btn" data-id="${t._id}" title="حذف">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <div class="table-actions">
+                    <button class="btn-tbl-action edit edit-btn" data-id="${t._id}" title="تعديل">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-tbl-action delete delete-btn" data-id="${t._id}" title="حذف">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
             </td>
         `;
         tbody.appendChild(tr);
