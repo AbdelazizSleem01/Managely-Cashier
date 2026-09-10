@@ -263,7 +263,7 @@
     <div class="ambient-glow"></div>
 
     <div class="splash-card" id="splashCard">
-        <div class="badge-version" id="versionBadge">v1.0.3</div>
+        <div class="badge-version" id="versionBadge">v1.0.4</div>
         <div class="badge-status">نظام جاهز</div>
 
         <div class="logo-wrapper">
@@ -316,11 +316,11 @@
             }, step.delay);
         });
 
-        // Smooth transition to main app
+        // Smooth transition to login
         setTimeout(() => {
             splashCard.classList.add('fade-out');
             setTimeout(() => {
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             }, 400);
         }, 2500);
     </script>
