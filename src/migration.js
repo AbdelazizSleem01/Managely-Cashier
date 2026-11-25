@@ -138,6 +138,62 @@ const MIGRATIONS = [
         up: async () => {
             log.info('[Migration] v1.0.1 Index optimization completed.');
         }
+    },
+    {
+        version: '1.0.2',
+        description: 'Normalize and repair treasury records with payment methods and descriptions',
+        up: async () => {
+            try {
+                const userDataPath = app.getPath('userData');
+                const dbPath = join(userDataPath, 'db');
+                const treasuryFile = join(dbPath, 'treasury.db');
+                const salesFile = join(dbPath, 'sales.db');
+                if (existsSync(treasuryFile)) {
+                    const tContent = readFileSync(treasuryFile, 'utf8');
+                    const tLines = tContent.split('\n').filter(Boolean).map(l => { try { return JSON.parse(l); } catch(e){ return null; } }).filter(Boolean);
+                    let sLines = [];
+                    if (existsSync(salesFile)) {
+                        sLines = readFileSync(salesFile, 'utf8').split('\n').filter(Boolean).map(l => { try { return JSON.parse(l); } catch(e){ return null; } }).filter(Boolean);
+                    }
+
+                    let modified = false;
+                    for (const t of tLines) {
+                        if (t.description && t.description.includes('غير محدد')) {
+                            const match = sLines.find(s => s.invoiceNumber && t.description.includes(s.invoiceNumber));
+                            if (match) {
+                                let pLabel = 'كاش';
+                                if (match.paymentMethod === 'split') {
+                                    const sc = match.splitPayment?.cash ? parseFloat(match.splitPayment.cash).toFixed(2) : '0.00';
+                                    const sd = match.splitPayment?.card ? parseFloat(match.splitPayment.card).toFixed(2) : '0.00';
+                                    pLabel = `دفع مقسم (كاش: ${sc} ج.م + فيزا: ${sd} ج.م)`;
+                                } else if (match.paymentMethod === 'credit') {
+                                    pLabel = 'آجل';
+                                } else if (match.paymentMethod === 'visaCard' || match.paymentMethod === 'card' || match.paymentMethod === 'visa') {
+                                    pLabel = 'فيزا / كارد';
+                                } else if (match.paymentMethod === 'vodafoneCash' || match.paymentMethod === 'wallet') {
+                                    pLabel = 'فودافون كاش';
+                                }
+                                t.description = `مبيعات - فاتورة رقم ${match.invoiceNumber} (${pLabel})`;
+                                t.paymentMethod = match.paymentMethod || 'split';
+                                if (match.splitPayment) t.splitPayment = match.splitPayment;
+                                modified = true;
+                            }
+                        }
+                        if (t.description && t.description.includes('undefined')) {
+                            t.description = t.description.replace('undefined', '1');
+                            modified = true;
+                        }
+                    }
+
+                    if (modified) {
+                        writeFileSync(treasuryFile, tLines.map(l => JSON.stringify(l)).join('\n') + '\n', 'utf8');
+                        log.info('[Migration] v1.0.2 Repaired legacy treasury descriptions and payment methods.');
+                    }
+                }
+            } catch (err) {
+                log.warn('[Migration] v1.0.2 Notice during treasury normalization:', err);
+            }
+        }
     }
 ];
 

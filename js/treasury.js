@@ -5,6 +5,44 @@ let currentTransactionsList = [];
 let currentTreasuryPage = 1;
 let treasuryPageSize = 10;
 
+/**
+ * Resolves payment method metadata (label, icon, cssClass, key)
+ * Supports all POS payment methods + fallback parser for legacy entries
+ */
+export function getPaymentMethodInfo(t) {
+    if (!t) return { key: "manual", label: "يدوي / أخرى", icon: "fa-hand-holding-dollar", cssClass: "pay-manual" };
+    
+    let method = t.paymentMethod;
+    const desc = t.description || "";
+
+    if (!method) {
+        if (desc.includes("مقسم") || desc.includes("split")) method = "split";
+        else if (desc.includes("فيزا") || desc.includes("كارد") || desc.includes("visaCard") || desc.includes("card") || desc.includes("visa")) method = "visaCard";
+        else if (desc.includes("فودافون") || desc.includes("محفظة") || desc.includes("vodafoneCash") || desc.includes("wallet")) method = "vodafoneCash";
+        else if (desc.includes("آجل") || desc.includes("credit")) method = "credit";
+        else if (desc.includes("كاش") || desc.includes("cash") || desc.includes("نقدي")) method = "cash";
+        else method = "manual";
+    }
+
+    switch (method) {
+        case "cash":
+            return { key: "cash", label: "كاش", icon: "fa-money-bill-wave", cssClass: "pay-cash" };
+        case "visaCard":
+        case "card":
+        case "visa":
+            return { key: "visaCard", label: "فيزا / كارد", icon: "fa-credit-card", cssClass: "pay-card" };
+        case "vodafoneCash":
+        case "wallet":
+            return { key: "vodafoneCash", label: "فودافون كاش", icon: "fa-mobile-alt", cssClass: "pay-wallet" };
+        case "split":
+            return { key: "split", label: "دفع مقسم", icon: "fa-arrows-split-up-and-left", cssClass: "pay-split" };
+        case "credit":
+            return { key: "credit", label: "آجل", icon: "fa-clock", cssClass: "pay-credit" };
+        default:
+            return { key: "manual", label: "يدوي / نقدي", icon: "fa-hand-holding-dollar", cssClass: "pay-manual" };
+    }
+}
+
 async function loadTreasuryData() {
     try {
         if (!window.electronAPI) {
@@ -31,7 +69,46 @@ async function loadTreasuryData() {
                 e.appendChild(n);
             });
         }
-        renderTransactions(await window.electronAPI.getTreasuryTransactions());
+
+        const transactions = (await window.electronAPI.getTreasuryTransactions()) || [];
+        
+        // Calculate Payment Methods Breakdown (for revenues)
+        let cashSum = 0, cardSum = 0, walletSum = 0, splitSum = 0, creditSum = 0;
+        transactions.forEach(tx => {
+            if (tx.type === "revenue") {
+                const amt = parseFloat(tx.amount) || 0;
+                const info = getPaymentMethodInfo(tx);
+                if (info.key === "cash" || info.key === "manual") {
+                    cashSum += amt;
+                } else if (info.key === "visaCard") {
+                    cardSum += amt;
+                } else if (info.key === "vodafoneCash") {
+                    walletSum += amt;
+                } else if (info.key === "split") {
+                    splitSum += amt;
+                    if (tx.splitPayment) {
+                        cashSum += parseFloat(tx.splitPayment.cash || 0);
+                        cardSum += parseFloat(tx.splitPayment.card || 0);
+                    }
+                } else if (info.key === "credit") {
+                    creditSum += amt;
+                }
+            }
+        });
+
+        const elCash = document.getElementById("statCashAmount");
+        const elCard = document.getElementById("statCardAmount");
+        const elWallet = document.getElementById("statWalletAmount");
+        const elSplit = document.getElementById("statSplitAmount");
+        const elCredit = document.getElementById("statCreditAmount");
+
+        if (elCash) elCash.textContent = `${cashSum.toFixed(2)} جنيه`;
+        if (elCard) elCard.textContent = `${cardSum.toFixed(2)} جنيه`;
+        if (elWallet) elWallet.textContent = `${walletSum.toFixed(2)} جنيه`;
+        if (elSplit) elSplit.textContent = `${splitSum.toFixed(2)} جنيه`;
+        if (elCredit) elCredit.textContent = `${creditSum.toFixed(2)} جنيه`;
+
+        renderTransactions(transactions);
         loadDailyStats();
     } catch (t) {
         console.error("Error loading treasury:", t);
@@ -56,7 +133,7 @@ function renderCurrentTransactionsPage() {
         if (pagContainer) pagContainer.innerHTML = "";
         const tr = document.createElement("tr");
         tr.innerHTML = `
-            <td colspan="6" class="text-center py-8 text-gray-500">
+            <td colspan="7" class="text-center py-8 text-gray-500">
                 <div class="flex flex-col items-center justify-center gap-2">
                     <i class="fas fa-database text-3xl opacity-30"></i>
                     <p>لا توجد معاملات مسجلة في الخزنة حالياً</p>
@@ -88,6 +165,19 @@ function renderCurrentTransactionsPage() {
             iconClass = "fa-undo text-warning";
         }
 
+        const payInfo = getPaymentMethodInfo(t);
+        let splitSubHtml = "";
+        if (payInfo.key === "split" && t.splitPayment) {
+            const sc = parseFloat(t.splitPayment.cash || 0).toFixed(2);
+            const sd = parseFloat(t.splitPayment.card || 0).toFixed(2);
+            splitSubHtml = `
+                <div class="split-details-tag">
+                    <span class="split-pill cash"><i class="fas fa-money-bill-wave"></i> كاش: ${sc} ج.م</span>
+                    <span class="split-pill card"><i class="fas fa-credit-card"></i> فيزا: ${sd} ج.م</span>
+                </div>
+            `;
+        }
+
         tr.innerHTML = `
             <td class="font-medium text-right">
                 <div class="flex items-center gap-2">
@@ -101,11 +191,18 @@ function renderCurrentTransactionsPage() {
                     ${t.type === "revenue" ? "إيراد" : t.type === "expense" ? "مصروف" : "مرتجع"}
                 </span>
             </td>
+            <td class='text-right'>
+                <span class="badge-pay ${payInfo.cssClass}">
+                    <i class="fas ${payInfo.icon}"></i>
+                    <span>${payInfo.label}</span>
+                </span>
+            </td>
             <td class="${textClass} text-right" style="font-weight: 800; font-size: 0.95rem;">
                 ${parseFloat(t.amount).toFixed(2)} <span class="text-xs">جنيه</span>
             </td>
-            <td class="max-w-xs truncate text-right font-medium" title="${t.description || "لا يوجد وصف"}">
-                ${t.description || '<span class="text-gray-400">لا يوجد وصف</span>'}
+            <td class="max-w-xs text-right font-medium" title="${t.description || "لا يوجد وصف"}">
+                <div class="truncate">${t.description || '<span class="text-gray-400">لا يوجد وصف</span>'}</div>
+                ${splitSubHtml}
             </td>
             <td class='text-right'>
                 <div class="flex items-center gap-2">
@@ -147,6 +244,26 @@ function renderCurrentTransactionsPage() {
 }
 
 function openModal(type) {
+    if (type === "revenue" && typeof window.hasPermission === "function" && !window.hasPermission("canAddTreasuryIncome")) {
+        return void Swal.fire({
+            icon: "warning",
+            title: "صلاحية مقيدة",
+            text: "ليس لديك صلاحية لتسجيل إيرادات يدوية في الخزنة.",
+            confirmButtonColor: "#f59e0b",
+            confirmButtonText: "حسناً"
+        });
+    }
+
+    if (type === "expense" && typeof window.hasPermission === "function" && !window.hasPermission("canAddTreasuryExpense")) {
+        return void Swal.fire({
+            icon: "warning",
+            title: "صلاحية مقيدة",
+            text: "ليس لديك صلاحية لتسجيل مصروفات يدوية من الخزنة.",
+            confirmButtonColor: "#f59e0b",
+            confirmButtonText: "حسناً"
+        });
+    }
+
     currentType = type;
     const modal = document.getElementById("transactionModal");
     const title = document.getElementById("modalTitle");
@@ -156,6 +273,7 @@ function openModal(type) {
     const submitBtnText = document.getElementById("submitBtnText");
     const amountInput = document.getElementById("transactionAmount");
     const descInput = document.getElementById("transactionDescription");
+    const payMethodSelect = document.getElementById("transactionPaymentMethod");
     const main = document.querySelector(".main-content");
     
     if (modal && title && amountInput && descInput) {
@@ -186,6 +304,7 @@ function openModal(type) {
 
         amountInput.value = "";
         descInput.value = "";
+        if (payMethodSelect) payMethodSelect.value = "cash";
         if (submitBtn) submitBtn.onclick = addTransaction;
 
         modal.classList.add("open");
@@ -226,8 +345,10 @@ async function addTransaction() {
     try {
         const amountInput = document.getElementById("transactionAmount");
         const descInput = document.getElementById("transactionDescription");
+        const payMethodSelect = document.getElementById("transactionPaymentMethod");
         const amount = amountInput.value.trim();
         const desc = descInput.value.trim();
+        const payMethod = payMethodSelect ? payMethodSelect.value : "cash";
 
         if (!amount || parseFloat(amount) <= 0) {
             amountInput.focus();
@@ -247,12 +368,15 @@ async function addTransaction() {
             });
         }
 
-        const user = (await window.electronAPI.getSettings())?.currentUser || "غير معروف";
+        const activeUser = typeof window.getCurrentUser === "function" ? window.getCurrentUser() : null;
+        const user = activeUser ? (activeUser.name || activeUser.username) : "المدير العام";
+
         await window.electronAPI.addTreasuryTransaction({
             type: currentType,
             amount: parseFloat(amount),
             description: desc,
-            user: user
+            user: user,
+            paymentMethod: payMethod
         });
         Swal.fire({
             icon: "success",
@@ -273,8 +397,18 @@ async function addTransaction() {
 }
 
 async function editTransaction(e) {
+    if (typeof window.hasPermission === "function" && !window.hasPermission("canDeleteTreasuryTransaction")) {
+        return void Swal.fire({
+            icon: "warning",
+            title: "صلاحية مقيدة",
+            text: "ليس لديك صلاحية لتعديل أو حذف حركات الخزنة.",
+            confirmButtonColor: "#f59e0b",
+            confirmButtonText: "حسناً"
+        });
+    }
+
     const id = e.target.closest(".edit-btn").dataset.id;
-    const tx = await window.electronAPI.getTreasuryTransactions().then(list => list.find(item => item._id === id));
+    const tx = (await window.electronAPI.getTreasuryTransactions())?.find(item => item._id === id);
     if (!tx) {
         return void Swal.fire({
             icon: "error",
@@ -292,6 +426,7 @@ async function editTransaction(e) {
     const main = document.querySelector(".main-content");
     const amountInput = document.getElementById("transactionAmount");
     const descInput = document.getElementById("transactionDescription");
+    const payMethodSelect = document.getElementById("transactionPaymentMethod");
 
     if (modal && title && amountInput && descInput) {
         lastFocusedElement = document.activeElement;
@@ -311,6 +446,9 @@ async function editTransaction(e) {
         submitBtn.onclick = () => updateTransaction(id);
         amountInput.value = tx.amount;
         descInput.value = tx.description;
+        if (payMethodSelect) {
+            payMethodSelect.value = tx.paymentMethod || "cash";
+        }
         modal.classList.add("open");
         setTimeout(() => amountInput.focus(), 150);
     }
@@ -320,6 +458,9 @@ async function updateTransaction(id) {
     try {
         const amount = document.getElementById("transactionAmount").value.trim();
         const desc = document.getElementById("transactionDescription").value.trim();
+        const payMethodSelect = document.getElementById("transactionPaymentMethod");
+        const payMethod = payMethodSelect ? payMethodSelect.value : "cash";
+
         if (!amount || !desc) {
             return void Swal.fire({
                 icon: "warning",
@@ -327,12 +468,15 @@ async function updateTransaction(id) {
                 text: "يرجى إدخال المبلغ والوصف للمتابعة."
             });
         }
-        const user = (await window.electronAPI.getSettings())?.currentUser || "غير معروف";
+        const activeUser = typeof window.getCurrentUser === "function" ? window.getCurrentUser() : null;
+        const user = activeUser ? (activeUser.name || activeUser.username) : "المدير العام";
+
         await window.electronAPI.updateTreasuryTransaction(id, {
             type: currentType,
             amount: parseFloat(amount),
             description: desc,
             user: user,
+            paymentMethod: payMethod,
             date: (new Date).toISOString()
         });
         Swal.fire({
@@ -352,6 +496,16 @@ async function updateTransaction(id) {
 }
 
 async function deleteTransaction(e) {
+    if (typeof window.hasPermission === "function" && !window.hasPermission("canDeleteTreasuryTransaction")) {
+        return void Swal.fire({
+            icon: "warning",
+            title: "صلاحية مقيدة",
+            text: "ليس لديك صلاحية لحذف حركات الخزنة.",
+            confirmButtonColor: "#f59e0b",
+            confirmButtonText: "حسناً"
+        });
+    }
+
     const id = e.target.closest(".delete-btn").dataset.id;
     const res = await Swal.fire({
         title: "تأكيد الحذف",
@@ -382,16 +536,54 @@ async function deleteTransaction(e) {
         }
     }
 }
+            Swal.fire({
+                icon: "success",
+                title: "تم الحذف",
+                text: "تم حذف المعاملة بنجاح."
+            });
+            loadTreasuryData();
+        } catch (err) {
+            Swal.fire({
+                icon: "error",
+                title: "تنبيه",
+                text: "تعذر حذف المعاملة، يرجى المحاولة مرة أخرى."
+            });
+        }
+    }
+}
 
 async function filterTransactions() {
     try {
         const filter = {
             date: document.getElementById("filterDate").value,
             type: document.getElementById("filterType").value,
-            user: document.getElementById("filterUser").value,
-            amount: document.getElementById("filterAmount").value
+            paymentMethod: document.getElementById("filterPaymentMethod")?.value,
+            user: document.getElementById("filterUser").value.trim().toLowerCase(),
+            amount: document.getElementById("filterAmount").value.trim()
         };
-        renderTransactions(await window.electronAPI.filterTreasuryTransactions(filter));
+
+        let list = (await window.electronAPI.getTreasuryTransactions()) || [];
+        if (filter.date) {
+            list = list.filter(t => t.date && t.date.slice(0, 10) === filter.date);
+        }
+        if (filter.type) {
+            list = list.filter(t => t.type === filter.type);
+        }
+        if (filter.paymentMethod) {
+            list = list.filter(t => {
+                const info = getPaymentMethodInfo(t);
+                return info.key === filter.paymentMethod;
+            });
+        }
+        if (filter.user) {
+            list = list.filter(t => (t.user || "").toLowerCase().includes(filter.user));
+        }
+        if (filter.amount) {
+            const targetAmt = parseFloat(filter.amount);
+            list = list.filter(t => Math.abs(parseFloat(t.amount) - targetAmt) < 0.01);
+        }
+
+        renderTransactions(list);
     } catch (err) {
         console.error("Error filtering transactions:", err);
     }
@@ -400,7 +592,7 @@ async function filterTransactions() {
 let dailyStatsChart = null;
 async function loadDailyStats() {
     try {
-        const transactions = await window.electronAPI.getTreasuryTransactions();
+        const transactions = (await window.electronAPI.getTreasuryTransactions()) || [];
         const endDate = new Date;
         endDate.setHours(23, 59, 59, 999);
         const startDate = new Date(endDate);
@@ -582,7 +774,7 @@ async function deleteSelectedTransactions() {
 async function printReport() {
     try {
         const summary = await window.electronAPI.getTreasurySummary();
-        const transactions = await window.electronAPI.getTreasuryTransactions();
+        const transactions = (await window.electronAPI.getTreasuryTransactions()) || [];
         const checked = Array.from(document.querySelectorAll(".print-checkbox:checked")).map(el => el.dataset.id);
         const toPrint = checked.length > 0 ? transactions.filter(t => checked.includes(t._id)) : transactions.slice(0, 30);
 
@@ -649,21 +841,25 @@ async function printReport() {
                     <table>
                         <thead>
                             <tr>
-                                <th style="width: 25%">الوقت</th>
-                                <th style="width: 25%">النوع</th>
-                                <th style="width: 25%">المبلغ</th>
+                                <th style="width: 20%">الوقت</th>
+                                <th style="width: 15%">النوع</th>
+                                <th style="width: 20%">طريقة الدفع</th>
+                                <th style="width: 20%">المبلغ</th>
                                 <th style="width: 25%">البيان</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${toPrint.map(t => `
+                            ${toPrint.map(t => {
+                                const pInfo = getPaymentMethodInfo(t);
+                                return `
                                 <tr>
                                     <td>${new Date(t.date).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })}</td>
                                     <td>${t.type === "revenue" ? "إيراد" : t.type === "expense" ? "مصروف" : "مرتجع"}</td>
+                                    <td>${pInfo.label}</td>
                                     <td>${parseFloat(t.amount).toFixed(2)} ج.م</td>
                                     <td style="font-size: 10px;">${t.description || ""}</td>
                                 </tr>
-                            `).join("")}
+                            `;}).join("")}
                         </tbody>
                     </table>
                     <div class="footer">
@@ -693,7 +889,7 @@ async function printReport() {
 
 async function exportToExcel() {
     try {
-        const transactions = await window.electronAPI.getTreasuryTransactions();
+        const transactions = (await window.electronAPI.getTreasuryTransactions()) || [];
         if (!transactions || transactions.length === 0) {
             return void Swal.fire({
                 icon: "info",
@@ -702,41 +898,117 @@ async function exportToExcel() {
             });
         }
         const data = [
-            ["التاريخ والوقت", "النوع", "المبلغ", "الوصف", "المستخدم"],
+            ["التاريخ والوقت", "النوع", "طريقة الدفع", "المبلغ (ج.م)", "الوصف والبيان", "المستخدم"],
             ...transactions.map(t => [
                 new Date(t.date).toLocaleString("ar-EG"),
                 t.type === "revenue" ? "إيراد" : t.type === "expense" ? "مصروف" : "مرتجع",
-                parseFloat(t.amount).toFixed(2) + " جنيه",
+                getPaymentMethodInfo(t).label,
+                parseFloat(t.amount || 0).toFixed(2),
                 t.description || "لا يوجد وصف",
                 t.user || "غير معروف"
             ])
         ];
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet(data);
-        ws["!cols"] = [{ wch: 20 }, { wch: 10 }, { wch: 12 }, { wch: 25 }, { wch: 15 }];
+        ws["!cols"] = [{ wch: 22 }, { wch: 12 }, { wch: 18 }, { wch: 15 }, { wch: 35 }, { wch: 18 }];
         ws["!freeze"] = { rows: 1 };
         XLSX.utils.book_append_sheet(wb, ws, "سجل الخزنة");
         const out = XLSX.write(wb, { bookType: "xlsx", type: "array" });
         const bytes = new Uint8Array(out);
-        const filePath = await window.electronAPI.uploadFile({
-            name: `treasury_report_${(new Date).toISOString().slice(0, 10)}.xlsx`,
-            arrayBuffer: bytes
-        }, "Documents");
 
-        if (filePath) {
+        const dateStr = new Date().toISOString().slice(0, 10);
+        const fileName = `treasury_report_${dateStr}.xlsx`;
+
+        let saveRes = null;
+        let tryNative = false;
+        if (window.electronAPI && typeof window.electronAPI.saveExcelDialog === "function") {
+            try {
+                saveRes = await window.electronAPI.saveExcelDialog({
+                    defaultFileName: fileName,
+                    arrayBuffer: bytes
+                });
+                tryNative = true;
+            } catch (dialogErr) {
+                console.warn("saveExcelDialog IPC handler not yet available in running process, falling back to direct download:", dialogErr);
+                saveRes = null;
+            }
+        }
+
+        // If user actively canceled the native dialog
+        if (tryNative && saveRes && saveRes.canceled) {
+            return;
+        }
+
+        // If native save dialog was successful and saved the file
+        if (saveRes && saveRes.success && saveRes.filePath) {
+            const savedPath = saveRes.filePath;
             Swal.fire({
                 icon: "success",
-                title: "تم التصدير بنجاح",
-                text: `تم حفظ الملف في:\n${filePath}`
+                title: "تم تصدير وحفظ الملف بنجاح",
+                html: `
+                    <div style="text-align: right; direction: rtl; font-family: 'Tajawal', sans-serif;">
+                        <p style="margin-bottom: 8px; font-weight: 700; color: #1e1b4b;">تم حفظ ملف Excel بنجاح في المسار التالي:</p>
+                        <div style="background: #f8fafc; padding: 10px 12px; border-radius: 10px; border: 1.5px solid #cbd5e1; direction: ltr; text-align: left; word-break: break-all; font-family: monospace; font-size: 0.85rem; color: #0f172a; margin-bottom: 12px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);">
+                            ${savedPath}
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-file-excel"></i> فتح ملف Excel',
+                cancelButtonText: '<i class="fas fa-folder-open"></i> فتح المجلد',
+                confirmButtonColor: "#10b981",
+                cancelButtonColor: "#6366f1",
+                showCloseButton: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    if (window.electronAPI && window.electronAPI.openPath) {
+                        window.electronAPI.openPath(savedPath);
+                    } else if (window.electronAPI && window.electronAPI.openFileWithShell) {
+                        window.electronAPI.openFileWithShell(savedPath);
+                    }
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    if (window.electronAPI && window.electronAPI.showItemInFolder) {
+                        window.electronAPI.showItemInFolder(savedPath);
+                    }
+                }
             });
-        } else {
-            Swal.fire({
-                icon: "info",
-                title: "تم الإلغاء",
-                text: "تم إلغاء عملية تصدير الملف."
-            });
+            return;
         }
+
+        // Resilient Fallback: direct download using XLSX.writeFile or Blob
+        if (typeof XLSX !== "undefined" && typeof XLSX.writeFile === "function") {
+            XLSX.writeFile(wb, fileName);
+        } else {
+            const blob = new Blob([bytes], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        Swal.fire({
+            icon: "success",
+            title: "تم تصدير وحفظ الملف بنجاح",
+            html: `
+                <div style="text-align: right; direction: rtl; font-family: 'Tajawal', sans-serif;">
+                    <p style="margin-bottom: 8px; font-weight: 700; color: #1e1b4b;">تم تنزيل وتصدير ملف Excel بنجاح باسم:</p>
+                    <div style="background: #f0fdf4; padding: 10px 12px; border-radius: 10px; border: 1.5px solid #86efac; direction: ltr; text-align: center; word-break: break-all; font-family: monospace; font-size: 0.95rem; font-weight: bold; color: #15803d; margin-bottom: 12px;">
+                        ${fileName}
+                    </div>
+                    <p style="color: #475569; font-size: 0.88rem; margin: 0;">
+                        <i class="fas fa-folder-download" style="color: #10b981;"></i> تم حفظ الملف في مجلد <strong>التنزيلات (Downloads)</strong> على جهازك.
+                    </p>
+                </div>
+            `,
+            confirmButtonText: "حسناً، فهمت",
+            confirmButtonColor: "#10b981"
+        });
     } catch (err) {
+        console.error("Error exporting to excel:", err);
         Swal.fire({
             icon: "error",
             title: "تنبيه",
@@ -757,4 +1029,5 @@ window.printReport = printReport;
 window.exportToExcel = exportToExcel;
 window.editTransaction = editTransaction;
 window.deleteTransaction = deleteTransaction;
+window.getPaymentMethodInfo = getPaymentMethodInfo;
 window.addEventListener("load", loadTreasuryData);

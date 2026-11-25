@@ -112,22 +112,38 @@
                                 <span>شعار المحل (Logo)</span>
                             </label>
 
-                            <div class="logo-dropzone" onclick="document.getElementById('storeLogo').click()">
-                                <input id="storeLogo" type="file" accept="image/*" style="display: none;" />
+                            <input id="storeLogo" type="file" accept="image/*" style="display: none;" />
+                            <input type="hidden" id="logoBase64" name="logoBase64">
+
+                            <!-- الحالة 1: منطقة الرفع (تظهر فقط عند عدم وجود شعار) -->
+                            <div id="logoUploadBox" class="logo-dropzone"
+                                onclick="document.getElementById('storeLogo').click()">
                                 <div class="logo-picker-label">
                                     <div class="logo-picker-icon">
                                         <i class="fas fa-cloud-arrow-up"></i>
                                     </div>
-                                    <span class="logo-picker-text">اضغط هنا لاختيار أو تغيير الشعار</span>
+                                    <span class="logo-picker-text">اضغط هنا لاختيار شعار المحل</span>
                                     <span class="logo-picker-hint">يدعم صيغ PNG, JPG, JPEG (الحجم الأقصى 2
                                         ميجابايت)</span>
                                 </div>
-                                <input type="hidden" id="logoBase64" name="logoBase64">
+                            </div>
 
-                                <img id="logoPreview" class="logo-preview-img hidden" alt="معاينة الشعار" />
-                                <div id="logoPlaceholder" style="margin-top: 12px; color: #94a3b8; font-size: 0.85rem;">
-                                    <i class="fas fa-circle-info"></i>
-                                    <span>سيظهر الشعار المحدد هنا مباشرة</span>
+                            <!-- الحالة 2: بطاقة الشعار المرفوع (تظهر عند وجود شعار مع أزرار التغيير والحذف) -->
+                            <div id="logoPreviewCard" class="logo-display-card hidden">
+                                <div class="logo-preview-wrapper">
+                                    <img id="logoPreview" class="logo-preview-img" alt="شعار المحل" />
+                                </div>
+                                <div class="logo-action-buttons">
+                                    <button type="button" class="btn-logo-action btn-change-logo"
+                                        onclick="document.getElementById('storeLogo').click()">
+                                        <i class="fas fa-arrows-rotate"></i>
+                                        <span>تغيير الشعار</span>
+                                    </button>
+                                    <button type="button" class="btn-logo-action btn-delete-logo"
+                                        onclick="removeLogo()">
+                                        <i class="fas fa-trash-can"></i>
+                                        <span>حذف الشعار</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -193,6 +209,78 @@
                     </div>
                 </div>
 
+                <!-- Card 2.5: Session & Auto-Login Settings -->
+                <div class="settings-card">
+                    <div class="card-header-gradient"
+                        style="background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%) !important;">
+                        <div class="card-header-icon"
+                            style="background: rgba(255,255,255,0.2) !important; color: #fff !important;">
+                            <i class="fas fa-clock-rotate-left"></i>
+                        </div>
+                        <div>
+                            <h2 class="card-header-title">حفظ تسجيل الدخول ومدة الجلسة</h2>
+                            <p class="card-header-desc">التحكم في البقاء متصلاً ومدة تذكر الحساب واقتراح الحسابات السابقة</p>
+                        </div>
+                    </div>
+
+                    <div class="card-body-content">
+                        <label class="custom-checkbox-card" for="rememberLoginEnabled">
+                            <input type="checkbox" id="rememberLoginEnabled" checked />
+                            <span class="custom-check-box">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            <div class="checkbox-text">
+                                <span class="checkbox-title">تفعيل ميزة البقاء متصلاً (تذكرني على هذا الجهاز)</span>
+                                <span class="checkbox-desc">تجاوز شاشة الدخول تلقائياً للمستخدم طوال فترة صلاحية الجلسة المحددة</span>
+                            </div>
+                        </label>
+
+                        <div class="form-group" style="margin-top: 14px;">
+                            <label for="sessionDurationDays" class="form-label">
+                                <i class="fas fa-calendar-days text-primary"></i>
+                                <span>مدة الاحتفاظ بتسجيل الدخول</span>
+                            </label>
+                            <div class="input-modern-wrap">
+                                <select id="sessionDurationDays" class="input-modern"
+                                    style="width: 100%; border: 1.5px solid var(--border-color); border-radius: 12px; padding: 12px 14px; font-family: inherit; font-size: 0.95rem; font-weight: 600; color: #1e293b; background-color: #f8fafc; outline: none;">
+                                    <option value="1">يوم واحد (24 ساعة)</option>
+                                    <option value="7">أسبوع (7 أيام)</option>
+                                    <option value="15">15 يوماً</option>
+                                    <option value="30" selected>شهر كامل (30 يوماً - الموصى به)</option>
+                                    <option value="90">3 أشهر (90 يوماً)</option>
+                                    <option value="180">6 أشهر (نصف سنة)</option>
+                                    <option value="365">سنة كاملة (365 يوماً)</option>
+                                    <option value="0">دائم حتى تسجيل الخروج يدوياً</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <label class="custom-checkbox-card" for="suggestAccountsEnabled" style="margin-top: 10px;">
+                            <input type="checkbox" id="suggestAccountsEnabled" checked />
+                            <span class="custom-check-box">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            <div class="checkbox-text">
+                                <span class="checkbox-title">اقتراح الحسابات السابقة في شاشة الدخول</span>
+                                <span class="checkbox-desc">إظهار قائمة سريعة بالحسابات التي سجلت دخولها مسبقاً لتسهيل التبديل بينها</span>
+                            </div>
+                        </label>
+
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px;">
+                            <button type="button" onclick="saveSessionSettings()" class="btn-save-action"
+                                style="background: linear-gradient(135deg, #4338ca, #6366f1) !important; flex: 1; min-width: 180px;">
+                                <i class="fas fa-check"></i>
+                                <span>حفظ إعدادات الجلسة</span>
+                            </button>
+                            <button type="button" onclick="clearAllSavedSessions()" class="btn-save-action"
+                                style="background: linear-gradient(135deg, #64748b, #475569) !important; flex: 1; min-width: 180px;">
+                                <i class="fas fa-trash-can"></i>
+                                <span>مسح الحسابات والجلسات المحفوظة</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Card 3: System Updates & Info -->
                 <div class="settings-card">
                     <div class="card-header-gradient system">
@@ -253,6 +341,502 @@
                             </button>
                             <span id="lastCheckTime" style="font-size: 0.8rem; color: #94a3b8; font-weight: 600;">لم يتم
                                 الفحص بعد</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Backup & Restore Management -->
+                <div class="settings-card">
+                    <div class="card-header-gradient"
+                        style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;">
+                        <div class="card-header-icon"
+                            style="background: rgba(255,255,255,0.2) !important; color: #fff !important;">
+                            <i class="fas fa-database"></i>
+                        </div>
+                        <div>
+                            <h2 class="card-header-title">النسخ الاحتياطي واستعادة البيانات</h2>
+                            <p class="card-header-desc">تصدير واستيراد قواعد البيانات بأمان لحفظ ملفاتك من الضياع</p>
+                        </div>
+                    </div>
+
+                    <div class="card-body-content">
+                        <p style="font-size: 0.9rem; color: #475569; margin-bottom: 16px; line-height: 1.6;">
+                            يمكنك إنشاء نسخة احتياطية مشفرة وشاملة لجميع المنتجات، الفواتير، الحسابات، والخزينة، وحفظها
+                            على قرص خارجي أو فلاش ميموري، أو استعادتها عند الحاجة.
+                        </p>
+
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;">
+                            <button type="button" onclick="handleCreateBackup()" class="btn-save-action"
+                                style="background: linear-gradient(135deg, #0284c7, #0369a1) !important; flex: 1; min-width: 200px;">
+                                <i class="fas fa-cloud-arrow-up"></i>
+                                <span>إنشاء وتصدير نسخة احتياطية</span>
+                            </button>
+                            <button type="button" onclick="handleRestoreBackup()" class="btn-save-action"
+                                style="background: linear-gradient(135deg, #475569, #334155) !important; flex: 1; min-width: 200px;">
+                                <i class="fas fa-arrow-rotate-left"></i>
+                                <span>استعادة البيانات من ملف</span>
+                            </button>
+                        </div>
+
+                        <div
+                            style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <strong style="font-size: 0.85rem; color: #334155;"><i
+                                        class="fas fa-history text-blue-500"></i> أحدث النسخ الاحتياطية
+                                    التلقائية:</strong>
+                                <button type="button" onclick="loadBackupsList()"
+                                    class="text-xs text-blue-600 hover:underline font-bold">
+                                    <i class="fas fa-sync-alt"></i> تحديث القائمة
+                                </button>
+                            </div>
+                            <div id="backupsListContainer"
+                                style="max-height: 140px; overflow-y: auto; font-size: 0.8rem; color: #64748b;">
+                                <span style="color: #94a3b8;">جاري فحص النسخ الاحتياطية...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5: Loyalty Points Settings -->
+                <div class="settings-card">
+                    <div class="card-header-gradient"
+                        style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;">
+                        <div class="card-header-icon"
+                            style="background: rgba(255,255,255,0.2) !important; color: #fff !important;">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div>
+                            <h2 class="card-header-title">نظام نقاط وولاء العملاء (Loyalty Points)</h2>
+                            <p class="card-header-desc">مكافأة العملاء بالنقاط واستبدالها بخصومات لتشجيع تكرار الشراء
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="card-body-content">
+                        <label class="custom-checkbox-card loyalty-toggle-card" for="loyaltyEnabled">
+                            <input type="checkbox" id="loyaltyEnabled" checked />
+                            <span class="custom-check-box">
+                                <i class="fas fa-check"></i>
+                            </span>
+                            <div class="checkbox-text">
+                                <span class="checkbox-title">تفعيل نظام نقاط ولاء العملاء في الكاشير</span>
+                                <span class="checkbox-desc">احتساب النقاط تلقائياً للعملاء وإتاحة استبدالها بخصم فوري في
+                                    الفاتورة</span>
+                            </div>
+                        </label>
+
+                        <div
+                            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+                            <div class="form-group">
+                                <label for="loyaltySpendPerPoint" class="form-label">
+                                    <i class="fas fa-coins text-amber-500"></i>
+                                    <span>قيمة المشتريات لكسب نقطة واحدة (ج.م)</span>
+                                </label>
+                                <div class="input-modern-wrap">
+                                    <input type="number" id="loyaltySpendPerPoint" min="1" step="1" value="10"
+                                        placeholder="مثال: 10 جنيه = 1 نقطة" />
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="loyaltyPointValue" class="form-label">
+                                    <i class="fas fa-tag text-amber-500"></i>
+                                    <span>قيمة النقطة الواحدة عند الاستبدال (ج.م)</span>
+                                </label>
+                                <div class="input-modern-wrap">
+                                    <input type="number" id="loyaltyPointValue" min="0.01" step="0.01" value="0.10"
+                                        placeholder="مثال: 1 نقطة = 0.10 جنيه خصم" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 10px; padding: 10px 12px; margin-top: 10px; font-size: 0.82rem; color: #92400e;">
+                            <i class="fas fa-circle-info"></i>
+                            <strong>مثال توضيحي:</strong> عند شراء عميل بمبلغ <strong>500 ج.م</strong>، سيكتسب
+                            <strong>50 نقطة</strong>، تعادل خصماً بقيمة <strong>5.00 ج.م</strong> يمكنه استبدالها بضغطة
+                            زر في فاتورته القادمة!
+                        </div>
+
+                        <div style="margin-top: 18px;">
+                            <button type="button" onclick="saveLoyaltySettings()" class="btn-save-action"
+                                style="background: linear-gradient(135deg, #f59e0b, #d97706) !important;">
+                                <i class="fas fa-check"></i>
+                                <span>حفظ إعدادات نقاط الولاء</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 6: Multi-Device Sync & Cloud Architecture (الربط الشبكي والمزامنة السحابية) -->
+                <div class="settings-card" id="networkSyncCard" style="grid-column: 1 / -1;">
+                    <div class="card-header-gradient"
+                        style="background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%) !important;">
+                        <div class="card-header-icon"
+                            style="background: rgba(255,255,255,0.2) !important; color: #fff !important;">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <div>
+                            <h2 class="card-header-title">الربط الشبكي، السحابي، ومزامنة الأجهزة عن بُعد</h2>
+                            <p class="card-header-desc">تشغيل أكثر من جهاز كاشير ومزامنة الفروع سحابياً أو محلياً مع حماية منع تضارب الفواتير</p>
+                        </div>
+                    </div>
+
+                    <div class="card-body-content">
+                        <!-- Mode Selector Grid (5 Modes) -->
+                        <div class="network-mode-grid">
+                            <!-- 1. Standalone Mode -->
+                            <label class="network-mode-card" for="modeStandalone">
+                                <input type="radio" name="networkMode" id="modeStandalone" value="standalone" checked />
+                                <div class="mode-card-inner">
+                                    <div class="mode-card-top">
+                                        <div class="mode-icon-circle bg-blue-100 text-blue-600">
+                                            <i class="fas fa-desktop"></i>
+                                        </div>
+                                        <span class="mode-badge-pill badge-standalone">أوفلاين 100%</span>
+                                    </div>
+                                    <div class="mode-info">
+                                        <span class="mode-title">جهاز مستقل (أوفلاين)</span>
+                                        <span class="mode-desc">يعمل البرنامج كجهاز منفرد مستقل تماماً بقاعدة بيانات محلية على هذا الكمبيوتر دون الحاجة لأي شبكة.</span>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <!-- 2. Cloud Key Mode (Smart 1-Click Sync) -->
+                            <label class="network-mode-card" for="modeCloudKey">
+                                <input type="radio" name="networkMode" id="modeCloudKey" value="cloud_key" />
+                                <div class="mode-card-inner">
+                                    <div class="mode-card-top">
+                                        <div class="mode-icon-circle bg-amber-100 text-amber-600">
+                                            <i class="fas fa-cloud-bolt"></i>
+                                        </div>
+                                        <span class="mode-badge-pill badge-cloud-key">سحابي سهل (الموصى به)</span>
+                                    </div>
+                                    <div class="mode-info">
+                                        <span class="mode-title">الربط السحابي الذكي (بكود موحد)</span>
+                                        <span class="mode-desc">مزامنة فورية بين جميع الأجهزة والفروع عبر كود متجر موحد تلقائياً دون الحاجة لضبط IP أو خوادم.</span>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <!-- 3. Custom Cloud / Supabase / VPS Mode -->
+                            <label class="network-mode-card" for="modeCloudCustom">
+                                <input type="radio" name="networkMode" id="modeCloudCustom" value="cloud_custom" />
+                                <div class="mode-card-inner">
+                                    <div class="mode-card-top">
+                                        <div class="mode-icon-circle bg-cyan-100 text-cyan-600">
+                                            <i class="fas fa-cloud"></i>
+                                        </div>
+                                        <span class="mode-badge-pill badge-cloud-custom">سيرفر مخصص / VPS</span>
+                                    </div>
+                                    <div class="mode-info">
+                                        <span class="mode-title">سيرفر سحابي مخصص (Custom Server)</span>
+                                        <span class="mode-desc">ربط التطبيق بخادم سحابي خارجي خاص بك (VPS / REST API / Supabase) لإدارة متقدمة للبيانات.</span>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <!-- 4. Server / Master Mode -->
+                            <label class="network-mode-card" for="modeServer">
+                                <input type="radio" name="networkMode" id="modeServer" value="server" />
+                                <div class="mode-card-inner">
+                                    <div class="mode-card-top">
+                                        <div class="mode-icon-circle bg-emerald-100 text-emerald-600">
+                                            <i class="fas fa-server"></i>
+                                        </div>
+                                        <span class="mode-badge-pill badge-server">خادم رئيسي محلي</span>
+                                    </div>
+                                    <div class="mode-info">
+                                        <span class="mode-title">جهاز رئيسي (Master Server)</span>
+                                        <span class="mode-desc">يحتوي هذا الجهاز على قاعدة البيانات الأصلية ويفتح خادماً محلياً لاستقبال عمليات باقي الأجهزة.</span>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <!-- 5. Client / Terminal Mode -->
+                            <label class="network-mode-card" for="modeClient">
+                                <input type="radio" name="networkMode" id="modeClient" value="client" />
+                                <div class="mode-card-inner">
+                                    <div class="mode-card-top">
+                                        <div class="mode-icon-circle bg-purple-100 text-purple-600">
+                                            <i class="fas fa-cash-register"></i>
+                                        </div>
+                                        <span class="mode-badge-pill badge-client">كاشير فرعي</span>
+                                    </div>
+                                    <div class="mode-info">
+                                        <span class="mode-title">جهاز فرعي (Client Terminal)</span>
+                                        <span class="mode-desc">يتصل هذا الجهاز بالجهاز الرئيسي عن بُعد (عبر Tailscale أو LAN) ويقوم بإجراء المبيعات مباشرة عليه.</span>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- PANEL 1: Cloud Key Sync Panel -->
+                        <div id="cloudKeyConfigPanel" class="network-details-panel hidden">
+                            <div class="network-panel-header">
+                                <div class="flex items-center gap-2">
+                                    <span class="status-indicator-dot online" id="cloudKeyStatusDot"></span>
+                                    <span class="font-bold text-slate-700">إعدادات الربط السحابي الذكي (Managely Cloud Sync)</span>
+                                </div>
+                                <span class="badge badge-warning text-xs font-bold" id="cloudKeyLiveBadge">جاهز للربط</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+                                <div class="form-group md:col-span-2">
+                                    <label class="form-label">
+                                        <i class="fas fa-key text-amber-500"></i>
+                                        <span>كود المزامنة السحابي الموحد (Cloud Sync Key)</span>
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <div class="input-modern-wrap flex items-center gap-2">
+                                        <input type="text" id="cloudSyncKeyInput" placeholder="مثال: MG-STORE-8941" autocomplete="off" style="letter-spacing: 1px; font-weight: 700;" />
+                                        <button type="button" id="btnGenerateCloudKey" class="btn-quick-action" title="توليد كود عشوائي جديد">
+                                            <i class="fas fa-wand-magic-sparkles"></i>
+                                            <span>توليد كود</span>
+                                        </button>
+                                    </div>
+                                    <span class="field-hint-text">اكتب نفس هذا الكود في جميع أجهزتك وفروعك لربطها فوراً بنفس قاعدة البيانات.</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-store text-amber-500"></i>
+                                        <span>اسم الفرع أو نقطة البيع</span>
+                                    </label>
+                                    <div class="input-modern-wrap">
+                                        <input type="text" id="cloudBranchNameInput" placeholder="مثال: الفرع الرئيسي - كاشير 1" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-arrows-rotate text-amber-500"></i>
+                                        <span>معدل المزامنة والتحديث التلقائي</span>
+                                    </label>
+                                    <div class="input-modern-wrap">
+                                        <select id="cloudSyncIntervalSelect" class="input-modern"
+                                            style="width: 100%; border: 1.5px solid var(--border-color); border-radius: 12px; padding: 12px 14px; font-family: inherit; font-size: 0.95rem; font-weight: 600; color: #1e293b; background-color: #f8fafc; outline: none;">
+                                            <option value="5">فوري وفائق السرعة (كل 5 ثوانٍ - الموصى به)</option>
+                                            <option value="15" selected>تحديث مستمر (كل 15 ثانية)</option>
+                                            <option value="30">متوازن (كل 30 ثانية)</option>
+                                            <option value="60">اقتصادي (كل دقيقة)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="cloud-cloud-info-box">
+                                    <i class="fas fa-shield-halved text-amber-500 text-lg"></i>
+                                    <div class="text-xs text-amber-900 leading-relaxed">
+                                        <strong>تزامن آمن وتلقائي:</strong> يتم تشفير جميع الفواتير وحركات المنتجات عبر قنوات TLS 1.3 مشفرة وحفظها سحابياً لمنع فقدان البيانات حتى في حال تعطل أحد الأجهزة.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Test Cloud Connection -->
+                            <div class="flex items-center justify-between flex-wrap gap-3 mt-3 pt-3 border-t border-slate-200">
+                                <button type="button" id="btnTestCloudKeyConnection" class="btn-test-connection"
+                                    style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important; border-color: #b45309 !important;">
+                                    <i class="fas fa-cloud-arrow-up"></i>
+                                    <span>فحص الاتصال بالسحابة الآن</span>
+                                </button>
+                                <div id="cloudKeyFeedback" class="text-xs font-semibold text-slate-500">
+                                    اضغط فحص للتأكد من صحة كود المزامنة والاتصال بالسحابة
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PANEL 2: Custom Cloud / Supabase / VPS Panel -->
+                        <div id="cloudCustomConfigPanel" class="network-details-panel hidden">
+                            <div class="network-panel-header">
+                                <div class="flex items-center gap-2">
+                                    <span class="status-indicator-dot online" id="cloudCustomStatusDot"></span>
+                                    <span class="font-bold text-slate-700">إعدادات الخادم السحابي المخصص (Custom VPS / Supabase / REST API)</span>
+                                </div>
+                                <span class="badge badge-info text-xs font-bold" id="cloudCustomLiveBadge">سيرفر خارجي</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+                                <div class="form-group md:col-span-2">
+                                    <label class="form-label">
+                                        <i class="fas fa-globe text-cyan-600"></i>
+                                        <span>رابط الخادم السحابي (Endpoint URL)</span>
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <div class="input-modern-wrap">
+                                        <input type="text" id="cloudCustomUrlInput" placeholder="مثال: https://api.yourdomain.com أو https://xyz.supabase.co" autocomplete="off" />
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-lock text-cyan-600"></i>
+                                        <span>رمز الأمان السري (Security PIN)</span>
+                                    </label>
+                                    <div class="input-modern-wrap has-toggle">
+                                        <input type="password" id="cloudSecurityPinInput" placeholder="اختياري لزيادة التشفير" />
+                                        <i class="fas fa-eye password-toggle-btn" id="toggleCloudSecurityPin"
+                                            title="إظهار / إخفاء رمز الأمان"
+                                            onclick="togglePasswordVisibility('cloudSecurityPinInput', this)"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group mt-2">
+                                <label class="form-label">
+                                    <i class="fas fa-key text-cyan-600"></i>
+                                    <span>مفتاح المصادقة (API Key / Bearer Token)</span>
+                                </label>
+                                <div class="input-modern-wrap has-toggle">
+                                    <input type="password" id="cloudApiKeyInput" placeholder="أدخل مفتاح الـ API للوصول إلى السيرفر الخاص بك" autocomplete="off" />
+                                    <i class="fas fa-eye password-toggle-btn" id="toggleCloudApiKey"
+                                        title="إظهار / إخفاء مفتاح المصادقة"
+                                        onclick="togglePasswordVisibility('cloudApiKeyInput', this)"></i>
+                                </div>
+                            </div>
+
+                            <!-- Test Custom Cloud Connection & Sync Actions -->
+                            <div class="flex items-center justify-between flex-wrap gap-3 mt-3 pt-3 border-t border-slate-200">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <button type="button" id="btnTestCustomCloudConnection" class="btn-test-connection"
+                                        style="background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important; border-color: #0369a1 !important;">
+                                        <i class="fas fa-bolt"></i>
+                                        <span>فحص اتصال السيرفر الآن</span>
+                                    </button>
+                                    <button type="button" id="btnCloudUploadAllCustom" class="btn-quick-action" title="رفع جميع المنتجات والفواتير الحالية إلى السحابة">
+                                        <i class="fas fa-cloud-arrow-up text-cyan-600"></i>
+                                        <span>رفع البيانات الحالية للسحابة</span>
+                                    </button>
+                                    <button type="button" id="btnCloudDownloadAllCustom" class="btn-quick-action" title="سحب جميع البيانات والمنتجات من السحابة لهذا الجهاز">
+                                        <i class="fas fa-cloud-arrow-down text-cyan-600"></i>
+                                        <span>سحب البيانات من السحابة</span>
+                                    </button>
+                                </div>
+                                <div id="cloudCustomFeedback" class="text-xs font-semibold text-slate-500">
+                                    اضغط فحص للتأكد من وصول البرنامج للسيرفر واستجابته
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PANEL 3: Local Server Mode Options Panel -->
+                        <div id="serverConfigPanel" class="network-details-panel hidden">
+                            <div class="network-panel-header">
+                                <div class="flex items-center gap-2">
+                                    <span class="status-indicator-dot online"></span>
+                                    <span class="font-bold text-slate-700">إعدادات الجهاز الرئيسي (Server)</span>
+                                </div>
+                                <span class="badge badge-success text-xs font-bold" id="serverLiveStatusBadge">جاهز للاتصال</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-plug text-teal-600"></i>
+                                        <span>منفذ الخادم (Port)</span>
+                                    </label>
+                                    <div class="input-modern-wrap">
+                                        <input type="number" id="serverPortInput" value="4545" placeholder="4545" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-tag text-teal-600"></i>
+                                        <span>اسم الجهاز في الشبكة</span>
+                                    </label>
+                                    <div class="input-modern-wrap">
+                                        <input type="text" id="serverDeviceNameInput" placeholder="Managely-Master" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Discovered IPs List -->
+                            <div class="discovered-ips-box mt-3">
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-xs font-bold text-slate-700">
+                                        <i class="fas fa-location-dot text-teal-600"></i> عناوين الـ IP المتاحة للاتصال بهذا الجهاز:
+                                    </span>
+                                    <button type="button" id="btnRefreshIPs" class="text-xs text-teal-600 hover:underline font-bold">
+                                        <i class="fas fa-sync-alt"></i> تحديث العناوين
+                                    </button>
+                                </div>
+                                <div id="serverIPsListContainer" class="ips-list-container">
+                                    <!-- Dynamic IPs inserted here -->
+                                </div>
+                            </div>
+
+                            <div class="tailscale-tip-box mt-3">
+                                <i class="fas fa-circle-info text-teal-600 text-lg"></i>
+                                <div class="text-xs text-slate-600 leading-relaxed">
+                                    <strong>للاتصال من أجهزة بعيدة (فروع أخرى أو منزلك):</strong> ثبّت برنامج <strong>Tailscale</strong> مجاناً على هذا الجهاز والأجهزة الأخرى وسجل بنفس الحساب، ثم انسخ عنوان الـ IP المبدأ بـ <code>100.x.x.x</code> وضعه في الأجهزة الفرعية.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PANEL 4: Local Client Mode Options Panel -->
+                        <div id="clientConfigPanel" class="network-details-panel hidden">
+                            <div class="network-panel-header">
+                                <div class="flex items-center gap-2">
+                                    <span class="status-indicator-dot checking" id="clientStatusDot"></span>
+                                    <span class="font-bold text-slate-700">إعدادات الاتصال بالجهاز الرئيسي</span>
+                                </div>
+                                <span class="badge text-xs font-bold" id="clientConnectionBadge">لم يتم الفحص</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
+                                <div class="form-group md:col-span-2">
+                                    <label class="form-label">
+                                        <i class="fas fa-globe text-teal-600"></i>
+                                        <span>عنوان IP الجهاز الرئيسي (Tailscale IP أو LAN IP)</span>
+                                        <span class="required-star">*</span>
+                                    </label>
+                                    <div class="input-modern-wrap">
+                                        <input type="text" id="clientHostInput" placeholder="مثال: 100.85.20.14 أو 192.168.1.50" autocomplete="off" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">
+                                        <i class="fas fa-plug text-teal-600"></i>
+                                        <span>المنفذ (Port)</span>
+                                    </label>
+                                    <div class="input-modern-wrap">
+                                        <input type="number" id="clientPortInput" value="4545" placeholder="4545" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Connection Test Section -->
+                            <div class="flex items-center justify-between flex-wrap gap-3 mt-3 pt-3 border-t border-slate-200">
+                                <button type="button" id="btnTestNetworkConnection" class="btn-test-connection"
+                                    style="background: linear-gradient(135deg, #0d9488, #0f766e) !important; color: #ffffff !important; padding: 10px 22px !important; border-radius: 12px !important; font-weight: 800 !important; display: inline-flex !important; align-items: center !important; gap: 8px !important; border: none !important;">
+                                    <i class="fas fa-plug-circle-bolt" style="color: #ffffff !important;"></i>
+                                    <span style="color: #ffffff !important;">فحص الاتصال بالسيرفر الآن</span>
+                                </button>
+                                <div id="connectionFeedback" class="text-xs font-semibold text-slate-500">
+                                    اضغط فحص للتأكد من وصول هذا الجهاز للسيرفر الرئيسي
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Concurrency Shield Notice -->
+                        <div class="concurrency-shield-banner mt-4">
+                            <div class="shield-icon">
+                                <i class="fas fa-shield-halved"></i>
+                            </div>
+                            <div class="shield-text">
+                                <strong>حماية العمليات المتزامنة مفعّلة تلقائياً (Atomic Queue & Stock Shield):</strong>
+                                <span>يقوم السيرفر المركزي بتنظيم وحماية الفواتير وحركات الخزنة بـ Mutex Lock آمن لمنع تكرار أرقام الفواتير ومنع بيع المنتجات التي نفدت في نفس اللحظة.</span>
+                            </div>
+                        </div>
+
+                        <!-- Save Button -->
+                        <div class="mt-4 pt-3 border-t border-slate-200 flex justify-end">
+                            <button type="button" id="btnSaveNetworkSettings" class="btn-save-action"
+                                style="background: linear-gradient(135deg, #0d9488, #0f766e) !important;">
+                                <i class="fas fa-floppy-disk"></i>
+                                <span>حفظ وتطبيق إعدادات الربط والمزامنة</span>
+                            </button>
                         </div>
                     </div>
                 </div>

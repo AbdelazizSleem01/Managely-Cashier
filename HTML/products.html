@@ -4,13 +4,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>إدارة المنتجات</title>
+  <title>إدارة المنتجات - مانيجلي كاشير</title>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet" />
   <link rel="stylesheet" href="../styles/output.css" />
   <link rel="stylesheet" href="../styles/home.css" />
   <link rel="stylesheet" href="../styles/products.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
 </head>
@@ -30,7 +31,7 @@
             </div>
             <div>
               <h1>إدارة المنتجات</h1>
-              <p>إدارة المخزون، الأسعار، الباركودات، وتتبع توفر المنتجات</p>
+              <p>إدارة المخزون، الأسعار، الباركودات، متعدد العملات، ومتابعة توفر المنتجات</p>
             </div>
           </div>
 
@@ -71,7 +72,7 @@
           </div>
         </div>
 
-        <!-- Header Controls (Search + Filters + Add Button in a Single Organized Row) -->
+        <!-- Header Controls (Search & Filters + Action Buttons in a Single Row) -->
         <div class="header-controls">
           <div class="header-search-and-filters">
             <div class="search-box-wrap">
@@ -83,31 +84,36 @@
               </button>
             </div>
 
-            <div class="w-42">
-              <select id="categoryFilter" class="filter-select " onchange="filterProducts()">
-                <option value="">جميع الفئات</option>
-              </select>
-            </div>
+            <select id="categoryFilter" class="filter-select" onchange="filterProducts()">
+              <option value="">جميع الفئات</option>
+            </select>
 
-            <div class="w-42">
-              <select id="stockFilter" class="filter-select" onchange="filterProducts()">
-                <option value="">جميع المخزون</option>
-                <option value="inStock">متوفر</option>
-                <option value="lowStock">منخفض</option>
-                <option value="outOfStock">نفذ</option>
-              </select>
-            </div>
+            <select id="stockFilter" class="filter-select" onchange="filterProducts()">
+              <option value="">جميع المخزون</option>
+              <option value="inStock">متوفر</option>
+              <option value="lowStock">منخفض</option>
+              <option value="outOfStock">نفذ</option>
+            </select>
 
-            <button onclick="resetFilters()" class="btn-reset-filter" title="إعادة تعيين الفلاتر">
-              <i class="fas fa-undo-alt"></i>
-              <span>إعادة تعيين</span>
-            </button>
+            <select id="currencyFilter" class="filter-select" onchange="filterProducts()" title="تصفية حسب العملة">
+              <option value="">جميع العملات</option>
+            </select>
           </div>
 
-          <button class="add-product-btn-header" onclick="openAddProductModal()">
-            <i class="fas fa-plus-circle"></i>
-            <span>إضافة منتج جديد</span>
-          </button>
+          <div class="header-action-buttons">
+            <button type="button" class="btn-currencies-header" onclick="openCurrenciesModal()" title="إدارة عملات المتجر والأسعار">
+              <i class="fas fa-coins"></i>
+              <span>العملات</span>
+            </button>
+            <button type="button" class="btn-import-products-header" onclick="openImportProductsModal()" title="استيراد منتجات من ملف Excel">
+              <i class="fas fa-file-excel"></i>
+              <span>استيراد</span>
+            </button>
+            <button type="button" class="add-product-btn-header" onclick="openAddProductModal()" title="إضافة منتج جديد">
+              <i class="fas fa-plus-circle"></i>
+              <span>إضافة منتج</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -161,7 +167,7 @@
               <label for="productCategory"><i class="fas fa-layer-group"></i> الفئة <span
                   class="required-star">*</span></label>
               <select id="productCategory" class="modal-select" required>
-                <option value="">اختار الفئة</option>
+                <option value="">اختر الفئة</option>
               </select>
             </div>
           </div>
@@ -169,13 +175,13 @@
           <!-- Row 2: Prices & Stock (Spacious 3 columns) -->
           <div class="form-grid-3">
             <div class="field-group">
-              <label for="productPrice"><i class="fas fa-money-bill-wave"></i> سعر البيع (ج.م) <span
+              <label for="productPrice"><i class="fas fa-money-bill-wave"></i> سعر البيع (العملة الأساسية) <span
                   class="required-star">*</span></label>
               <input type="number" id="productPrice" step="any" min="0" class="modal-input" placeholder="0.00" required>
             </div>
 
             <div class="field-group">
-              <label for="productPurchasePrice"><i class="fas fa-shopping-cart"></i> سعر الشراء (ج.م)</label>
+              <label for="productPurchasePrice"><i class="fas fa-shopping-cart"></i> سعر الشراء (الأساسية)</label>
               <input type="number" id="productPurchasePrice" step="any" min="0" class="modal-input" placeholder="0.00">
             </div>
 
@@ -183,6 +189,34 @@
               <label for="productQuantity"><i class="fas fa-boxes-stacked"></i> الكمية بالمخزون <span
                   class="required-star">*</span></label>
               <input type="number" id="productQuantity" min="0" class="modal-input" placeholder="0" value="1" required>
+            </div>
+          </div>
+
+          <!-- Multi-Currency Pricing Section -->
+          <div class="multi-currency-box-card">
+            <div class="multi-currency-card-header">
+              <div class="multi-currency-card-title">
+                <div class="multi-currency-icon-badge">
+                  <i class="fas fa-coins"></i>
+                </div>
+                <div>
+                  <span class="multi-currency-heading">أسعار إضافية بعملات أخرى (متعدد العملات)</span>
+                  <span class="multi-currency-sub">يمكنك تسعير المنتج بعملات مختلفة مع الحفظ المباشر (مثل الدولار، الريال، اليورو)</span>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="btn-auto-calc-currency-prices" onclick="autoCalculateProductCurrencyPrices()" title="حساب الأسعار تلقائياً حسب سعر الصرف لجميع العملات">
+                  <i class="fas fa-wand-magic-sparkles"></i>
+                  <span>حساب تلقائي بسعر الصرف</span>
+                </button>
+                <button type="button" class="btn-add-currency-price-row" onclick="addProductCurrencyPriceRow()" title="إضافة سعر بعملة أخرى">
+                  <i class="fas fa-plus-circle"></i>
+                  <span>+ إضافة عملة</span>
+                </button>
+              </div>
+            </div>
+            <div id="productCurrencyPricesList" class="currency-prices-list">
+              <!-- Dynamic currency price rows injected via JS -->
             </div>
           </div>
 
@@ -379,6 +413,288 @@
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Import Products from Excel / CSV Modal ===== -->
+  <div id="importProductsModal" class="modal-overlay" onclick="handleImportModalOverlayClick(event)">
+    <div class="custom-modal-box import-modal-box">
+      <div class="modal-scroll-inner">
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <div class="modal-title">
+            <div class="modal-title-icon" style="background: #ecfdf5; color: #059669;">
+              <i class="fas fa-file-excel"></i>
+            </div>
+            <div>
+              <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #1e1b4b;">استيراد المنتجات من ملف Excel / CSV</h3>
+              <p class="modal-subtitle">أضف مئات المنتجات دفعة واحدة بضغطة زر واحدة بسهولة وسرعة</p>
+            </div>
+          </div>
+          <button class="modal-close" onclick="closeImportProductsModal()" title="إغلاق">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Step 1: Download Template Banner -->
+        <div class="template-download-banner">
+          <div class="template-info">
+            <i class="fas fa-info-circle text-emerald-600" style="font-size: 1.4rem;"></i>
+            <div>
+              <span class="template-title">هل تحتاج لنموذج جاهز لتعبئته؟</span>
+              <span class="template-desc">قم بتحميل نموذج Excel الجاهز، املأ بيانات منتجاتك ثم ارفعه هنا</span>
+            </div>
+          </div>
+          <button type="button" class="btn-download-template" onclick="downloadProductExcelTemplate()">
+            <i class="fas fa-download"></i>
+            <span>تحميل نموذج Excel</span>
+          </button>
+        </div>
+
+        <!-- Step 2: File Dropzone -->
+        <input type="file" id="importFileInput" accept=".xlsx, .xls, .csv" class="hidden" onchange="handleImportFileSelect(event)">
+        <label for="importFileInput" id="importDropzone" class="import-file-dropzone">
+          <div class="dropzone-icon-wrap">
+            <i class="fas fa-cloud-arrow-up"></i>
+          </div>
+          <h4 class="dropzone-title">انقر لاختيار ملف Excel أو اسحبه إلى هنا</h4>
+          <p class="dropzone-sub">يدعم صيغ (.xlsx, .xls, .csv) - يجب أن يحتوي على أعمدة: اسم المنتج، السعر، المخزون</p>
+        </label>
+
+        <!-- Step 3: Preview & Options (Shown after file selected) -->
+        <div id="importPreviewSection" style="display: none; margin-top: 20px;">
+          <!-- Import File Info Summary -->
+          <div class="import-summary-strip">
+            <div class="summary-item">
+              <i class="fas fa-file-alt text-indigo-600"></i>
+              <span>الملف: <strong id="importFileName">--</strong></span>
+            </div>
+            <div class="summary-item">
+              <i class="fas fa-cubes text-emerald-600"></i>
+              <span>إجمالي المنتجات: <strong id="importTotalRows">0</strong></span>
+            </div>
+            <div class="summary-item">
+              <i class="fas fa-folder-plus text-purple-600"></i>
+              <span>فئات جديدة ستُنشأ: <strong id="importNewCategoriesCount">0</strong></span>
+            </div>
+          </div>
+
+          <!-- Duplicate Handling Strategy & Auto Categories -->
+          <div class="import-settings-grid">
+            <div class="field-group" style="margin-bottom: 0;">
+              <label for="duplicateStrategySelect"><i class="fas fa-shield-alt"></i> في حالة وجود منتج بنفس الباركود أو الاسم:</label>
+              <select id="duplicateStrategySelect" class="modal-select" style="font-weight: 700; font-size: 0.9rem;">
+                <option value="update">تحديث وتعديل بيانات المنتج والمخزون الحالي (مستحسن)</option>
+                <option value="add_stock">زيادة كمية المخزون فقط على الرصيد الحالي</option>
+                <option value="skip">تخطي وتجاهل المنتجات المكررة</option>
+              </select>
+            </div>
+
+            <div class="field-group" style="margin-bottom: 0; justify-content: flex-end;">
+              <label class="custom-checkbox-card" style="margin: 0; padding: 10px 14px; height: 44px; box-sizing: border-box;">
+                <input type="checkbox" id="autoCreateCategoriesCheck" checked>
+                <span class="custom-check-box"><i class="fas fa-check"></i></span>
+                <div class="checkbox-text">
+                  <span class="checkbox-title">إنشاء الفئات الجديدة تلقائياً</span>
+                  <span class="checkbox-desc">حفظ أي فئة غير موجودة في قاعدة البيانات</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Preview Table Container -->
+          <div class="import-preview-table-wrap">
+            <table class="import-preview-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>اسم المنتج</th>
+                  <th>الفئة</th>
+                  <th>سعر البيع</th>
+                  <th>سعر الشراء</th>
+                  <th>الكمية</th>
+                  <th>الباركود</th>
+                  <th>الحالة</th>
+                </tr>
+              </thead>
+              <tbody id="importPreviewTableBody">
+                <!-- Rows injected dynamically via JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Progress Bar during execution -->
+          <div id="importProgressBarWrap" class="import-progress-container" style="display: none;">
+            <div class="import-progress-track">
+              <div id="importProgressBar" class="import-progress-fill" style="width: 0%;"></div>
+            </div>
+            <span id="importProgressStatus" class="import-progress-status-text">جاري استيراد المنتجات (0%)...</span>
+          </div>
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div class="modal-footer" style="margin-top: 24px;">
+          <button type="button" id="executeImportBtn" class="btn-execute-import" onclick="executeProductsImport()" style="display: none;">
+            <i class="fas fa-check-double"></i>
+            <span>تأكيد وبدء الاستيراد</span>
+          </button>
+          <button type="button" class="btn-cancel-modal" onclick="closeImportProductsModal()">
+            <i class="fas fa-times"></i>
+            <span>إلغاء</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Store Currencies Management Dedicated Modal ===== -->
+  <div id="currenciesModal" class="modal-overlay" onclick="handleCurrenciesModalOverlayClick(event)">
+    <div class="custom-modal-box currencies-modal-box">
+      <div class="modal-scroll-inner">
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <div class="modal-title">
+            <div class="modal-title-icon" style="background: #fef3c7; color: #d97706;">
+              <i class="fas fa-coins"></i>
+            </div>
+            <div>
+              <h3 style="margin: 0; font-size: 1.25rem; font-weight: 800; color: #1e1b4b;">إدارة عملات المتجر والأسعار</h3>
+              <p class="modal-subtitle">إضافة العملات المقبولة بالمتجر، تحديد سعر الصرف، والعملة الأساسية</p>
+            </div>
+          </div>
+          <button class="modal-close" onclick="closeCurrenciesModal()" title="إغلاق">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Currency Form Card (Add / Edit) -->
+        <div class="currency-form-card">
+          <div class="currency-form-header">
+            <span id="currencyFormTitle" class="currency-form-title">
+              <i class="fas fa-plus-circle text-amber-500"></i>
+              <span>إضافة عملة جديدة للمتجر</span>
+            </span>
+            <button type="button" id="cancelCurrencyEditBtn" class="btn-cancel-curr-edit hidden" onclick="resetCurrencyForm()">
+              <i class="fas fa-times"></i> إلغاء التعديل
+            </button>
+          </div>
+
+          <form id="currencyForm" onsubmit="event.preventDefault(); saveCurrency();">
+            <input type="hidden" id="editingCurrencyId">
+
+            <div class="currency-form-grid-2">
+              <!-- Quick Preset Dropdown -->
+              <div class="field-group" style="grid-column: 1 / -1;">
+                <label for="quickCurrencyPreset"><i class="fas fa-wand-magic-sparkles text-amber-500"></i> اختيار سريع من أشهر العملات</label>
+                <select id="quickCurrencyPreset" class="modal-select currency-preset-select" onchange="applyCurrencyPreset(this.value)">
+                  <option value="">⚡ اختر عملة للتعبئة التلقائية السريعة...</option>
+                  <optgroup label="🌍 العملات العربية والخليجية">
+                    <option value="EGP|جنيه مصري|ج.م">جنيه مصري (EGP - ج.م)</option>
+                    <option value="SAR|ريال سعودي|ر.س">ريال سعودي (SAR - ر.س)</option>
+                    <option value="AED|درهم إماراتي|د.إ">درهم إماراتي (AED - د.إ)</option>
+                    <option value="KWD|دينار كويتي|د.ك">دينار كويتي (KWD - د.ك)</option>
+                    <option value="QAR|ريال قطري|ر.ق">ريال قطري (QAR - ر.ق)</option>
+                    <option value="BHD|دينار بحريني|د.ب">دينار بحريني (BHD - د.ب)</option>
+                    <option value="OMR|ريال عماني|ر.ع">ريال عماني (OMR - ر.ع)</option>
+                    <option value="JOD|دينار أردني|د.أ">دينار أردني (JOD - د.أ)</option>
+                    <option value="IQD|دينار عراقي|د.ع">دينار عراقي (IQD - د.ع)</option>
+                    <option value="LBP|ليرة لبنانية|ل.ل">ليرة لبنانية (LBP - ل.ل)</option>
+                    <option value="LYD|دينار ليبي|د.ل">دينار ليبي (LYD - د.ل)</option>
+                    <option value="TND|دينار تونسي|د.ت">دينار تونسي (TND - د.ت)</option>
+                    <option value="DZD|دينار جزائري|د.ج">دينار جزائري (DZD - د.ج)</option>
+                    <option value="MAD|درهم مغربي|د.م">درهم مغربي (MAD - د.م)</option>
+                    <option value="SDG|جنيه سوداني|ج.س">جنيه سوداني (SDG - ج.س)</option>
+                    <option value="YER|ريال يمني|ر.ي">ريال يمني (YER - ر.ي)</option>
+                    <option value="SYP|ليرة سورية|ل.س">ليرة سورية (SYP - ل.س)</option>
+                  </optgroup>
+                  <optgroup label="🌐 العملات العالمية الكبرى">
+                    <option value="USD|دولار أمريكي|$">دولار أمريكي (USD - $)</option>
+                    <option value="EUR|يورو|€">يورو (EUR - €)</option>
+                    <option value="GBP|جنيه إسترليني|£">جنيه إسترليني (GBP - £)</option>
+                    <option value="TRY|ليرة تركية|₺">ليرة تركية (TRY - ₺)</option>
+                    <option value="CAD|دولار كندي|C$">دولار كندي (CAD - C$)</option>
+                    <option value="AUD|دولار أسترالي|A$">دولار أسترالي (AUD - A$)</option>
+                    <option value="CHF|فرنك سويسري|CHF">فرنك سويسري (CHF)</option>
+                    <option value="CNY|يوان صيني|¥">يوان صيني (CNY - ¥)</option>
+                    <option value="JPY|ين ياباني|¥">ين ياباني (JPY - ¥)</option>
+                    <option value="INR|روبية هندية|₹">روبية هندية (INR - ₹)</option>
+                    <option value="RUB|روبل روسي|₽">روبل روسي (RUB - ₽)</option>
+                    <option value="BRL|ريال برازيلي|R$">ريال برازيلي (BRL - R$)</option>
+                    <option value="MYR|رينغيت ماليزي|RM">رينغيت ماليزي (MYR - RM)</option>
+                    <option value="SGD|دولار سنغافوري|S$">دولار سنغافوري (SGD - S$)</option>
+                    <option value="SEK|كرونة سويدية|kr">كرونة سويدية (SEK - kr)</option>
+                    <option value="NOK|كرونة نرويجية|kr">كرونة نرويجية (NOK - kr)</option>
+                    <option value="DKK|كرونة دنماركية|kr">كرونة دنماركية (DKK - kr)</option>
+                    <option value="KRW|وون كوري|₩">وون كوري (KRW - ₩)</option>
+                  </optgroup>
+                </select>
+              </div>
+
+              <div class="field-group">
+                <label for="currencyName"><i class="fas fa-tag"></i> اسم العملة <span class="required-star">*</span></label>
+                <input type="text" id="currencyName" class="modal-input" placeholder="مثال: دولار أمريكي" required>
+              </div>
+
+              <!-- Row 2: Currency Code + Symbol -->
+              <div class="field-group">
+                <label for="currencyCode"><i class="fas fa-globe"></i> كود العملة (ISO) <span class="required-star">*</span></label>
+                <input type="text" id="currencyCode" class="modal-input" placeholder="مثال: USD" maxlength="6" style="text-transform: uppercase;" required>
+              </div>
+
+              <div class="field-group">
+                <label for="currencySymbol"><i class="fas fa-dollar-sign"></i> الرمز أو الاختصار <span class="required-star">*</span></label>
+                <input type="text" id="currencySymbol" class="modal-input" placeholder="مثال: $" required>
+              </div>
+
+              <!-- Row 3: Exchange Rate + Default Toggle -->
+              <div class="field-group">
+                <label for="currencyExchangeRate"><i class="fas fa-arrow-trend-up"></i> سعر الصرف (مقابل الأساسية)</label>
+                <input type="number" id="currencyExchangeRate" step="any" min="0" class="modal-input" placeholder="1.00" value="1">
+              </div>
+
+              <div class="field-group" style="justify-content: flex-end;">
+                <label class="custom-checkbox-card" style="margin: 0; padding: 10px 14px; height: 44px; box-sizing: border-box;">
+                  <input type="checkbox" id="currencyIsDefault">
+                  <span class="custom-check-box"><i class="fas fa-check"></i></span>
+                  <div class="checkbox-text">
+                    <span class="checkbox-title">العملة الأساسية للمتجر</span>
+                    <span class="checkbox-desc">تكون الافتراضية في كل الفواتير</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <div class="currency-form-actions-row">
+              <button type="submit" id="saveCurrencyBtn" class="btn-save-currency">
+                <i class="fas fa-save"></i>
+                <span id="saveCurrencyBtnText">حفظ العملة</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Currencies List Header & Container -->
+        <div class="currencies-list-section">
+          <div class="currencies-list-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-list-check text-indigo-600" style="font-size: 1.1rem;"></i>
+              <span style="font-size: 1rem; font-weight: 800; color: #1e1b4b;">العملات المسجلة بالمتجر</span>
+            </div>
+            <span id="currenciesCountBadge" class="curr-count-badge">0 عملات</span>
+          </div>
+          <div id="currenciesListContainer" class="currencies-cards-grid">
+            <!-- Currency cards rendered here via JS -->
+          </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="modal-footer" style="margin-top: 24px;">
+          <button type="button" class="btn-cancel-modal" onclick="closeCurrenciesModal()" style="margin-right: auto;">
+            <i class="fas fa-times"></i>
+            <span>إغلاق النافذة</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>

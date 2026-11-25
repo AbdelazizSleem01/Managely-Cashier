@@ -118,12 +118,12 @@ export function renderPagination({
                 <div class="flex items-center gap-1.5 text-xs text-gray-500">
                     <span class="whitespace-nowrap">لكل صفحة</span>
                     <!-- Custom page-size dropdown -->
-                    <div class="pagination-size-dropdown p-3" id="${pageSizeId}" style="position:relative;display:inline-block;">
+                    <div class="pagination-size-dropdown" id="${pageSizeId}" style="position:relative;display:inline-block">
                         <button type="button" class="pagination-size-trigger flex items-center gap-1 px-3 py-2 rounded-md border border-primary/40 bg-white text-primary font-bold text-xs hover:bg-primary/5 transition-all" style="min-width:56px;justify-content:space-between;">
                             <span class="size-label">${pageSize}</span>
                             <i class="fas fa-chevron-up text-[9px] size-arrow" style="transition:transform 0.2s;"></i>
                         </button>
-                        <div class="size-options" style="display:none;position:fixed;background:#fff;border:1.5px solid #e9d5ff;border-radius:12px;box-shadow:0 8px 32px rgba(109,40,217,0.18);z-index:99999;min-width:80px;padding:6px;overflow:hidden;">
+                        <div class="size-options" style="display:none;position:absolute;bottom:calc(100% + 6px);right:0;background:#fff;border:1.5px solid #e9d5ff;border-radius:12px;box-shadow:0 8px 32px rgba(109,40,217,0.18);z-index:999999999;min-width:76px;padding:6px;overflow:hidden;">
                             ${pageSizeOptions.map(size => `
                                 <div class="size-option flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold cursor-pointer transition-all ${size === pageSize ? 'bg-primary/10 text-primary' : 'text-gray-700 hover:bg-gray-50'}" data-size="${size}">
                                     ${size === pageSize ? '<i class="fas fa-check text-primary" style="font-size:9px;"></i>' : '<span style="width:11px;display:inline-block;"></span>'}
@@ -197,36 +197,20 @@ export function renderPagination({
         const arrow = dropdownEl.querySelector(".size-arrow");
 
         function openDropdown() {
-            const rect = trigger.getBoundingClientRect();
-
-            // Show invisibly first to measure actual height
-            optionsPanel.style.visibility = "hidden";
-            optionsPanel.style.display = "block";
-
-            const panelHeight = optionsPanel.offsetHeight;
-            const panelWidth = optionsPanel.offsetWidth;
-
-            // Align right edge of dropdown with right edge of trigger (RTL-friendly)
-            const rightEdge = window.innerWidth - rect.right;
+            // Bottom pagination dropdown always opens upwards above the trigger
+            optionsPanel.style.top = "auto";
+            optionsPanel.style.bottom = "calc(100% + 6px)";
+            optionsPanel.style.right = "0px";
             optionsPanel.style.left = "auto";
-            optionsPanel.style.right = rightEdge + "px";
-
-            // Place above if space allows, else below — 2px gap only
-            const spaceAbove = rect.top;
-            if (spaceAbove >= panelHeight + 2) {
-                optionsPanel.style.top = (rect.top - panelHeight - 2) + "px";
-            } else {
-                optionsPanel.style.top = (rect.bottom + 2) + "px";
-            }
-
-            optionsPanel.style.visibility = "visible";
+            optionsPanel.style.display = "block";
             arrow.style.transform = "rotate(180deg)";
+            dropdownEl.style.zIndex = "99999";
         }
-
 
         function closeDropdown() {
             optionsPanel.style.display = "none";
             arrow.style.transform = "rotate(0deg)";
+            dropdownEl.style.zIndex = "";
         }
 
         trigger.addEventListener("click", (e) => {

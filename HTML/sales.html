@@ -14,114 +14,7 @@
 </head>
 
 <body class="bg-gray-50 min-h-screen" data-page="sales">
-    <div id="sidebar-container">
-        <!-- Sidebar Toggle Button -->
-        <button id="sidebar-toggle">
-            <i class="fas fa-bars"></i>
-        </button>
-
-        <!-- Sidebar Navigation -->
-        <nav id="sidebar">
-            <div class="p-4">
-                <div class="title text-2xl font-bold text-white mb-5 mt-4 text-center">
-                    نظام الكاشير
-                    <i class="fas fa-shop"></i>
-                </div>
-                <ul class="space-y-2">
-                    <li>
-                        <a href="index.html" data-page="home"
-                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                            <i class="fas fa-home"></i> الرئيسية
-                        </a>
-                    </li>
-                    <li>
-                        <a href="products.html" data-page="products"
-                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                            <i class="fas fa-box"></i> المنتجات
-                        </a>
-                    </li>
-                    <li>
-                        <a href="categories.html" data-page="categories"
-                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                            <i class="fas fa-tags"></i> الفئات
-                        </a>
-                    </li>
-                    <li>
-                        <a href="sales-invoice.html" data-page="invoice-page"
-                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                            <i class="fas fa-file-invoice"></i> فاتورة البيع
-                        </a>
-                    </li>
-                    <li>
-                        <a href="returns.html" data-page="returns"
-                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                            <i class="fas fa-arrows-rotate"></i>مـرتجع
-                        </a>
-                    </li>
-                    <li>
-                        <a href="sales.html" data-page="sales"
-                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2 text-blue-200 font-bold">
-                            <i class="fas fa-chart-line"></i> سجل المبيعات
-                        </a>
-                    </li>
-                    <li>
-                        <a href="customers.html" data-page="customers"
-                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                            <i class="fas fa-users"></i> العمــلاء
-                        </a>
-                    </li>
-                    <li>
-                        <a href="settings.html" data-page="settings"
-                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                            <i class="fas fa-cog"></i> الإعدادات
-                        </a>
-                    </li>
-                    <li>
-                        <a href="statistics.html" data-page="statistics"
-                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                            <i class="fas fa-chart-bar"></i> الإحصائيـــات
-                        </a>
-                    </li>
-                    <li>
-                        <a href="purchase-invoices.html" data-page="purchase-invoices"
-                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                            <i class="fas fa-file-invoice"></i> المشتـريات
-                        </a>
-                    </li>
-                    <li>
-                        <a href="employees.html" data-page="employees"
-                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                            <i class="fas fa-user-tie"></i> الموظفين
-                        </a>
-                    </li>
-                    <li>
-                        <a href="ProductsPurchaseInvoices.html" data-page="ProductsPurchaseInvoices"
-                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                            <i class="fas fa-file-invoice-dollar"></i> فواتير شراء المنتجات
-                        </a>
-                    </li>
-                    <li>
-                        <a href="suppliers.html" data-page="suppliers"
-                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                            <i class="fas fa-truck"></i> الموردين
-                        </a>
-                    </li>
-                    <li>
-                        <a href="treasury.html" data-page="treasury"
-                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                            <i class="fas fa-wallet"></i> الخزنة
-                        </a>
-                    </li>
-                    <li>
-                        <a href="printer-settings.html" data-page="printer-settings"
-                            class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                            <i class="fas fa-print"></i> إعدادات الطابعة
-                        </a>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-    </div>
+    <div id="sidebar-container"></div>
 
     <div class="main-content pt-18 mb-10">
         <div class="container mx-auto px-4 py-6 ">
@@ -146,6 +39,13 @@
                                 <span class="stat-value" id="totalSalesAmount">0.00 ج.م</span>
                             </div>
                         </div>
+                        <div class="stat-pill stat-pill-profit" style="background: #ecfdf5; border-color: #a7f3d0;">
+                            <i class="fas fa-hand-holding-dollar" style="color: #059669;"></i>
+                            <div class="stat-info">
+                                <span class="stat-label">صافي الأرباح</span>
+                                <span class="stat-value" id="totalProfitAmount" style="color: #059669;">0.00 ج.م</span>
+                            </div>
+                        </div>
                         <div class="stat-pill stat-pill-count">
                             <i class="fas fa-receipt"></i>
                             <div class="stat-info">
@@ -160,6 +60,7 @@
                                 <span class="stat-value" id="totalReturnsCount">0</span>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
@@ -170,6 +71,9 @@
                         <input type="text" id="searchInput" placeholder="ابحث عن رقم فاتورة، اسم عميل، هاتف، أو منتج..."
                             oninput="handleSearch()" autocomplete="off" />
                     </div>
+                    <select id="salesCurrencyFilter" class="filter-select" onchange="handleSearch()" title="تصفية حسب العملة" style="padding: 9px 14px; border-radius: 12px; border: 1.5px solid #e2e8f0; background: #fff; font-weight: 700; color: #1e1b4b; font-size: 0.88rem; outline: none; cursor: pointer;">
+                        <option value="">جميع العملات</option>
+                    </select>
                     <button onclick="exportToExcel()" class="btn-export-excel" id="exportExcelBtn">
                         <i class="fas fa-file-excel"></i>
                         <span>تصدير إلى Excel</span>
@@ -216,11 +120,22 @@
                                             if (Array.isArray(sales) && sales.length > 0) {
                                                 const totalAmt = sales.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
                                                 const totalRet = sales.filter(s => s.hasReturn).length;
+                                                const formatCompact = (val) => {
+                                                    const n = Number(val) || 0;
+                                                    const a = Math.abs(n);
+                                                    if (a >= 1e9) return (n / 1e9).toFixed(2).replace(/\.?0+$/, '') + 'B ج.م';
+                                                    if (a >= 1e6) return (n / 1e6).toFixed(2).replace(/\.?0+$/, '') + 'M ج.م';
+                                                    if (a >= 1e4) return (n / 1e3).toFixed(1).replace(/\.?0+$/, '') + 'K ج.م';
+                                                    return n.toFixed(2) + ' ج.م';
+                                                };
                                                 const elAmt = document.getElementById("totalSalesAmount");
                                                 const elCnt = document.getElementById("totalInvoicesCount");
                                                 const elRet = document.getElementById("totalReturnsCount");
-                                                if (elAmt) elAmt.textContent = totalAmt.toFixed(2) + " ج.م";
-                                                if (elCnt) elCnt.textContent = sales.length.toLocaleString("ar-EG");
+                                                if (elAmt) {
+                                                    elAmt.textContent = formatCompact(totalAmt);
+                                                    elAmt.title = `القيمة الدقيقة: ${totalAmt.toLocaleString("ar-EG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ج.م`;
+                                                }
+                                                if (elCnt) elCnt.textContent = sales.length >= 10000 ? (sales.length / 1000).toFixed(1) + 'K' : sales.length.toLocaleString("ar-EG");
                                                 if (elRet) elRet.textContent = totalRet.toLocaleString("ar-EG");
 
                                                 const tbody = document.getElementById("salesTable");

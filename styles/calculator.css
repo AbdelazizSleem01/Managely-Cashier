@@ -1,0 +1,569 @@
+/* ==========================================================================
+   Managely Pro - World-Class Calculator Modal Design System
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap');
+
+/* Modal Backdrop & Overlay */
+.calc-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(8, 12, 22, 0.78);
+    backdrop-filter: blur(16px) saturate(160%);
+    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+                visibility 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    direction: rtl;
+    user-select: none;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.calc-modal-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Modal Outer Wrapper */
+.calc-modal-wrapper {
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    justify-content: center;
+    perspective: 1000px;
+}
+
+/* Main Modal Card Chassis */
+.calc-modal-card {
+    width: 100%;
+    background: linear-gradient(165deg, #1e1b4b 0%, #0f172a 45%, #080d1a 100%);
+    border: 1.5px solid rgba(139, 92, 246, 0.3);
+    border-radius: 28px;
+    padding: 24px 22px 20px;
+    box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.75),
+                0 0 45px rgba(124, 58, 237, 0.2),
+                inset 0 1px 1px rgba(255, 255, 255, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    transform: scale(0.92) translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-sizing: border-box;
+    font-family: 'Tajawal', sans-serif;
+}
+
+.calc-modal-backdrop.active .calc-modal-card {
+    transform: scale(1) translateY(0);
+}
+
+/* Header Area */
+.calc-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.calc-header-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.calc-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.25rem;
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+}
+
+.calc-icon-box i {
+    margin: 0 !important;
+}
+
+.calc-title-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.calc-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #f8fafc;
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: -0.2px;
+}
+
+.calc-subtitle {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-top: 2px;
+    letter-spacing: 0.3px;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.calc-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Keyboard Active Badge */
+.calc-kb-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(51, 65, 85, 0.8);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #c4b5fd;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.calc-kb-pulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    animation: calcPulse 2s infinite ease-in-out;
+}
+
+@keyframes calcPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* Luxury Close Button */
+.calc-close-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.22s ease;
+    flex-shrink: 0;
+}
+
+.calc-close-btn i {
+    margin: 0 !important;
+}
+
+.calc-close-btn:hover {
+    background: #f43f5e;
+    color: #ffffff;
+    border-color: #f43f5e;
+    transform: rotate(90deg) scale(1.08);
+    box-shadow: 0 0 16px rgba(244, 63, 94, 0.45);
+}
+
+/* ==========================================================================
+   OLED Screen Area
+   ========================================================================== */
+.calc-screen-wrap {
+    background: #060913;
+    border: 1.5px solid #1e293b;
+    border-radius: 20px;
+    padding: 14px 18px 12px;
+    box-shadow: inset 0 3px 12px rgba(0, 0, 0, 0.7),
+                0 1px 1px rgba(255, 255, 255, 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Subtle gloss reflection overlay */
+.calc-screen-wrap::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.035) 0%, transparent 100%);
+    pointer-events: none;
+}
+
+.calc-screen-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 24px;
+    gap: 8px;
+}
+
+.calc-mode-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.calc-pill-tag {
+    font-size: 0.65rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: #64748b;
+    background: rgba(30, 41, 59, 0.8);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(71, 85, 105, 0.4);
+}
+
+.calc-mem-tag {
+    font-size: 0.65rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.calc-mem-tag.hidden {
+    display: none;
+}
+
+.calc-screen-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+}
+
+.calc-history-stream {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #94a3b8;
+    direction: ltr;
+    font-family: 'JetBrains Mono', monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+    min-height: 1.2em;
+}
+
+/* Copy Button */
+.calc-copy-btn {
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(71, 85, 105, 0.5);
+    color: #cbd5e1;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    outline: none;
+}
+
+.calc-copy-btn i {
+    margin: 0 !important;
+    font-size: 0.72rem;
+}
+
+.calc-copy-btn:hover {
+    background: rgba(51, 65, 85, 0.9);
+    color: #ffffff;
+    border-color: #8b5cf6;
+}
+
+.calc-copy-btn.copied {
+    background: rgba(16, 185, 129, 0.2) !important;
+    border-color: #10b981 !important;
+    color: #34d399 !important;
+}
+
+/* Main LCD Output */
+.calc-screen-body {
+    width: 100%;
+}
+
+.calc-main-lcd {
+    width: 100%;
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    color: #38bdf8 !important;
+    -webkit-text-fill-color: #38bdf8 !important;
+    font-size: 2.35rem !important;
+    font-weight: 800 !important;
+    text-align: right !important;
+    direction: ltr !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    text-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+    letter-spacing: -0.5px;
+    line-height: 1.15;
+    margin: 0;
+}
+
+/* ==========================================================================
+   Memory & Scientific Tools Toolbar
+   ========================================================================== */
+.calc-quick-toolbar {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+}
+
+.calc-btn-tool {
+    height: 34px;
+    background: rgba(15, 23, 42, 0.65);
+    border: 1px solid rgba(51, 65, 85, 0.7);
+    border-radius: 9px;
+    color: #94a3b8;
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.16s ease;
+    outline: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.calc-btn-tool:hover {
+    background: rgba(30, 41, 59, 0.95);
+    color: #f1f5f9;
+    border-color: #8b5cf6;
+    transform: translateY(-1px);
+}
+
+.calc-btn-tool:active {
+    transform: translateY(1px) scale(0.96);
+}
+
+/* ==========================================================================
+   Tactile Keypad Grid
+   ========================================================================== */
+.calc-keypad-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 11px;
+}
+
+/* Base Keypad Button */
+.calc-btn {
+    height: 54px;
+    border-radius: 15px;
+    border: 1px solid transparent;
+    font-size: 1.35rem;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    transition: all 0.14s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3),
+                inset 0 1px 1px rgba(255, 255, 255, 0.12);
+    position: relative;
+    user-select: none;
+    font-family: 'Tajawal', sans-serif;
+}
+
+.calc-btn i {
+    margin: 0 !important;
+}
+
+.calc-btn:active,
+.calc-btn.calc-btn-pressed {
+    transform: translateY(2px) scale(0.96);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    filter: brightness(1.25);
+}
+
+/* Key Colors & Themes */
+/* 1. Numbers (0-9, ., 00) */
+.calc-btn-num {
+    background: linear-gradient(150deg, #1e293b 0%, #0f172a 100%);
+    color: #f8fafc;
+    border-color: rgba(71, 85, 105, 0.4);
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.calc-btn-num:hover {
+    background: linear-gradient(150deg, #334155 0%, #1e293b 100%);
+    color: #ffffff;
+    border-color: rgba(148, 163, 184, 0.5);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+/* 2. Operations (÷, ×, −, +) */
+.calc-btn-op {
+    background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+    color: #ffffff;
+    border-color: rgba(167, 139, 250, 0.3);
+    font-size: 1.45rem;
+}
+
+.calc-btn-op:hover {
+    background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+    box-shadow: 0 6px 16px rgba(124, 58, 237, 0.45);
+}
+
+/* Secondary op (%) */
+.calc-btn-op-secondary {
+    background: linear-gradient(150deg, #1e293b 0%, #0f172a 100%);
+    color: #c4b5fd;
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.calc-btn-op-secondary:hover {
+    background: linear-gradient(150deg, #334155 0%, #1e293b 100%);
+    color: #ffffff;
+}
+
+/* 3. Clear (C / AC) */
+.calc-btn-clear {
+    background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+    color: #ffffff;
+    border-color: rgba(251, 113, 133, 0.4);
+    font-weight: 900;
+}
+
+.calc-btn-clear:hover {
+    background: linear-gradient(135deg, #fb7185 0%, #f43f5e 100%);
+    box-shadow: 0 6px 16px rgba(244, 63, 94, 0.45);
+}
+
+/* 4. Backspace (⌫) */
+.calc-btn-backspace {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #ffffff;
+    border-color: rgba(252, 211, 77, 0.35);
+    font-size: 1.15rem;
+}
+
+.calc-btn-backspace:hover {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    box-shadow: 0 6px 16px rgba(245, 158, 11, 0.45);
+}
+
+/* 5. Equals (=) */
+.calc-btn-equals {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    border-color: rgba(52, 211, 153, 0.4);
+    font-size: 1.55rem;
+}
+
+.calc-btn-equals:hover {
+    background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+}
+
+/* ==========================================================================
+   Footer Keyboard Quick Guide
+   ========================================================================== */
+.calc-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 4px;
+}
+
+.calc-shortcut-pill {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #64748b;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.calc-shortcut-pill span {
+    background: rgba(30, 41, 59, 0.7);
+    color: #cbd5e1;
+    border: 1px solid rgba(71, 85, 105, 0.5);
+    border-radius: 5px;
+    padding: 1px 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   Global Floating Trigger Button
+   ========================================================================== */
+#floatingCalcButton,
+.calc-button {
+    position: fixed !important;
+    bottom: 48px !important;
+    right: 20px !important;
+    z-index: 990 !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #6001e3 0%, #4f46e5 100%) !important;
+    color: #ffffff !important;
+    border: 2px solid rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 0 8px 24px rgba(96, 1, 227, 0.45) !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+#floatingCalcButton:hover,
+.calc-button:hover {
+    transform: translateY(-4px) scale(1.08) !important;
+    box-shadow: 0 14px 30px rgba(96, 1, 227, 0.6) !important;
+    background: linear-gradient(135deg, #7c3aed 0%, #6001e3 100%) !important;
+}
+
+#floatingCalcButton:active,
+.calc-button:active {
+    transform: translateY(-1px) scale(0.96) !important;
+}
+
+#floatingCalcButton i,
+.calc-button i {
+    font-size: 1.25rem !important;
+    margin: 0 !important;
+    color: #ffffff !important;
+}

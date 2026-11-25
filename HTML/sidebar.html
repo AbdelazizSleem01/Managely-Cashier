@@ -9,141 +9,200 @@
     <link href="../styles/home.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        #sidebar {
-            overflow-y: auto;
-        }
-
-        #sidebar::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        #sidebar::-webkit-scrollbar-track {
-            background: #f1f1f1;
-        }
-
-        #sidebar::-webkit-scrollbar-thumb {
-            background: #6929ff69;
-            border-radius: 3px;
-            transition: background 0.3s ease;
-        }
-
-        #sidebar::-webkit-scrollbar-thumb:hover {
-            background: #000000;
-            cursor: pointer;
-        }
-        .fa-arrows-rotate{
-            margin-left: 5px;
-        }
-    </style>
 </head>
 
 <body data-page="side-bar">
-    <!-- Sidebar Toggle Button -->
-    <button id="sidebar-toggle">
+    <!-- Sidebar Toggle Button (Modern Floating Glass Trigger) -->
+    <button id="sidebar-toggle" title="فتح القائمة الجانبية">
         <i class="fas fa-bars"></i>
     </button>
 
-    <!-- Sidebar Navigation -->
+    <!-- Sidebar Navigation (Modern Categorized Luxury Sidebar) -->
     <nav id="sidebar">
-        <div class="p-4">
-            <div class="title text-2xl font-bold text-white mb-5 mt-4 text-center">
-                نظام الكاشير
-                <i class="fas fa-shop"></i>
+        <!-- 1. Brand Logo Header -->
+        <div class="sidebar-brand-header">
+            <div class="sidebar-brand-logo">
+                <div class="brand-icon-wrap">
+                    <i class="fas fa-shop"></i>
+                </div>
+                <div class="brand-text-wrap">
+                    <span class="brand-title">Managely POS</span>
+                    <span class="brand-subtitle">نظام الكاشير وإدارة المبيعات</span>
+                </div>
             </div>
-            <ul class="space-y-2">
-                <li>
-                    <a href="index.html" data-page="home"
-                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                        <i class="fas fa-home"></i> الرئيسية
-                    </a>
-                </li>
-                <li>
-                    <a href="products.html" data-page="products"
-                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                        <i class="fas fa-box"></i> المنتجات
-                    </a>
-                </li>
-                <li>
-                    <a href="categories.html" data-page="categories"
-                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                        <i class="fas fa-tags"></i> الفئات
-                    </a>
-                </li>
-                <li>
-                    <a href="sales-invoice.html" data-page="invoice-page"
-                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                        <i class="fas fa-file-invoice"></i> فاتورة البيع
-                    </a>
-                </li>
-                <li>
-                    <a href="returns.html" data-page="returns"
-                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                        <i class="fas fa-arrows-rotate"></i>مـرتجع
-                    </a>
-                </li>
-                <li>
-                    <a href="sales.html" data-page="sales"
-                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                        <i class="fas fa-chart-line"></i> سجل المبيعات
-                    </a>
-                </li>
-                <li>
-                    <a href="customers.html" data-page="customers"
-                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                        <i class="fas fa-users"></i> العمــلاء
-                    </a>
-                </li>
-                <li>
-                    <a href="settings.html" data-page="settings"
-                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                        <i class="fas fa-cog"></i> الإعدادات
-                    </a>
-                </li>
-                <li>
-                    <a href="statistics.html" data-page="statistics"
-                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                        <i class="fas fa-chart-bar"></i> الإحصائيـــات
-                    </a>
-                </li>
-                <li>
-                    <a href="purchase-invoices.html" data-page="purchase-invoices"
-                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                        <i class="fas fa-file-invoice"></i> المشتـريات
-                    </a>
-                </li>
-                <li>
-                    <a href="employees.html" data-page="employees"
-                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                        <i class="fas fa-user-tie"></i> الموظفين
-                    </a>
-                </li>
-                <li>
-                    <a href="ProductsPurchaseInvoices.html" data-page="ProductsPurchaseInvoices"
-                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                        <i class="fas fa-file-invoice-dollar"></i> فواتير شراء المنتجات
-                    </a>
-                </li>
-                <li>
-                    <a href="suppliers.html" data-page="suppliers"
-                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                        <i class="fas fa-truck"></i> الموردين
-                    </a>
-                </li>
-                <li>
-                    <a href="treasury.html" data-page="treasury"
-                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                        <i class="fas fa-wallet"></i> الخزنة
-                    </a>
-                </li>
-                <li>
-                    <a href="printer-settings.html" data-page="printer-settings"
-                        class="hover:text-blue-200 transition duration-300 flex items-center gap-2">
-                        <i class="fas fa-print"></i> إعدادات الطابعة
-                    </a>
-                </li>
+            <button id="sidebar-close-btn" class="sidebar-close-btn" title="إغلاق القائمة">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
 
-            </ul>
+        <!-- 2. User Profile Card (VIP Glassmorphism) -->
+        <div class="sidebar-user-card">
+            <div class="user-avatar-wrap" id="sbUserAvatar">
+                <span>م</span>
+            </div>
+            <div class="user-details">
+                <div class="user-name" id="sbUserName">المدير العام</div>
+                <div class="user-status-row">
+                    <span class="user-role-badge" id="sbUserRole">
+                        <i class="fas fa-crown text-amber-400"></i> مدير عام
+                    </span>
+                </div>
+            </div>
+            <button type="button" onclick="logoutUser()" class="sidebar-logout-action" title="تسجيل الخروج من النظام">
+                <i class="fas fa-right-from-bracket"></i>
+            </button>
+        </div>
+
+        <!-- 3. Scrollable Navigation Menu with Categorized Sections -->
+        <div class="sidebar-nav-scroll">
+            <!-- Section 1: نقاط البيع والعمليات اليومية -->
+            <div class="sidebar-group">
+                <div class="sidebar-group-header">
+                    <i class="fas fa-cash-register"></i>
+                    <span>العمليات اليومية</span>
+                </div>
+                <ul class="sidebar-links-list">
+                    <li>
+                        <a href="index.html" data-page="home">
+                            <span class="link-icon"><i class="fas fa-home"></i></span>
+                            <span class="link-text">الرئيسية</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="sales-invoice.html" data-page="invoice-page">
+                            <span class="link-icon"><i class="fas fa-file-invoice"></i></span>
+                            <span class="link-text">فاتورة البيع</span>
+                            <span class="sidebar-badge-pill pos-badge">POS</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="returns.html" data-page="returns">
+                            <span class="link-icon"><i class="fas fa-arrows-rotate"></i></span>
+                            <span class="link-text">المرتجعات</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="sales.html" data-page="sales">
+                            <span class="link-icon"><i class="fas fa-chart-line"></i></span>
+                            <span class="link-text">سجل المبيعات</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Section 2: إدارة المخزون والمشتريات -->
+            <div class="sidebar-group">
+                <div class="sidebar-group-header">
+                    <i class="fas fa-boxes-stacked"></i>
+                    <span>المخزون والمشتريات</span>
+                </div>
+                <ul class="sidebar-links-list">
+                    <li>
+                        <a href="products.html" data-page="products">
+                            <span class="link-icon"><i class="fas fa-box"></i></span>
+                            <span class="link-text">إدارة المنتجات</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="categories.html" data-page="categories">
+                            <span class="link-icon"><i class="fas fa-tags"></i></span>
+                            <span class="link-text">الفئات والأقسام</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="purchase-invoices.html" data-page="purchase-invoices">
+                            <span class="link-icon"><i class="fas fa-cart-shopping"></i></span>
+                            <span class="link-text">المشتريات</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="ProductsPurchaseInvoices.html" data-page="ProductsPurchaseInvoices">
+                            <span class="link-icon"><i class="fas fa-file-invoice-dollar"></i></span>
+                            <span class="link-text">فواتير شراء الأصناف</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="suppliers.html" data-page="suppliers">
+                            <span class="link-icon"><i class="fas fa-truck"></i></span>
+                            <span class="link-text">الموردين</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Section 3: المالية والعملاء والذكاء الاصطناعي -->
+            <div class="sidebar-group">
+                <div class="sidebar-group-header">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>المالية والتقارير</span>
+                </div>
+                <ul class="sidebar-links-list">
+                    <li>
+                        <a href="treasury.html" data-page="treasury">
+                            <span class="link-icon"><i class="fas fa-wallet"></i></span>
+                            <span class="link-text">الخزينة والسيولة</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="customers.html" data-page="customers">
+                            <span class="link-icon"><i class="fas fa-users"></i></span>
+                            <span class="link-text">العملاء والولاء</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="statistics.html" data-page="statistics">
+                            <span class="link-icon"><i class="fas fa-brain"></i></span>
+                            <span class="link-text">الذكاء الاصطناعي والإحصائيات</span>
+                            <span class="sidebar-badge-pill ai-badge">AI ✨</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Section 4: الإدارة والموظفين والإعدادات -->
+            <div class="sidebar-group">
+                <div class="sidebar-group-header">
+                    <i class="fas fa-gears"></i>
+                    <span>الإدارة والإعدادات</span>
+                </div>
+                <ul class="sidebar-links-list">
+                    <li>
+                        <a href="employees.html" data-page="employees">
+                            <span class="link-icon"><i class="fas fa-user-tie"></i></span>
+                            <span class="link-text">الموظفين</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="users.html" data-page="users">
+                            <span class="link-icon"><i class="fas fa-users-gear"></i></span>
+                            <span class="link-text">إدارة المستخدمين</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="printer-settings.html" data-page="printer-settings">
+                            <span class="link-icon"><i class="fas fa-print"></i></span>
+                            <span class="link-text">إعدادات الطابعة</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="settings.html" data-page="settings">
+                            <span class="link-icon"><i class="fas fa-cog"></i></span>
+                            <span class="link-text">إعدادات النظام</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 4. Pinned Bottom Footer Status Dock -->
+        <div class="sidebar-bottom-footer">
+            <div class="sidebar-shift-status">
+                <span class="shift-dot"></span>
+                <span class="shift-text" id="sbShiftText">الوردية: نشطة</span>
+            </div>
+            <div class="sidebar-app-ver">
+                <span id="sbAppVersion">Managely POS</span>
+            </div>
         </div>
     </nav>
 

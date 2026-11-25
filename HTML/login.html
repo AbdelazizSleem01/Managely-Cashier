@@ -12,27 +12,16 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        i {
-            margin-top: -10px !important;
-        }
-        .mt-4{
-            margin-top: 10px;
-        }
-        .tooltip{
-            margin-top: 15px;
-        }
-    </style>
 </head>
 
 <body>
     <div class="container">
-        <!-- Image Section -->
+        <!-- Image / Hero Section -->
         <div class="image-section">
             <h1>مرحباً بعودتك!</h1>
-            <p>نظام إدارة المحتوى الخاص بك ينتظرك. سجل الدخول الآن للوصول إلى لوحة التحكم والإحصائيات الخاصة بك.</p>
-            <div style="margin-top: 4rem;">
-                <i class="fas fa-lock" style="font-size: 3rem; opacity: 0.8;"></i>
+            <p>نظام إدارة المحتوى ونقاط البيع الخاص بك ينتظرك. سجل الدخول الآن للوصول إلى لوحة التحكم والمبيعات.</p>
+            <div class="hero-icon-box">
+                <i class="fas fa-lock"></i>
             </div>
         </div>
 
@@ -41,48 +30,175 @@
             <div class="login-card">
                 <div class="login-header">
                     <h2>تسجيل الدخول</h2>
-
                     <p>الرجاء إدخال بيانات الاعتماد الخاصة بك للوصول إلى حسابك</p>
+                </div>
 
-                    <div class="tooltip"
-                        data-tip="اول ايميل وباسورد سيتم ادخالهم سيكونوا الاساسين فيما بعد ان كنت تحتاج لتغيريهم من صفحة الاعدادات">
-                        <i class="fas fa-info-circle mx-auto text-primary mt-8"></i>
+                <!-- First-Time Setup Notice (Only visible on the first-ever login setup) -->
+                <div id="firstTimeSetupNotice" class="first-time-notice-card" style="display: none;">
+                    <div class="notice-icon-box">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <div class="notice-content">
+                        <span class="notice-title">إعداد الحساب الرئيسي لأول مرة:</span>
+                        <span>أول اسم مستخدم/إيميل وكلمة مرور تقوم بإدخالهم الآن سيتم اعتمادهم كبيانات للمدير العام، ويمكنك تعديلهم لاحقاً من الإعدادات.</span>
                     </div>
                 </div>
 
-                <form id="loginForm">
-                    <div class="form-control">
-                        <label for="email">البريد الإلكتروني <span class="required-star">*</span></label>
-                        <div class="relative">
-                            <input class="text-gray-700" type="email" id="email" placeholder="أدخل بريدك الإلكتروني" required>
-                            <i class="fas fa-envelope input-icon "></i>
+                <form id="loginForm" autocomplete="on">
+                    <div class="form-control" style="position: relative;">
+                        <label for="email">اسم المستخدم أو البريد الإلكتروني <span class="required-star">*</span></label>
+                        <div class="relative" style="position: relative;">
+                            <input class="text-gray-700" type="text" id="email"
+                                placeholder="اسم المستخدم أو البريد الإلكتروني"
+                                required autocomplete="username">
+                            <i class="fas fa-user-shield input-icon"></i>
+                        </div>
+
+                        <!-- Saved Accounts Autocomplete Dropdown -->
+                        <div id="savedAccountsDropdown" class="saved-accounts-dropdown" style="display: none;">
+                            <div class="saved-accounts-header">
+                                <span><i class="fas fa-clock-rotate-left"></i> الحسابات المسجلة سابقاً:</span>
+                            </div>
+                            <div id="savedAccountsList"></div>
                         </div>
                     </div>
 
                     <div class="form-control password-container">
                         <label for="password">كلمة المرور <span class="required-star">*</span></label>
-                        <div class="relative">
-                            <input class="text-gray-700" type="password" id="password" placeholder="أدخل كلمة المرور" required>
-                            <i class="fas fa-lock input-icon "></i>
-                            <i class="fas fa-eye toggle-password" id="togglePassword"></i>
+                        <div class="relative" style="position: relative;">
+                            <input class="text-gray-700" type="password" id="password"
+                                placeholder="أدخل كلمة المرور"
+                                required autocomplete="current-password">
+                            <i class="fas fa-lock input-icon"></i>
+                            <i class="fas fa-eye toggle-password" id="togglePassword" title="إظهار / إخفاء كلمة المرور"></i>
                         </div>
                     </div>
 
+                    <!-- Remember Me / Session Persistence Row -->
+                    <div class="remember-me-row">
+                        <label class="remember-checkbox-label" for="rememberMe">
+                            <input type="checkbox" id="rememberMe" checked>
+                            <span>تذكرني على هذا الجهاز</span>
+                        </label>
+                        <span class="session-duration-hint" id="sessionDurationBadge">لمدة شهر</span>
+                    </div>
 
-                    <button type="submit" class="login-btn">
-                        <i class="fas fa-sign-in-alt mr-2"></i> تسجيل الدخول
+                    <button type="submit" id="submitLoginBtn" class="login-btn">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>تسجيل الدخول</span>
                     </button>
-
                 </form>
             </div>
         </div>
     </div>
 
     <script type="module">
+        const SAVED_ACCOUNTS_KEY = 'managely_saved_accounts';
+        const AUTH_SESSION_KEY = 'managely_auth_session';
+
         document.addEventListener('DOMContentLoaded', async () => {
+            const emailInput = document.getElementById('email');
             const passwordInput = document.getElementById('password');
             const togglePassword = document.getElementById('togglePassword');
+            const rememberMeCheckbox = document.getElementById('rememberMe');
+            const sessionDurationBadge = document.getElementById('sessionDurationBadge');
+            const savedAccountsDropdown = document.getElementById('savedAccountsDropdown');
+            const savedAccountsList = document.getElementById('savedAccountsList');
+            const loginForm = document.getElementById('loginForm');
+            const submitBtn = document.getElementById('submitLoginBtn');
 
+            // Load settings (to get session duration setting)
+            let appSettings = {};
+            try {
+                if (window.electronAPI && window.electronAPI.getSettings) {
+                    appSettings = (await window.electronAPI.getSettings()) || {};
+                }
+            } catch (e) {
+                console.warn('Could not fetch settings:', e);
+            }
+
+            const durationDays = appSettings.sessionDurationDays !== undefined ? Number(appSettings.sessionDurationDays) : 30;
+            const suggestEnabled = appSettings.suggestAccountsEnabled !== false;
+
+            // Format badge text
+            if (sessionDurationBadge) {
+                if (durationDays === 0) {
+                    sessionDurationBadge.textContent = 'دائم';
+                } else if (durationDays === 1) {
+                    sessionDurationBadge.textContent = 'لمدة 24 ساعة';
+                } else if (durationDays === 7) {
+                    sessionDurationBadge.textContent = 'لمدة أسبوع';
+                } else if (durationDays === 15) {
+                    sessionDurationBadge.textContent = 'لمدة 15 يوماً';
+                } else if (durationDays === 30) {
+                    sessionDurationBadge.textContent = 'لمدة شهر';
+                } else if (durationDays === 90) {
+                    sessionDurationBadge.textContent = 'لمدة 3 أشهر';
+                } else if (durationDays === 180) {
+                    sessionDurationBadge.textContent = 'لمدة 6 أشهر';
+                } else if (durationDays === 365) {
+                    sessionDurationBadge.textContent = 'لمدة سنة';
+                } else {
+                    sessionDurationBadge.textContent = `لمدة ${durationDays} يوم`;
+                }
+            }
+
+            // ===== First-Time Setup Notice Display =====
+            const firstTimeNotice = document.getElementById('firstTimeSetupNotice');
+            const savedList = getSavedAccounts();
+            const hasLoggedInBefore = localStorage.getItem('managely_has_logged_in') === 'true' || savedList.length > 0;
+            const isFirstTime = !hasLoggedInBefore && (!appSettings.password || appSettings.isFirstTimeLogin === true);
+
+            if (firstTimeNotice) {
+                firstTimeNotice.style.display = isFirstTime ? 'flex' : 'none';
+            }
+
+            // ===== Auto-Login Check (Only if not explicitly logged out) =====
+            const justLoggedOut = sessionStorage.getItem('justLoggedOut') === 'true';
+            if (!justLoggedOut) {
+                try {
+                    let validUser = null;
+                    const sessionRaw = localStorage.getItem(AUTH_SESSION_KEY);
+                    if (sessionRaw) {
+                        const session = JSON.parse(sessionRaw);
+                        const isExpired = session.expiresAt && Date.now() > session.expiresAt;
+                        if (session && session.user && (!session.expiresAt || !isExpired)) {
+                            validUser = session.user;
+                        } else if (isExpired) {
+                            localStorage.removeItem(AUTH_SESSION_KEY);
+                        }
+                    }
+
+                    // Backend persistent session check
+                    if (!validUser && window.electronAPI && window.electronAPI.getRememberedSession) {
+                        const backendSession = await window.electronAPI.getRememberedSession();
+                        if (backendSession && backendSession.user) {
+                            const isExpired = backendSession.expiresAt && Date.now() > backendSession.expiresAt;
+                            if (!backendSession.expiresAt || !isExpired) {
+                                validUser = backendSession.user;
+                                localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(backendSession));
+                            }
+                        }
+                    }
+
+                    if (validUser) {
+                        // User session is valid -> Auto login immediately
+                        localStorage.setItem('currentUser', JSON.stringify(validUser));
+                        localStorage.setItem('isLoggedIn', 'true');
+
+                        const target = determineTargetPage(validUser);
+                        window.location.href = target;
+                        return;
+                    }
+                } catch (err) {
+                    console.warn('Auto-login session check failed:', err);
+                }
+            } else {
+                // Clear the one-time logout flag so future app starts can auto-login if remembered
+                sessionStorage.removeItem('justLoggedOut');
+            }
+
+            // ===== Password Visibility Toggle =====
             togglePassword.addEventListener('click', () => {
                 const type = passwordInput.type === 'password' ? 'text' : 'password';
                 passwordInput.type = type;
@@ -90,28 +206,191 @@
                 togglePassword.classList.toggle('fa-eye-slash');
             });
 
-            document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            // ===== Saved Accounts Suggestions =====
+            function getSavedAccounts() {
+                try {
+                    const raw = localStorage.getItem(SAVED_ACCOUNTS_KEY);
+                    return raw ? JSON.parse(raw) : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function saveAccountToList(user, identifier, plainPassword = '') {
+                try {
+                    let list = getSavedAccounts();
+                    const cleanId = (identifier || user.email || user.username || '').trim().toLowerCase();
+                    if (!cleanId) return;
+
+                    // Remove existing entry for this identifier
+                    list = list.filter(a => (a.identifier || '').toLowerCase() !== cleanId && (a.email || '').toLowerCase() !== cleanId && (a.username || '').toLowerCase() !== cleanId);
+
+                    // Add to beginning
+                    list.unshift({
+                        identifier: identifier || user.email || user.username,
+                        savedPassword: plainPassword || '',
+                        name: user.name || user.username || 'مستخدم',
+                        email: user.email || '',
+                        username: user.username || '',
+                        role: user.role || 'user',
+                        roleName: user.roleName || (user.role === 'admin' ? 'مدير عام' : 'كاشير'),
+                        lastUsed: Date.now()
+                    });
+
+                    // Keep top 6
+                    list = list.slice(0, 6);
+                    localStorage.setItem(SAVED_ACCOUNTS_KEY, JSON.stringify(list));
+                } catch (e) {
+                    console.warn('Could not save account to list:', e);
+                }
+            }
+
+            function removeAccountFromList(identifierToRemove, event) {
+                if (event) {
+                    event.stopPropagation();
+                    event.preventDefault();
+                }
+                try {
+                    let list = getSavedAccounts();
+                    list = list.filter(a => (a.identifier || '').toLowerCase() !== identifierToRemove.toLowerCase());
+                    localStorage.setItem(SAVED_ACCOUNTS_KEY, JSON.stringify(list));
+                    renderSavedAccountsDropdown(emailInput.value);
+                } catch (e) {
+                    console.warn('Error removing account:', e);
+                }
+            }
+
+            function renderSavedAccountsDropdown(filterText = '') {
+                if (!suggestEnabled) {
+                    savedAccountsDropdown.style.display = 'none';
+                    return;
+                }
+
+                const accounts = getSavedAccounts();
+                if (!accounts || accounts.length === 0) {
+                    savedAccountsDropdown.style.display = 'none';
+                    return;
+                }
+
+                const query = (filterText || '').trim().toLowerCase();
+                const filtered = query
+                    ? accounts.filter(a => (a.identifier || '').toLowerCase().includes(query) || (a.name || '').toLowerCase().includes(query) || (a.roleName || '').toLowerCase().includes(query))
+                    : accounts;
+
+                if (filtered.length === 0) {
+                    savedAccountsDropdown.style.display = 'none';
+                    return;
+                }
+
+                savedAccountsList.innerHTML = filtered.map(acc => {
+                    const firstLetter = (acc.name || acc.identifier || 'U').charAt(0).toUpperCase();
+                    const safeId = escapeHTML(acc.identifier || '');
+                    const safeName = escapeHTML(acc.name || acc.identifier || '');
+                    const safeRole = escapeHTML(acc.roleName || 'مستخدم');
+
+                    return `
+                        <div class="saved-account-item" data-identifier="${safeId}">
+                            <div class="saved-account-left">
+                                <div class="account-avatar">${firstLetter}</div>
+                                <div class="account-info">
+                                    <span class="account-name">${safeName}</span>
+                                    <span class="account-identifier">${safeId}</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="account-role-badge">${safeRole}</span>
+                                <button type="button" class="account-remove-btn" title="إزالة من الحسابات المقترحة" data-remove-id="${safeId}">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                // Bind click events
+                savedAccountsList.querySelectorAll('.saved-account-item').forEach(item => {
+                    item.addEventListener('mousedown', (e) => {
+                        // If delete button clicked, let delete handler process
+                        if (e.target.closest('.account-remove-btn')) return;
+
+                        const id = item.dataset.identifier;
+                        if (id) {
+                            emailInput.value = id;
+                            savedAccountsDropdown.style.display = 'none';
+
+                            const accounts = getSavedAccounts();
+                            const matched = accounts.find(a => (a.identifier || '').toLowerCase() === id.toLowerCase());
+                            if (matched && matched.savedPassword) {
+                                passwordInput.value = matched.savedPassword;
+                                submitBtn.focus();
+                            } else {
+                                passwordInput.focus();
+                            }
+                        }
+                    });
+                });
+
+                savedAccountsList.querySelectorAll('.account-remove-btn').forEach(btn => {
+                    btn.addEventListener('mousedown', (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const idToRemove = btn.dataset.removeId;
+                        if (idToRemove) {
+                            removeAccountFromList(idToRemove, e);
+                        }
+                    });
+                });
+
+                savedAccountsDropdown.style.display = 'block';
+            }
+
+            // Input Event Listeners for Suggestions
+            emailInput.addEventListener('focus', () => {
+                renderSavedAccountsDropdown(emailInput.value);
+            });
+
+            emailInput.addEventListener('input', () => {
+                renderSavedAccountsDropdown(emailInput.value);
+            });
+
+            // Hide dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!emailInput.contains(e.target) && !savedAccountsDropdown.contains(e.target)) {
+                    savedAccountsDropdown.style.display = 'none';
+                }
+            });
+
+            // Pre-fill with last used account credentials if inputs are empty
+            const accounts = getSavedAccounts();
+            if (accounts.length > 0 && !emailInput.value) {
+                const latest = accounts[0];
+                emailInput.value = latest.identifier || latest.email || latest.username || '';
+                if (latest.savedPassword) {
+                    passwordInput.value = latest.savedPassword;
+                }
+            }
+
+            // ===== Form Submission =====
+            loginForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const emailEl = document.getElementById('email');
-                const passwordEl = document.getElementById('password');
-                const email = emailEl.value.trim();
-                const password = passwordEl.value.trim();
+                const identifier = emailInput.value.trim();
+                const password = passwordInput.value.trim();
 
                 let hasError = false;
                 let firstInvalid = null;
 
-                if (!email) {
+                if (!identifier) {
                     if (typeof window.markFieldInvalid === "function") {
-                        window.markFieldInvalid(emailEl, "يرجى إدخال البريد الإلكتروني");
+                        window.markFieldInvalid(emailInput, "يرجى إدخال اسم المستخدم أو البريد الإلكتروني");
                     }
-                    if (!firstInvalid) firstInvalid = emailEl;
+                    if (!firstInvalid) firstInvalid = emailInput;
                     hasError = true;
                 }
                 if (!password) {
                     if (typeof window.markFieldInvalid === "function") {
-                        window.markFieldInvalid(passwordEl, "يرجى إدخال كلمة المرور");
+                        window.markFieldInvalid(passwordInput, "يرجى إدخال كلمة المرور");
                     }
-                    if (!firstInvalid) firstInvalid = passwordEl;
+                    if (!firstInvalid) firstInvalid = passwordInput;
                     hasError = true;
                 }
 
@@ -121,24 +400,117 @@
                 }
 
                 try {
-                    await window.electronAPI.login(email, password);
-                    localStorage.setItem('isLoggedIn', 'true');
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>جاري تسجيل الدخول...</span>`;
+
+                    const res = await window.electronAPI.login(identifier, password);
+                    if (res && res.user) {
+                        localStorage.setItem('currentUser', JSON.stringify(res.user));
+                        localStorage.setItem('isLoggedIn', 'true');
+                        localStorage.setItem('managely_has_logged_in', 'true');
+                        if (firstTimeNotice) firstTimeNotice.style.display = 'none';
+
+                        // Save to suggestions list (including password if remember me is on)
+                        saveAccountToList(res.user, identifier, rememberMeCheckbox.checked ? password : '');
+
+                        // Remember Me / Session Persistence
+                        if (rememberMeCheckbox.checked) {
+                            let expiresAt = null;
+                            if (durationDays > 0) {
+                                expiresAt = Date.now() + (durationDays * 24 * 60 * 60 * 1000);
+                            } else {
+                                // 100 years = persistent
+                                expiresAt = Date.now() + (100 * 365 * 24 * 60 * 60 * 1000);
+                            }
+
+                            const sessionData = {
+                                user: res.user,
+                                expiresAt: expiresAt,
+                                remember: true,
+                                savedAt: Date.now()
+                            };
+                            localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify(sessionData));
+
+                            // Also save in backend database for persistent storage across app restarts
+                            if (window.electronAPI && window.electronAPI.saveRememberedSession) {
+                                await window.electronAPI.saveRememberedSession(sessionData);
+                            }
+                        } else {
+                            localStorage.removeItem(AUTH_SESSION_KEY);
+                            if (window.electronAPI && window.electronAPI.clearRememberedSession) {
+                                await window.electronAPI.clearRememberedSession();
+                            }
+                        }
+                    }
+
+                    const targetPage = determineTargetPage(res?.user);
+
                     Swal.fire({
-                        title: 'نجاح!',
-                        text: 'تم تسجيل الدخول بنجاح.',
+                        title: `مرحباً، ${res?.user?.name || 'بك'}! 👋`,
+                        text: `تم تسجيل الدخول بنجاح بصلاحية: ${res?.user?.roleName || 'مستخدم'}.`,
                         icon: 'success',
-                        confirmButtonColor: '#4CAF50',
+                        timer: 1000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = targetPage;
                     });
-                    window.location.href = './index.html';
                 } catch (err) {
+                    let errMsg = err.message || 'بيانات الدخول أو كلمة المرور غير صحيحة.';
+                    errMsg = errMsg.replace(/^Error invoking remote method '[^']+':\s*/i, '').replace(/^Error:\s*/i, '');
                     Swal.fire({
-                        title: 'خطأ!',
-                        text: 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
+                        title: 'تعذر تسجيل الدخول',
+                        text: errMsg,
                         icon: 'error',
                         confirmButtonColor: '#EF4444',
                     });
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<i class="fas fa-sign-in-alt"></i> <span>تسجيل الدخول</span>`;
                 }
             });
+
+            function determineTargetPage(user) {
+                let targetPage = './index.html';
+                const userPages = user?.permissions?.pages || {};
+                if (userPages.home) {
+                    targetPage = './index.html';
+                } else if (userPages.salesInvoice) {
+                    targetPage = './sales-invoice.html';
+                } else {
+                    const PAGE_MAP = {
+                        sales: './sales.html',
+                        products: './products.html',
+                        categories: './categories.html',
+                        customers: './customers.html',
+                        suppliers: './suppliers.html',
+                        purchaseInvoices: './purchase-invoices.html',
+                        productsPurchaseInvoices: './ProductsPurchaseInvoices.html',
+                        returns: './returns.html',
+                        treasury: './treasury.html',
+                        statistics: './statistics.html',
+                        employees: './employees.html',
+                        printerSettings: './printer-settings.html',
+                        settings: './settings.html'
+                    };
+                    for (const [k, v] of Object.entries(userPages)) {
+                        if (v && PAGE_MAP[k]) {
+                            targetPage = PAGE_MAP[k];
+                            break;
+                        }
+                    }
+                }
+                return targetPage;
+            }
+
+            function escapeHTML(str) {
+                if (!str) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
         });
     </script>
     <div id="footer-container" class="z-10"></div>

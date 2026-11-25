@@ -502,7 +502,9 @@ label i,
         flex-direction: column;
         align-items: stretch;
     }
-    .category-add-bar, .category-search-wrap {
+
+    .category-add-bar,
+    .category-search-wrap {
         width: 100%;
     }
 }
@@ -706,4 +708,3 @@ label i,
     background: #f1f5f9 !important;
     color: #334155 !important;
 }
-

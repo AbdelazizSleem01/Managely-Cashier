@@ -212,14 +212,14 @@
                     <!-- 11. Statistics & Reports -->
                     <a href="./statistics.html" class="home-shortcut-card sc-reports">
                         <div class="shortcut-icon-wrap">
-                            <i class="fas fa-chart-pie"></i>
+                            <i class="fas fa-brain"></i>
                         </div>
                         <div class="shortcut-content">
                             <div class="shortcut-title">
-                                <span>التقارير والإحصائيات</span>
+                                <span>الذكاء الاصطناعي والتحليلات</span>
                                 <span class="shortcut-kbd">F5</span>
                             </div>
-                            <p class="shortcut-subtitle">تحليلات المبيعات والأرباح</p>
+                            <p class="shortcut-subtitle">الأرباح، ساعات الذروة، والبضاعة الراكدة</p>
                         </div>
                     </a>
 
@@ -242,15 +242,20 @@
             <!-- 3. Interactive Product Catalog & Live Stock Radar (Moved Up) -->
             <div class="home-catalog-box">
                 <div class="catalog-top-bar">
-                    <div class="flex items-center gap-3">
+                    <div class="catalog-header-info">
                         <div class="page-icon-badge">
                             <i class="fas fa-boxes-stacked"></i>
                         </div>
-                        <div>
-                            <h2 class="text-xl font-bold text-gray-800 m-0">معرض المنتجات والمخزون الحي</h2>
-                            <p class="text-xs text-gray-500 m-0">عرض المنتجات المتاحة والكميات والأسعار الحالية</p>
+                        <div class="catalog-title-wrapper">
+                            <div class="catalog-title-row">
+                                <h2 class="catalog-main-title">معرض المنتجات والمخزون الحي</h2>
+                                <span id="totalProductsBadge" class="catalog-count-badge">
+                                    <i class="fas fa-boxes-stacked"></i>
+                                    <span id="totalProductsCountText">0 منتج</span>
+                                </span>
+                            </div>
+                            <p class="catalog-subtitle-text">عرض المنتجات المتاحة والكميات والأسعار الحالية</p>
                         </div>
-                        <span id="totalProductsBadge" class="bg-purple-100 text-purple-800 text-xs font-bold px-3 py-1 rounded-full mr-2">0 منتج</span>
                     </div>
 
                     <div class="catalog-search-wrap">
@@ -279,6 +284,9 @@
                 <div id="products" class="home-products-grid">
                     <!-- Loaded dynamically by js/home.js -->
                 </div>
+
+                <!-- Products Grid Pagination -->
+                <div id="homeProductsPagination" class="home-products-pagination-container"></div>
 
                 <!-- No Products Placeholder -->
                 <div id="noProducts" class="hidden p-12 text-center bg-gray-50 rounded-2xl border border-dashed border-gray-200 mt-4">

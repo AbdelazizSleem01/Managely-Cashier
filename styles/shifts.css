@@ -1,0 +1,295 @@
+/* ==========================================================================
+   Managely POS - Shift Management & Z-Report Styling System
+   ========================================================================== */
+
+/* Current Shift Badge in POS Header */
+.pos-shift-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 27px;
+    padding: 0 8px;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    border: 1px solid transparent;
+}
+
+.pos-shift-badge.shift-open {
+    background: #ecfdf5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+
+.pos-shift-badge.shift-open:hover {
+    background: #d1fae5;
+    border-color: #6ee7b7;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.pos-shift-badge.shift-closed {
+    background: #fef2f2;
+    color: #991b1b;
+    border-color: #fecaca;
+}
+
+.pos-shift-badge.shift-closed:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+}
+
+.pos-shift-badge .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: pulseDot 1.8s infinite;
+}
+
+.pos-shift-badge.shift-open .badge-dot {
+    background-color: #10b981;
+    box-shadow: 0 0 6px #10b981;
+}
+
+.pos-shift-badge.shift-closed .badge-dot {
+    background-color: #ef4444;
+    box-shadow: 0 0 6px #ef4444;
+}
+
+@keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* Shift Modals (Open & Close Z-Report) */
+.shift-modal-card {
+    width: 100%;
+    max-width: 580px;
+    background: #ffffff;
+    border-radius: 24px;
+    padding: 26px;
+    box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.35),
+                0 0 0 1px rgba(226, 232, 240, 0.8);
+    position: relative;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.shift-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+    border-bottom: 1.5px solid #f1f5f9;
+}
+
+.shift-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0;
+}
+
+.shift-modal-title i {
+    color: #6001e3;
+    font-size: 1.35rem;
+}
+
+/* Financial Summary Grid in Z-Report */
+.zreport-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.zreport-card {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: all 0.2s ease;
+}
+
+.zreport-card:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+}
+
+.zreport-card.highlight-cash {
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    border-color: #86efac;
+    grid-column: span 2;
+}
+
+.zreport-card.highlight-card {
+    background: #faf5ff;
+    border-color: #d8b4fe;
+}
+
+.zreport-card.highlight-wallet {
+    background: #f0fdfa;
+    border-color: #99f6e4;
+}
+
+.zreport-card-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.zreport-card-val {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: #0f172a;
+    font-family: 'JetBrains Mono', 'Tajawal', monospace;
+}
+
+.zreport-card.highlight-cash .zreport-card-val {
+    color: #15803d;
+    font-size: 1.45rem;
+}
+
+/* Difference Indicator (العجز / الزيادة) */
+.zreport-diff-box {
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-top: 14px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: 800;
+}
+
+.zreport-diff-box.diff-balanced {
+    background: #ecfdf5;
+    border: 1.5px solid #a7f3d0;
+    color: #065f46;
+}
+
+.zreport-diff-box.diff-shortage {
+    background: #fef2f2;
+    border: 1.5px solid #fca5a5;
+    color: #991b1b;
+}
+
+.zreport-diff-box.diff-surplus {
+    background: #eff6ff;
+    border: 1.5px solid #bfdbfe;
+    color: #1e40af;
+}
+
+.diff-amount {
+    font-size: 1.35rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 900;
+}
+
+/* WhatsApp Share Button in POS */
+.btn-pos-whatsapp {
+    background: linear-gradient(135deg, #25d366 0%, #128c7e 100%) !important;
+    color: #ffffff !important;
+    border: none !important;
+    font-weight: 800 !important;
+    font-size: 0.8rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 4px !important;
+    padding: 5px 10px !important;
+    height: 35px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 3px 10px rgba(37, 211, 102, 0.3) !important;
+    white-space: nowrap !important;
+}
+
+.btn-pos-whatsapp:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 5px 15px rgba(37, 211, 102, 0.4) !important;
+    background: linear-gradient(135deg, #2ee071 0%, #159b8c 100%) !important;
+}
+
+/* Quick Visual Products Touch Bar */
+.quick-products-bar {
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.quick-product-chip {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    color: #1e293b;
+    padding: 6px 12px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.quick-product-chip:hover {
+    background: #ede9fe;
+    border-color: #8b5cf6;
+    color: #6001e3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(96, 1, 227, 0.15);
+}
+
+.quick-product-chip .chip-price {
+    background: #f1f5f9;
+    color: #6001e3;
+    padding: 1px 6px;
+    border-radius: 6px;
+    font-size: 0.74rem;
+    font-weight: 800;
+}
+
+.quick-product-chip:hover .chip-price {
+    background: #ffffff;
+}
+
+/* Low Stock Alert Badge in POS Table */
+.stock-warning-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+    animation: fadeInError 0.2s ease-out;
+}

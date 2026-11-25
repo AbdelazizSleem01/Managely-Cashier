@@ -1,3 +1,5 @@
+import { paginateArray, renderPagination } from "./pagination.js";
+
 if (!window.electronAPI) {
     if (typeof Swal !== "undefined") {
         Swal.fire({
@@ -14,6 +16,8 @@ let cart = [];
 let customers = [];
 let activeCategoryFilter = "";
 let isLowStockFilterActive = false;
+let currentHomeProductsPage = 1;
+let homeProductsPageSize = 8;
 
 function debounce(func, wait) {
     let timeout;
@@ -33,17 +37,20 @@ function updateLiveClockAndGreeting() {
     const now = new Date();
     const hours = now.getHours();
 
+    const user = typeof window.getCurrentUser === "function" ? window.getCurrentUser() : null;
+    const userName = user && user.name ? `، ${user.name}` : "";
+
     if (greetingTextEl && greetingBadgeEl) {
         if (hours >= 4 && hours < 13) {
-            greetingTextEl.textContent = "صباح الخير ";
+            greetingTextEl.textContent = `صباح الخير${userName}`;
             const icon = greetingBadgeEl.querySelector("i");
             if (icon) icon.className = "fas fa-sun";
         } else if (hours >= 13 && hours < 18) {
-            greetingTextEl.textContent = "مساء الخير ";
+            greetingTextEl.textContent = `مساء الخير${userName}`;
             const icon = greetingBadgeEl.querySelector("i");
             if (icon) icon.className = "fas fa-cloud-sun";
         } else {
-            greetingTextEl.textContent = "مساء الخير ";
+            greetingTextEl.textContent = `مساء الخير${userName}`;
             const icon = greetingBadgeEl.querySelector("i");
             if (icon) icon.className = "fas fa-moon";
         }
@@ -79,7 +86,11 @@ async function loadQuickStats() {
         const totalRevenue = todaySales.reduce((acc, curr) => acc + (curr.total || 0) - (curr.returnAmount || 0), 0).toFixed(2);
 
         const allProducts = (await window.electronAPI.getProducts()) || [];
-        const lowStockCount = allProducts.filter(p => Number(p.quantity || 0) <= 3).length;
+        const lowStockCount = allProducts.filter(p => {
+            const qty = Number(p.quantity !== undefined && p.quantity !== null ? p.quantity : 0);
+            const threshold = Number(p.minStock || p.minStockLevel || 5);
+            return qty <= threshold;
+        }).length;
 
         const elSales = document.getElementById("dailySales");
         const elRev = document.getElementById("dailyRevenue");
@@ -184,8 +195,8 @@ async function loadRecentInvoices() {
 
 // 4. Keyboard Shortcuts Handler
 function handleKeyboardShortcuts(e) {
-    // If SweetAlert2 popup (e.g. Calculator) is currently visible, skip home shortcuts
-    if (typeof Swal !== "undefined" && Swal.isVisible()) {
+    // If SweetAlert2 popup or Calculator modal is currently visible, skip home shortcuts
+    if ((typeof Swal !== "undefined" && Swal.isVisible()) || (document.getElementById("managelyCalcModal") && document.getElementById("managelyCalcModal").classList.contains("active"))) {
         return;
     }
 
@@ -276,17 +287,14 @@ export async function renderHomeProducts(categoryFilter = activeCategoryFilter, 
     const container = document.getElementById("products");
     const noProductsEl = document.getElementById("noProducts");
     const badgeEl = document.getElementById("totalProductsBadge");
+    const pagContainer = document.getElementById("homeProductsPagination");
 
     if (!container) return;
 
     try {
         let prods = await window.electronAPI.getProducts();
         if (!Array.isArray(prods)) prods = [];
-
-        // Update total product count badge
-        if (badgeEl) {
-            badgeEl.textContent = `${prods.length} منتج`;
-        }
+        const totalAllProducts = prods.length;
 
         // Apply filters
         if (categoryFilter) {
@@ -301,7 +309,26 @@ export async function renderHomeProducts(categoryFilter = activeCategoryFilter, 
             );
         }
         if (onlyLowStock) {
-            prods = prods.filter(p => Number(p.quantity || 0) <= 3);
+            prods = prods.filter(p => {
+                const qty = Number(p.quantity !== undefined && p.quantity !== null ? p.quantity : 0);
+                const threshold = Number(p.minStock || p.minStockLevel || 5);
+                return qty <= threshold;
+            });
+        }
+
+        // Update total product count badge
+        if (badgeEl) {
+            const isFiltered = !!(categoryFilter || searchFilter || onlyLowStock);
+            const text = isFiltered && prods.length !== totalAllProducts
+                ? `${prods.length} من ${totalAllProducts} منتج`
+                : `${totalAllProducts} منتج`;
+
+            const countTextEl = document.getElementById("totalProductsCountText");
+            if (countTextEl) {
+                countTextEl.textContent = text;
+            } else {
+                badgeEl.innerHTML = `<i class="fas fa-boxes-stacked"></i> <span id="totalProductsCountText">${text}</span>`;
+            }
         }
 
         prods.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
@@ -309,14 +336,23 @@ export async function renderHomeProducts(categoryFilter = activeCategoryFilter, 
         if (prods.length === 0) {
             container.innerHTML = "";
             if (noProductsEl) noProductsEl.classList.remove("hidden");
+            if (pagContainer) {
+                pagContainer.innerHTML = "";
+                pagContainer.style.display = "none";
+            }
             return;
         }
 
         if (noProductsEl) noProductsEl.classList.add("hidden");
 
-        container.innerHTML = prods.map(p => {
+        // Apply pagination slicing
+        const paginated = paginateArray(prods, currentHomeProductsPage, homeProductsPageSize);
+        currentHomeProductsPage = paginated.currentPage;
+
+        container.innerHTML = paginated.pageItems.map(p => {
             const price = typeof p.price === "number" ? p.price.toFixed(2) : (Number(p.price) || 0).toFixed(2);
-            const qty = Number(p.quantity || 0);
+            const qty = Number(p.quantity !== undefined && p.quantity !== null ? p.quantity : 0);
+            const threshold = Number(p.minStock || p.minStockLevel || 5);
 
             let stockClass = "in-stock";
             let stockText = `متوفر: ${qty}`;
@@ -326,7 +362,7 @@ export async function renderHomeProducts(categoryFilter = activeCategoryFilter, 
                 stockClass = "out-of-stock";
                 stockText = "نفذ من المخزون";
                 stockIcon = "fa-circle-xmark";
-            } else if (qty <= 3) {
+            } else if (qty <= threshold) {
                 stockClass = "low-stock";
                 stockText = `منخفض: ${qty}`;
                 stockIcon = "fa-triangle-exclamation";
@@ -353,9 +389,34 @@ export async function renderHomeProducts(categoryFilter = activeCategoryFilter, 
             `;
         }).join("");
 
+        // Render Pagination Controls
+        if (pagContainer) {
+            renderPagination({
+                container: "homeProductsPagination",
+                totalItems: paginated.totalItems,
+                currentPage: paginated.currentPage,
+                pageSize: paginated.pageSize,
+                pageSizeOptions: [8, 12, 16, 24, 32],
+                onPageChange: (newPage, newSize) => {
+                    currentHomeProductsPage = newPage;
+                    homeProductsPageSize = newSize;
+                    const sInput = document.getElementById("searchInput");
+                    renderHomeProducts(activeCategoryFilter, sInput ? sInput.value : "", isLowStockFilterActive);
+                    const catalogBox = document.querySelector(".home-catalog-box");
+                    if (catalogBox) {
+                        catalogBox.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                }
+            });
+        }
+
     } catch (err) {
         console.error("Error loading products:", err);
         container.innerHTML = '<p class="text-center text-red-500 py-6 col-span-full">تعذر تحميل المنتجات حالياً، يرجى المحاولة لاحقاً.</p>';
+        if (pagContainer) {
+            pagContainer.innerHTML = "";
+            pagContainer.style.display = "none";
+        }
     }
 }
 
@@ -401,6 +462,7 @@ export async function renderCategoryFilter() {
 export function setCategoryFilter(categoryName) {
     activeCategoryFilter = categoryName;
     isLowStockFilterActive = false;
+    currentHomeProductsPage = 1;
 
     // Update active pill button
     const pills = document.querySelectorAll(".category-pill-btn");
@@ -423,6 +485,7 @@ export function setCategoryFilter(categoryName) {
 export function filterLowStockProducts() {
     isLowStockFilterActive = !isLowStockFilterActive;
     activeCategoryFilter = "";
+    currentHomeProductsPage = 1;
 
     // Clear active pill state
     document.querySelectorAll(".category-pill-btn").forEach(p => p.classList.remove("active"));
@@ -446,6 +509,7 @@ export function filterLowStockProducts() {
 }
 
 function filterAndSearch() {
+    currentHomeProductsPage = 1;
     const sInput = document.getElementById("searchInput");
     renderHomeProducts(activeCategoryFilter, sInput ? sInput.value : "", isLowStockFilterActive);
 }
@@ -467,10 +531,40 @@ export function handleShortcutsOverlayClick(e) {
     }
 }
 
+export function filterHomeShortcutsByPermissions() {
+    if (typeof window.hasPermission !== "function") return;
+    const shortcutCards = document.querySelectorAll(".home-shortcuts-grid a.home-shortcut-card, .home-hero-actions a");
+    shortcutCards.forEach(card => {
+        const href = (card.getAttribute("href") || "").replace(/^\.\//, "").replace(".html", "");
+        const PAGE_URL_TO_KEY = {
+            "sales-invoice": "salesInvoice",
+            "sales": "sales",
+            "products": "products",
+            "categories": "categories",
+            "customers": "customers",
+            "suppliers": "suppliers",
+            "purchase-invoices": "purchaseInvoices",
+            "ProductsPurchaseInvoices": "productsPurchaseInvoices",
+            "products-purchase-invoices": "productsPurchaseInvoices",
+            "returns": "returns",
+            "treasury": "treasury",
+            "statistics": "statistics",
+            "employees": "employees",
+            "printer-settings": "printerSettings",
+            "settings": "settings"
+        };
+        const pageKey = PAGE_URL_TO_KEY[href] || href;
+        if (pageKey && !window.hasPermission(pageKey, "page")) {
+            card.style.display = "none";
+        }
+    });
+}
+
 // 8. Initialization
 document.addEventListener("DOMContentLoaded", () => {
     updateLiveClockAndGreeting();
     setInterval(updateLiveClockAndGreeting, 1000);
+    filterHomeShortcutsByPermissions();
 
     Promise.all([
         window.electronAPI.getCategories().catch(() => []),
@@ -480,6 +574,7 @@ document.addEventListener("DOMContentLoaded", () => {
         renderHomeProducts();
         loadQuickStats();
         loadRecentInvoices();
+        filterHomeShortcutsByPermissions();
 
         const sInput = document.getElementById("searchInput");
         if (sInput) sInput.addEventListener("input", debounce(filterAndSearch, 250));

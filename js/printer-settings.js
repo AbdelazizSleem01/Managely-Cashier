@@ -61,20 +61,47 @@ async function loadPrinters() {
         }
 
         // Determine initially selected printer
-        selectedPrinter = currentDefaultPrinter || printers.find(p => p.isDefault)?.name || printers[0].name;
+        selectedPrinter = currentDefaultPrinter || '__PDF_EXPORT__';
 
-        // Render modern printer cards
-        printerListDiv.innerHTML = printers.map(printer => {
+        const isPdfSelected = selectedPrinter === '__PDF_EXPORT__';
+        const isPdfDefault = currentDefaultPrinter === '__PDF_EXPORT__' || !currentDefaultPrinter;
+
+        const pdfExportCardHtml = `
+            <div class="printer-card ${isPdfSelected ? 'selected' : ''}" data-name="__PDF_EXPORT__" style="border: 1.5px solid #6366f1;">
+                <div class="printer-card-main">
+                    <input type="radio" name="printer" value="__PDF_EXPORT__" id="printer-pdf-export" class="printer-card-radio" ${isPdfSelected ? 'checked' : ''}>
+                    <div class="printer-card-icon-box" style="background: rgba(99, 102, 241, 0.12); color: #6366f1;">
+                        <i class="fas fa-file-pdf"></i>
+                        <span class="printer-online-dot" style="background: #6366f1;" title="تصدير إلكتروني"></span>
+                    </div>
+                    <div class="printer-card-info">
+                        <label for="printer-pdf-export" class="printer-card-name" style="cursor: pointer; color: #4338ca; font-weight: 800;">
+                            📄 تصدير كملف PDF تلقائياً (بدون طابعة كاشير)
+                        </label>
+                        <span class="printer-card-desc" style="color: #475569;">
+                            يتم حفظ الفاتورة تلقائياً كملف PDF في مجلد المستندات وفتحها على الشاشة فور الحفظ
+                        </span>
+                    </div>
+                </div>
+                <div class="printer-card-badges">
+                    ${isPdfDefault ? '<span class="badge-printer-app-default"><i class="fas fa-star"></i> الوضع المعتمد حالياً</span>' : ''}
+                    <span class="badge-printer-default" style="background: #e0e7ff; color: #3730a3; border-color: #c7d2fe;"><i class="fas fa-check-circle"></i> مستحسن للأجهزة بدون طابعة حرارية</span>
+                </div>
+            </div>
+        `;
+
+        const printerCardsHtml = printers.map(printer => {
             const isSelected = selectedPrinter === printer.name;
             const isSysDefault = printer.isDefault;
             const isAppDefault = currentDefaultPrinter === printer.name;
+            const isVirtual = printer.isVirtual;
 
             return `
                 <div class="printer-card ${isSelected ? 'selected' : ''}" data-name="${printer.name}">
                     <div class="printer-card-main">
                         <input type="radio" name="printer" value="${printer.name}" id="printer-${encodeURIComponent(printer.name)}" class="printer-card-radio" ${isSelected ? 'checked' : ''}>
                         <div class="printer-card-icon-box">
-                            <i class="fas fa-print"></i>
+                            <i class="fas ${isVirtual ? 'fa-laptop' : 'fa-print'}"></i>
                             <span class="printer-online-dot" title="متصلة"></span>
                         </div>
                         <div class="printer-card-info">
@@ -82,7 +109,7 @@ async function loadPrinters() {
                                 ${printer.name}
                             </label>
                             <span class="printer-card-desc">
-                                ${printer.description ? printer.description : 'طابعة مستندات وإيصالات'}
+                                ${printer.description ? printer.description : (isVirtual ? 'طابعة برمجية / افتراضية' : 'طابعة مستندات وإيصالات')}
                                 ${printer.status ? ' - الحالة: ' + printer.status : ''}
                             </span>
                         </div>
@@ -90,10 +117,13 @@ async function loadPrinters() {
                     <div class="printer-card-badges">
                         ${isAppDefault ? '<span class="badge-printer-app-default"><i class="fas fa-star"></i> الطابعة الافتراضية للنظام</span>' : ''}
                         ${isSysDefault ? '<span class="badge-printer-default"><i class="fas fa-desktop"></i> طابعة الويندوز الافتراضية</span>' : ''}
+                        ${isVirtual ? '<span style="background: #f1f5f9; color: #64748b; font-size: 0.72rem; padding: 2px 8px; border-radius: 9999px; border: 1px solid #cbd5e1;"><i class="fas fa-circle-info"></i> تعريف نظام (افتراضية)</span>' : ''}
                     </div>
                 </div>
             `;
         }).join('');
+
+        printerListDiv.innerHTML = pdfExportCardHtml + printerCardsHtml;
 
         // Header Status
         if (headerStatusPill) headerStatusPill.className = "header-status-pill ready";
@@ -154,14 +184,19 @@ function selectPrinterCard(printerName) {
 
 function updateActivePrinterPreview() {
     if (!activePrinterName) return;
-    if (selectedPrinter) {
+    if (selectedPrinter === '__PDF_EXPORT__') {
+        activePrinterName.textContent = "📄 تصدير كملف PDF تلقائياً";
+        if (activePrinterMeta) {
+            activePrinterMeta.innerHTML = `<span style="color: #6366f1; font-weight: 800;">✓ الوضع الرقمي: يتم إنشاء ملف PDF في مجلد المستندات وفتحه على الشاشة مباشرة فور حفظ كل فاتورة.</span>`;
+        }
+    } else if (selectedPrinter) {
         activePrinterName.textContent = selectedPrinter;
         const matched = printers.find(p => p.name === selectedPrinter);
         if (activePrinterMeta) {
             if (currentDefaultPrinter === selectedPrinter) {
                 activePrinterMeta.innerHTML = `<span style="color: #059669; font-weight: 800;">✓ هذه هي الطابعة الافتراضية المعتمدة حالياً للبرنامج</span>`;
             } else {
-                activePrinterMeta.textContent = matched?.description || "جاهزة لتعيينها كطابعة افتراضية";
+                activePrinterMeta.textContent = matched?.description || (matched?.isVirtual ? "طابعة برمجية (افتراضية)" : "جاهزة لتعيينها كطابعة افتراضية");
             }
         }
     } else {

@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-page="users">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة المستخدمين والصلاحيات</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
+    <link href="../styles/output.css" rel="stylesheet">
+    <link href="../styles/home.css" rel="stylesheet">
+    <link href="../styles/users.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body data-page="users">
+    <!-- Sidebar Container -->
+    <div id="sidebar-container"></div>
+
+    <main class="main-content pt-6">
+        <div class="users-page-container">
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="header-top">
+                    <div class="page-title-group">
+                        <div class="page-icon-badge">
+                            <i class="fas fa-users-gear"></i>
+                        </div>
+                        <div>
+                            <h1>إدارة المستخدمين والصلاحيات</h1>
+                            <p>إدارة حسابات الموظفين والكاشير وتخصيص صلاحيات الشاشات والعمليات</p>
+                        </div>
+                    </div>
+
+                    <!-- Header Stats Chips -->
+                    <div class="header-stats">
+                        <div class="stat-pill stat-pill-total" onclick="resetUserFilters()" style="cursor: pointer;" title="عرض كل المستخدمين">
+                            <i class="fas fa-users"></i>
+                            <div class="stat-info">
+                                <span class="stat-label">إجمالي المستخدمين</span>
+                                <span id="totalUsersStat" class="stat-value">0 مستخدم</span>
+                            </div>
+                        </div>
+                        <div class="stat-pill stat-pill-active" onclick="quickFilterStatus('active')" style="cursor: pointer;" title="تصفية: الحسابات النشطة">
+                            <i class="fas fa-circle-check" style="color: #059669;"></i>
+                            <div class="stat-info">
+                                <span class="stat-label">الحسابات النشطة</span>
+                                <span id="activeUsersStat" class="stat-value" style="color: #059669;">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-pill stat-pill-admins" onclick="quickFilterRole('admin')" style="cursor: pointer;" title="تصفية: المدراء">
+                            <i class="fas fa-crown" style="color: #d97706;"></i>
+                            <div class="stat-info">
+                                <span class="stat-label">المدراء</span>
+                                <span id="adminUsersStat" class="stat-value" style="color: #d97706;">0</span>
+                            </div>
+                        </div>
+                        <div class="stat-pill stat-pill-staff" onclick="quickFilterRole('cashier')" style="cursor: pointer;" title="تصفية: الكاشير والموظفين">
+                            <i class="fas fa-user-tag" style="color: #4f46e5;"></i>
+                            <div class="stat-info">
+                                <span class="stat-label">الكاشير والموظفين</span>
+                                <span id="staffUsersStat" class="stat-value" style="color: #4f46e5;">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Header Controls: Search + Filters + Add User -->
+                <div class="header-controls">
+                    <div class="header-search-and-filters">
+                        <div class="search-box-wrap">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" id="searchUserInput" class="search-input"
+                                placeholder="بحث بالاسم، اسم المستخدم، البريد، أو الهاتف..."
+                                oninput="filterUsers()">
+                            <button onclick="clearUserSearch()" id="clearUserSearchBtn" class="clear-search-btn hidden" title="مسح البحث">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <div class="filter-dropdown-container role-dropdown-wrap">
+                            <select id="roleFilter" class="filter-select" onchange="filterUsers()">
+                                <option value="all">جميع الأدوار</option>
+                                <option value="admin">مدير عام</option>
+                                <option value="cashier">كاشير</option>
+                                <option value="inventory">مسؤول مخزن</option>
+                                <option value="accountant">محاسب مالي</option>
+                                <option value="custom">مخصص</option>
+                            </select>
+                        </div>
+
+                        <div class="filter-dropdown-container status-dropdown-wrap">
+                            <select id="statusFilter" class="filter-select" onchange="filterUsers()">
+                                <option value="all">جميع الحالات</option>
+                                <option value="active">نشط فقط</option>
+                                <option value="inactive">معطل فقط</option>
+                            </select>
+                        </div>
+
+                        <button type="button" onclick="resetUserFilters()" class="btn-reset-filter" title="إعادة تعيين الفلاتر">
+                            <i class="fas fa-undo-alt"></i>
+                            <span>إعادة تعيين</span>
+                        </button>
+                    </div>
+
+                    <div class="header-action-buttons">
+                        <button type="button" class="add-user-btn-header" onclick="openAddUserModal()">
+                            <i class="fas fa-user-plus"></i>
+                            <span>إضافة مستخدم جديد</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Users Cards Grid -->
+            <div id="usersGrid" class="users-grid">
+                <div class="empty-users-state">
+                    <i class="fas fa-spinner fa-spin empty-icon"></i>
+                    <h3>جاري تحميل المستخدمين...</h3>
+                    <p>يرجى الانتظار قليلاً أثناء جلب بيانات الحسابات والصلاحيات.</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ==========================================================================
+         Add / Edit User Modal
+         ========================================================================== -->
+    <div id="userModal" class="modal-overlay hidden" onclick="handleUserModalOverlayClick(event)">
+        <div class="user-modal-box">
+            <div class="user-modal-header">
+                <div class="user-modal-title-group">
+                    <div class="user-modal-icon">
+                        <i class="fas fa-user-gear"></i>
+                    </div>
+                    <div>
+                        <h3 id="userModalTitle" class="user-modal-title">إضافة مستخدم جديد</h3>
+                        <p id="userModalSubtitle" class="user-modal-subtitle">تحديد بيانات الدخول والأدوار ومصفوفة الصلاحيات</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeUserModal()" class="modal-close-btn" title="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="userForm" onsubmit="handleSaveUser(event)" class="user-modal-body">
+                <input type="hidden" id="editingUserId" value="" />
+
+                <!-- Section 1: Basic Info -->
+                <div class="user-form-section">
+                    <h4 class="user-section-title">
+                        <i class="fas fa-id-card text-primary"></i>
+                        <span>البيانات الأساسية ومعلومات الدخول</span>
+                    </h4>
+
+                    <div class="user-fields-grid">
+                        <div class="form-group">
+                            <label for="userFullName">
+                                <span>الاسم الكامل</span>
+                                <span class="text-rose-500 font-bold">*</span>
+                            </label>
+                            <div class="input-modern-wrap">
+                                <input type="text" id="userFullName" placeholder="مثال: أحمد محمد علي" required autocomplete="off" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="userUsername">
+                                <span>اسم المستخدم (للدخول)</span>
+                                <span class="text-rose-500 font-bold">*</span>
+                            </label>
+                            <div class="input-modern-wrap">
+                                <input type="text" id="userUsername" placeholder="مثال: ahmed_pos" required autocomplete="off" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="userEmail">
+                                <span>البريد الإلكتروني (اختياري)</span>
+                            </label>
+                            <div class="input-modern-wrap">
+                                <input type="email" id="userEmail" placeholder="ahmed@example.com" autocomplete="off" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="userPhone">
+                                <span>رقم الهاتف (اختياري)</span>
+                            </label>
+                            <div class="input-modern-wrap">
+                                <input type="text" id="userPhone" placeholder="010xxxxxxxx" autocomplete="off" />
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="passwordGroup">
+                            <label for="userPassword">
+                                <span>كلمة المرور</span>
+                                <span id="pwdRequiredStar" class="text-rose-500 font-bold">*</span>
+                            </label>
+                            <div class="input-modern-wrap" style="position: relative;">
+                                <input type="password" id="userPassword" placeholder="كلمة المرور (4 أحرف على الأقل)" autocomplete="new-password" style="padding-left: 40px;" />
+                                <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('userPassword', this)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <span id="passwordHelpText" class="text-xs text-slate-500 hidden mt-1 block">اترك الحقل فارغاً إذا كنت لا ترغب في تعديل كلمة المرور الحالية</span>
+                        </div>
+
+                        <div class="form-group" id="confirmPasswordGroup">
+                            <label for="userPasswordConfirm">
+                                <span>تأكيد كلمة المرور</span>
+                                <span id="pwdConfirmRequiredStar" class="text-rose-500 font-bold">*</span>
+                            </label>
+                            <div class="input-modern-wrap" style="position: relative;">
+                                <input type="password" id="userPasswordConfirm" placeholder="أعد إدخال كلمة المرور" autocomplete="new-password" style="padding-left: 40px;" />
+                                <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('userPasswordConfirm', this)">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Role Preset Selection -->
+                <div class="user-form-section">
+                    <h4 class="user-section-title">
+                        <i class="fas fa-shield-halved text-primary"></i>
+                        <span>الدور الوظيفي وقالب الصلاحيات (Role Preset)</span>
+                    </h4>
+
+                    <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 14px 16px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="userRoleSelect" style="margin-bottom: 8px;">
+                                <span>اختر قالب الدور الوظيفي:</span>
+                            </label>
+                            <div class="input-modern-wrap">
+                                <select id="userRoleSelect" onchange="onRolePresetChange(this.value)">
+                                    <option value="admin">مدير عام (Super Admin) — صلاحيات كاملة وشاملة لكل النظام</option>
+                                    <option value="cashier" selected>كاشير (Cashier) — شاشة البيع، المرتجع، ودليل العملاء</option>
+                                    <option value="inventory">مسؤول مخزن (Inventory) — إدارة المنتجات، الفئات، والتوريدات</option>
+                                    <option value="accountant">محاسب مالي (Accountant) — سجل المبيعات، الخزنة، والتقارير المالية</option>
+                                    <option value="custom">مخصص (Custom) — تخصيص يدوي دقيق للشاشات والعمليات</option>
+                                </select>
+                            </div>
+                        </div>
+                        <p style="font-size: 0.8rem; color: #64748b; margin: 8px 0 0 0; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-wand-magic-sparkles text-indigo-500"></i>
+                            <span>تحديد الدور يضبط مربعات الاختيار بالأسفل تلقائياً، ويمكنك تعديل أي صلاحية يدوياً.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Section 3: Pages Permissions Matrix -->
+                <div class="user-form-section">
+                    <div class="perm-header-actions">
+                        <h4 class="user-section-title" style="margin-bottom: 0;">
+                            <i class="fas fa-layer-group text-indigo-600"></i>
+                            <span>صلاحيات الشاشات والصفحات (عرض ووصول)</span>
+                        </h4>
+                        <div style="display: flex; gap: 14px;">
+                            <button type="button" onclick="setAllPagePermissions(true)" class="btn-select-all">
+                                <i class="fas fa-check-double"></i> تحديد الكل
+                            </button>
+                            <button type="button" onclick="setAllPagePermissions(false)" class="btn-select-all" style="color: #dc2626;">
+                                <i class="fas fa-times"></i> إلغاء الكل
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="permissions-selection-grid">
+                        <label class="perm-checkbox-item" for="perm_page_home">
+                            <input type="checkbox" id="perm_page_home" checked />
+                            <span><i class="fas fa-home text-indigo-500"></i> الرئيسية</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_page_salesInvoice">
+                            <input type="checkbox" id="perm_page_salesInvoice" checked />
+                            <span><i class="fas fa-cash-register text-emerald-500"></i> فاتورة البيع (الكاشير)</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_page_sales">
+                            <input type="checkbox" id="perm_page_sales" checked />
+                            <span><i class="fas fa-receipt text-blue-500"></i> سجل المبيعات</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_page_products">
+                            <input type="checkbox" id="perm_page_products" />
+                            <span><i class="fas fa-boxes-stacked text-amber-500"></i> المنتجات والمخزون</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_page_categories">
+                            <input type="checkbox" id="perm_page_categories" />
+                            <span><i class="fas fa-tags text-teal-500"></i> الفئات والتصنيفات</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_page_customers">
+                            <input type="checkbox" id="perm_page_customers" checked />
+                            <span><i class="fas fa-users text-cyan-500"></i> دليل العملاء والديون</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_page_suppliers">
+                            <input type="checkbox" id="perm_page_suppliers" />
+                            <span><i class="fas fa-truck-fast text-orange-500"></i> إدارة الموردين</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_page_purchaseInvoices">
+                            <input type="checkbox" id="perm_page_purchaseInvoices" />
+                            <span><i class="fas fa-file-invoice text-purple-500"></i> المشتريات السريعة</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_page_productsPurchaseInvoices">
+                            <input type="checkbox" id="perm_page_productsPurchaseInvoices" />
+                            <span><i class="fas fa-dolly text-pink-500"></i> فواتير توريد المنتجات</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_page_returns">
+                            <input type="checkbox" id="perm_page_returns" checked />
+                            <span><i class="fas fa-arrows-rotate text-red-500"></i> المرتجعات</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_page_treasury">
+                            <input type="checkbox" id="perm_page_treasury" />
+                            <span><i class="fas fa-wallet text-emerald-600"></i> الخزنة والحسابات</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_page_statistics">
+                            <input type="checkbox" id="perm_page_statistics" />
+                            <span><i class="fas fa-chart-pie text-violet-500"></i> الذكاء الاصطناعي والإحصائيات</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_page_employees">
+                            <input type="checkbox" id="perm_page_employees" />
+                            <span><i class="fas fa-user-tie text-blue-600"></i> شؤون الموظفين والرواتب</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_page_printerSettings">
+                            <input type="checkbox" id="perm_page_printerSettings" />
+                            <span><i class="fas fa-print text-gray-600"></i> إعدادات الطابعة</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_page_settings">
+                            <input type="checkbox" id="perm_page_settings" />
+                            <span><i class="fas fa-gear text-slate-700"></i> إعدادات النظام</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_page_users">
+                            <input type="checkbox" id="perm_page_users" />
+                            <span><i class="fas fa-users-gear text-indigo-700"></i> إدارة المستخدمين</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Section 4: Sensitive Actions Matrix -->
+                <div class="user-form-section">
+                    <div class="perm-header-actions">
+                        <h4 class="user-section-title" style="margin-bottom: 0;">
+                            <i class="fas fa-bolt text-amber-500"></i>
+                            <span>صلاحيات العمليات الحساسة (Actions & Controls)</span>
+                        </h4>
+                        <div style="display: flex; gap: 14px;">
+                            <button type="button" onclick="setAllActionPermissions(true)" class="btn-select-all">
+                                <i class="fas fa-check-double"></i> تحديد الكل
+                            </button>
+                            <button type="button" onclick="setAllActionPermissions(false)" class="btn-select-all" style="color: #dc2626;">
+                                <i class="fas fa-times"></i> إلغاء الكل
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="permissions-selection-grid">
+                        <label class="perm-checkbox-item" for="perm_act_canApplyDiscount">
+                            <input type="checkbox" id="perm_act_canApplyDiscount" />
+                            <span>تطبيق خصم على الفاتورة</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canChangePrice">
+                            <input type="checkbox" id="perm_act_canChangePrice" />
+                            <span>تعديل سعر البيع في الفاتورة</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canDeleteCartItem">
+                            <input type="checkbox" id="perm_act_canDeleteCartItem" checked />
+                            <span>حذف صنف من سلة البيع</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canSuspendInvoice">
+                            <input type="checkbox" id="perm_act_canSuspendInvoice" checked />
+                            <span>تعليق واستئناف الفواتير</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canDeleteSale">
+                            <input type="checkbox" id="perm_act_canDeleteSale" />
+                            <span>حذف فواتير البيع من السجل</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canExportSales">
+                            <input type="checkbox" id="perm_act_canExportSales" />
+                            <span>تصدير المبيعات إلى Excel</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canAddProduct">
+                            <input type="checkbox" id="perm_act_canAddProduct" />
+                            <span>إضافة منتجات جديدة</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canEditProduct">
+                            <input type="checkbox" id="perm_act_canEditProduct" />
+                            <span>تعديل بيانات وأسعار المنتجات</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canDeleteProduct">
+                            <input type="checkbox" id="perm_act_canDeleteProduct" />
+                            <span>حذف منتجات من المخزن</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canImportProducts">
+                            <input type="checkbox" id="perm_act_canImportProducts" />
+                            <span>استيراد منتجات من Excel</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canExportProducts">
+                            <input type="checkbox" id="perm_act_canExportProducts" />
+                            <span>تصدير قائمة المنتجات</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canAddTreasuryIncome">
+                            <input type="checkbox" id="perm_act_canAddTreasuryIncome" />
+                            <span>تسجيل إيراد يدوي في الخزنة</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canAddTreasuryExpense">
+                            <input type="checkbox" id="perm_act_canAddTreasuryExpense" />
+                            <span>تسجيل مصروف يدوي من الخزنة</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canDeleteTreasuryTransaction">
+                            <input type="checkbox" id="perm_act_canDeleteTreasuryTransaction" />
+                            <span>حذف وتعديل حركات الخزنة</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canCreateBackup">
+                            <input type="checkbox" id="perm_act_canCreateBackup" />
+                            <span>إنشاء نسخ احتياطية</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canRestoreBackup">
+                            <input type="checkbox" id="perm_act_canRestoreBackup" />
+                            <span>استعادة النسخ الاحتياطية</span>
+                        </label>
+
+                        <label class="perm-checkbox-item" for="perm_act_canManageUsers">
+                            <input type="checkbox" id="perm_act_canManageUsers" />
+                            <span>إدارة المستخدمين والصلاحيات</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Section 5: Status -->
+                <div class="user-form-section">
+                    <h4 class="user-section-title">
+                        <i class="fas fa-toggle-on text-primary"></i>
+                        <span>حالة الحساب</span>
+                    </h4>
+
+                    <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+                        <label class="perm-checkbox-item" style="flex: 1; min-width: 200px;">
+                            <input type="radio" name="userStatusRadio" id="userStatusActive" value="active" checked />
+                            <span style="color: #059669; font-weight: 700;"><i class="fas fa-circle-check"></i> حساب نشط (متاح للدخول)</span>
+                        </label>
+                        <label class="perm-checkbox-item" style="flex: 1; min-width: 200px;">
+                            <input type="radio" name="userStatusRadio" id="userStatusInactive" value="inactive" />
+                            <span style="color: #dc2626; font-weight: 700;"><i class="fas fa-circle-xmark"></i> حساب معطل (محظور مؤقتاً)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Footer Buttons -->
+                <div class="modal-footer-btns">
+                    <button type="button" onclick="closeUserModal()" class="btn-modal-cancel">
+                        <i class="fas fa-times"></i> إلغاء
+                    </button>
+                    <button type="submit" id="btnSaveUserModal" class="btn-modal-save">
+                        <i class="fas fa-save"></i>
+                        <span>حفظ بيانات المستخدم</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         Change User Password Modal
+         ========================================================================== -->
+    <div id="changeUserPasswordModal" class="modal-overlay hidden" onclick="handleChangePwdModalOverlayClick(event)">
+        <div class="user-modal-box pwd-modal-box">
+            <div class="user-modal-header">
+                <div class="user-modal-title-group">
+                    <div class="user-modal-icon" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+                        <i class="fas fa-key"></i>
+                    </div>
+                    <div>
+                        <h3 class="user-modal-title">تغيير كلمة المرور</h3>
+                        <p class="user-modal-subtitle" id="pwdTargetUserDisplay">المستخدم: --</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeChangePasswordModal()" class="modal-close-btn" title="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="changePasswordForm" onsubmit="handleSaveChangedPassword(event)" class="user-modal-body">
+                <input type="hidden" id="pwdTargetUserId" value="" />
+
+                <div class="form-group">
+                    <label for="newCustomPassword">
+                        <span>كلمة المرور الجديدة</span>
+                        <span class="text-rose-500 font-bold">*</span>
+                    </label>
+                    <div class="input-modern-wrap" style="position: relative;">
+                        <input type="password" id="newCustomPassword" placeholder="أدخل كلمة المرور الجديدة (4 أحرف على الأقل)" required autocomplete="new-password" style="padding-left: 40px;" />
+                        <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('newCustomPassword', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="newCustomPasswordConfirm">
+                        <span>تأكيد كلمة المرور الجديدة</span>
+                        <span class="text-rose-500 font-bold">*</span>
+                    </label>
+                    <div class="input-modern-wrap" style="position: relative;">
+                        <input type="password" id="newCustomPasswordConfirm" placeholder="أعد كتابة كلمة المرور للتأكيد" required autocomplete="new-password" style="padding-left: 40px;" />
+                        <button type="button" class="btn-toggle-pwd" onclick="togglePasswordVisibility('newCustomPasswordConfirm', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="modal-footer-btns">
+                    <button type="button" onclick="closeChangePasswordModal()" class="btn-modal-cancel">
+                        <i class="fas fa-times"></i> إلغاء
+                    </button>
+                    <button type="submit" class="btn-modal-save btn-blue-save">
+                        <i class="fas fa-check"></i>
+                        <span>تحديث كلمة المرور</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div id="footer-container" class="z-10"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="../js/calculator.js"></script>
+    <script type="module" src="../js/shared.js"></script>
+    <script type="module" src="../js/users.js"></script>
+</body>
+
+</html>

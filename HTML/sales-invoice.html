@@ -4,471 +4,773 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فاتورة بيع</title>
+    <title>فاتورة بيع ونقطة البيع - مانيجلي كاشير</title>
     <link href="../styles/output.css" rel="stylesheet">
     <link href="../styles/home.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.4/dist/full.css" rel="stylesheet">
+    <link href="../styles/sales-invoice.css" rel="stylesheet">
+    <link href="../styles/shifts.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap"
+        rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <style>
-        body {
-            font-family: 'Tajawal', sans-serif;
-            background-color: #f8fafc;
-        }
-
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-
-            body {
-                padding: 0 !important;
-                margin: 0 !important;
-                background: white !important;
-            }
-
-            .print-container {
-                box-shadow: none !important;
-                border: none !important;
-            }
-        }
-
-        .store-div {
-            margin-top: 30px;
-        }
-
-        .store-div img {
-            border: 1px solid #6419e6;
-            border-radius: 50%;
-            margin: 10px;
-        }
-
-        .hide-number-arrows::-webkit-outer-spin-button,
-        .hide-number-arrows::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .hide-number-arrows {
-            -moz-appearance: textfield;
-        }
-
-        .quntity-input {
-            text-align: center;
-            width: 80px;
-            margin: auto 10px;
-        }
-
-        /* ===== Custom Autocomplete Dropdown ===== */
-        .autocomplete-wrapper {
-            position: relative;
-        }
-
-        .autocomplete-dropdown {
-            position: absolute;
-            top: calc(100% + 4px);
-            right: 0;
-            left: 0;
-            z-index: 9999;
-            background: #ffffff;
-            border: 1.5px solid #7c3aed;
-            border-radius: 12px;
-            box-shadow: 0 8px 30px rgba(109, 40, 217, 0.18);
-            max-height: 260px;
-            overflow-y: auto;
-            display: none;
-        }
-
-        .autocomplete-dropdown.open {
-            display: block;
-        }
-
-        .autocomplete-item {
-            padding: 10px 14px;
-            cursor: pointer;
-            border-bottom: 1px solid #f3f4f6;
-            transition: background 0.15s;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .autocomplete-item:last-child {
-            border-bottom: none;
-        }
-
-        .autocomplete-item:hover,
-        .autocomplete-item.active {
-            background: #f5f3ff;
-        }
-
-        .autocomplete-item .item-name {
-            font-weight: 600;
-            color: #3b0764;
-            font-size: 14px;
-        }
-
-        .autocomplete-item .item-meta {
-            font-size: 11.5px;
-            color: #6b7280;
-        }
-
-        .autocomplete-item .item-stock-ok {
-            color: #16a34a;
-            font-weight: 600;
-        }
-
-        .autocomplete-item .item-stock-low {
-            color: #dc2626;
-            font-weight: 600;
-        }
-
-        .autocomplete-empty {
-            padding: 14px;
-            text-align: center;
-            color: #9ca3af;
-            font-size: 13px;
-        }
-    </style>
 </head>
 
-<body class="min-h-screen bg-gray-50" data-page="invoice-page">
+<body class="min-h-screen" data-page="invoice-page">
+    <!-- Navigation Sidebar Component -->
     <div id="sidebar-container"></div>
 
-    <div class="main-content pt-10 min-h-screen px-4 py-8">
-        <div class="max-w-7xl mx-auto space-y-6">
-            <!-- بطاقة الفاتورة الرئيسية -->
-            <div class="print-container bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100">
-                <div class="bg-gradient-to-r from-indigo-800 to-indigo-700 p-6 text-white">
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h1 class="text-3xl font-bold">فاتورة بيع</h1>
-                            <p class="text-blue-100 mt-1">نظام إدارة المبيعات</p>
-                        </div>
-                        <div class="text-right">
-                            <div class="badge badge-lg badge-outline bg-white/10 border-white/20 text-white">
-                                <i class="fas fa-receipt ml-2"></i>
-                                <span id="invoiceNumber"></span>
-                            </div>
-                            <p class="mt-2 text-blue-100" id="invoiceDate"></p>
-                        </div>
-                    </div>
+    <div class="main-content p-4 sm:p-6 max-w-[1440px] mx-auto">
+        <!-- 1. Hero Header Banner -->
+        <header class="pos-hero-header">
+            <div class="pos-header-right">
+                <div class="page-icon-badge">
+                    <i class="fas fa-cash-register"></i>
                 </div>
-
-                <!-- معلومات الفاتورة -->
-                <div class="p-6 border-b border-gray-200">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div class="space-y-2">
-                            <h3 class="text-lg font-semibold text-gray-700">معلومات العميل</h3>
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text text-gray-600">اسم العميل</span>
-                                </label>
-                                <input type="text" id="customerName" placeholder="اسم العميل (اختياري)"
-                                    class="input input-primary bg-transparent w-full ">
-                            </div>
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text text-gray-600">رقم الهاتف</span>
-                                </label>
-                                <input type="text" id="customerPhone" placeholder="رقم الهاتف (اختياري)"
-                                    class="input input-primary bg-transparent w-full ">
-                            </div>
-                        </div>
-
-                        <!-- طريقة الدفع -->
-                        <div class="space-y-2">
-                            <h3 class="text-lg font-semibold text-gray-700">طريقة الدفع</h3>
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text text-gray-600">اختر طريقة الدفع</span>
-                                </label>
-                                <select id="paymentMethod" class="select select-primary bg-transparent w-full ">
-                                    <option value="cash">كاش</option>
-                                    <option value="vodafoneCash">فودافون كاش</option>
-                                    <option value="visaCard">كارد فيزا</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- معلومات المحل (اسم ولوجو) -->
-                        <div class="">
-                            <h3 class="text-lg font-semibold text-gray-700">معلومات المحل</h3>
-                            <div class="flex items-center -mr-2 space-x-2 store-div">
-                                <img id="storeLogoPreview" src="" alt="Store Logo"
-                                    class="w-16 h-16 object-contain border-primary">
-                                <span id="storeNamePreview" class="text-primary font-bold"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- إضافة المنتجات -->
-                <div class="p-6 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4">إضافة منتجات</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4 items-start">
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text text-gray-600 font-medium">فلتر حسب الفئة</span>
-                            </label>
-                            <select id="categorySelect" onchange="filterProducts()"
-                                class="select select-bordered select-primary bg-transparent w-full h-[46px] min-h-[46px]">
-                                <option value="">الكل</option>
-                            </select>
-                        </div>
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text text-gray-600 font-medium">بحث عن منتج بالاسم أو الباركود</span>
-                            </label>
-                            <div class="autocomplete-wrapper">
-                                <input type="text" id="productSearch" oninput="searchProducts()" autocomplete="off"
-                                    onkeydown="handleProductSearchKeydown(event)"
-                                    class="input input-bordered input-primary bg-transparent w-full h-[46px] min-h-[46px]"
-                                    placeholder="ابحث باسم المنتج أو امسح الباركود...">
-                                <div id="productDropdown" class="autocomplete-dropdown"></div>
-                            </div>
-                        </div>
-
-                        <div class="form-control">
-                            <label class="label">
-                                <span class="label-text text-transparent select-none">&nbsp;</span>
-                            </label>
-                            <button type="button" id="addProductBtn" onclick="addProductToInvoice()"
-                                class="btn btn-primary w-full h-[46px] min-h-[46px] font-bold text-base flex items-center justify-center gap-2">
-                                <i class="fas fa-plus"></i>
-                                <span>إضافة</span>
-                                <kbd class="kbd kbd-sm bg-white/20 text-white border-none text-xs">Enter</kbd>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- جدول المنتجات -->
-                    <div class="overflow-x-auto">
-                        <table class="table table-zebra w-full">
-                            <thead id="itemsTableHead" class="hidden">
-                                <tr class="bg-primary text-white">
-                                    <th class="text-right">المنتج</th>
-                                    <th class="text-center">الكمية</th>
-                                    <th class="text-center">السعر</th>
-                                    <th class="text-center">الإجمالي</th>
-                                    <th class="text-center">الباركود</th>
-                                    <th class="text-center">الإجراءات</th>
-                                </tr>
-                            </thead>
-                            <tbody id="itemsTableBody" class="text-gray-700">
-                                <!-- سيتم ملؤها بالمنتجات المضافة -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- الخصومات والضرائب -->
-                <div class="p-6 border-b border-gray-200">
-                    <h3 class="text-lg font-semibold text-gray-700 mb-4">الخصومات والضرائب</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div class="space-y-2">
-                            <label class="label">
-                                <span class="label-text text-gray-600">الخصم الدائم</span>
-                            </label>
-                            <button id="defaultDiscountBtn" onclick="openDefaultDiscountSettings()"
-                                class="btn btn-primary w-full flex items-center justify-center">
-                                <i class="fas fa-cog mr-2"></i>
-                                إعدادات
-                            </button>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="label">
-                                <span class="label-text text-gray-600">الخصم الحالي (رقم)</span>
-                            </label>
-                            <div class="relative">
-                                <input type="number" id="currentDiscountAmount" min="0" step="1"
-                                    oninput="updateDiscount('amount')"
-                                    class="input input-primary bg-transparent pl-12 w-full hide-number-arrows">
-                                <span class="absolute left-3 top-3 text-gray-500">ج.م</span>
-                            </div>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="label">
-                                <span class="label-text text-gray-600">الخصم الحالي (%)</span>
-                            </label>
-                            <div class="relative">
-                                <input type="number" id="currentDiscountPercentage" min="0" max="100" step="1"
-                                    oninput="updateDiscount('percentage')"
-                                    class="input input-primary bg-transparent pl-12 w-full hide-number-arrows">
-                                <span class="absolute left-3 top-3 text-gray-500">%</span>
-                            </div>
-                        </div>
-                        <div class="space-y-2 md:col-span-3">
-                            <label class="label">
-                                <span class="label-text text-gray-600">الضريبة (%)</span>
-                            </label>
-                            <div class="relative">
-                                <input type="number" id="taxRate" value="0" min="0" max="100" step="1"
-                                    oninput="calculateTotals()"
-                                    class="input input-primary bg-transparent pl-12 w-full hide-number-arrows">
-                                <span class="absolute left-3 top-3 text-gray-500">%</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- الإجماليات وحاسبة النقدية -->
-                <div class="p-6">
-                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                        <!-- حاسبة النقدية والباقي + إحصاءات الأصناف والقطع -->
-                        <div class="lg:col-span-7 bg-slate-50 p-5 rounded-2xl border border-gray-200 space-y-4">
-                            <!-- عداد الأصناف والقطع -->
-                            <div class="flex flex-wrap items-center gap-3">
-                                <div
-                                    style="display:inline-flex;align-items:center;gap:6px;background:#ede9fe;border:1.5px solid #c4b5fd;color:#5b21b6;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600;">
-                                    <i class="fas fa-boxes-stacked" style="color:#7c3aed;"></i>
-                                    <span>عدد الأصناف:</span>
-                                    <span id="itemsCount" class="font-bold">0</span>
-                                </div>
-                                <div
-                                    style="display:inline-flex;align-items:center;gap:6px;background:#dcfce7;border:1.5px solid #86efac;color:#15803d;border-radius:999px;padding:6px 14px;font-size:14px;font-weight:600;">
-                                    <i class="fas fa-layer-group" style="color:#16a34a;"></i>
-                                    <span>إجمالي القطع:</span>
-                                    <span id="totalUnitsCount" class="font-bold">0</span>
-                                </div>
-                            </div>
-
-                            <!-- حاسبة النقدية (المبلغ المدفوع والباقي) -->
-                            <div id="cashCalculatorSection" class="pt-2 border-t border-gray-200">
-                                <h4 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                                    <i class="fas fa-coins text-amber-500"></i>
-                                    <span>حاسبة النقدية وسرعة الصرف</span>
-                                </h4>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="label pt-0 pb-1">
-                                            <span class="label-text text-gray-600 font-semibold text-xs">المبلغ المستلم
-                                                (المدفوع)</span>
-                                        </label>
-                                        <div class="relative">
-                                            <input type="number" id="paidAmount" min="0" step="any"
-                                                oninput="calculateChange()" placeholder="0.00"
-                                                class="input input-primary bg-white text-gray-900 font-bold text-lg w-full pl-12 h-[46px] hide-number-arrows shadow-sm">
-                                            <span
-                                                class="absolute left-3 top-3 text-gray-400 font-medium text-sm">ج.م</span>
-                                        </div>
-                                        <!-- أزرار نقدية سريعة -->
-                                        <div class="flex flex-wrap gap-1.5 mt-2">
-                                            <button type="button" onclick="setExactPaid()"
-                                                class="btn btn-xs btn-outline btn-primary font-semibold">بالضبط</button>
-                                            <button type="button" onclick="addQuickCash(20)"
-                                                class="btn btn-xs btn-outline font-semibold text-gray-700 hover:text-white">+20</button>
-                                            <button type="button" onclick="addQuickCash(50)"
-                                                class="btn btn-xs btn-outline font-semibold text-gray-700 hover:text-white">+50</button>
-                                            <button type="button" onclick="addQuickCash(100)"
-                                                class="btn btn-xs btn-outline font-semibold text-gray-700 hover:text-white">+100</button>
-                                            <button type="button" onclick="addQuickCash(200)"
-                                                class="btn btn-xs btn-outline font-semibold text-gray-700 hover:text-white">+200</button>
-                                        </div>
-                                    </div>
-                                    <div
-                                        class="bg-white rounded-xl p-3 border border-gray-200 shadow-sm flex flex-col justify-between">
-                                        <div
-                                            class="flex justify-between items-center text-xs text-gray-500 font-medium">
-                                            <span>الباقي للعميل:</span>
-                                            <span id="changeStatusBadge"
-                                                style="background:#f3f4f6;color:#6b7280;border-radius:999px;padding:2px 8px;font-size:11px;font-weight:600;">في
-                                                الانتظار</span>
-                                        </div>
-                                        <div class="text-2xl font-black text-gray-400 py-1" id="changeAmount">
-                                            0.00 ج.م
-                                        </div>
-                                        <div class="text-[11px] text-gray-400 flex items-center gap-1">
-                                            <i class="fas fa-info-circle text-[10px]"></i>
-                                            <span>يتم حسابه وطباعته آلياً في الفاتورة</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- إجماليات الفاتورة المالية -->
-                        <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
-                            <div class="flex justify-between items-center text-sm">
-                                <span class="text-gray-600 font-medium">الإجمالي الفرعي:</span>
-                                <span id="subtotal" class="font-bold text-gray-800 text-base">0.00 ج.م</span>
-                            </div>
-                            <div class="flex justify-between items-center text-sm">
-                                <span class="text-gray-600 font-medium">الخصم الإجمالي:</span>
-                                <span id="totalDiscount" class="font-bold text-red-500 text-base">0.00 ج.م</span>
-                            </div>
-                            <div class="flex justify-between items-center text-sm">
-                                <span class="text-gray-600 font-medium">الضريبة المضافة:</span>
-                                <span id="taxAmount" class="font-bold text-gray-700 text-base">0.00 ج.م</span>
-                            </div>
-                            <div class="divider my-1"></div>
-                            <div class="flex justify-between items-center pt-1">
-                                <span class="font-bold text-gray-800 text-lg">الصافي النهائي:</span>
-                                <span id="grandTotal" class="font-black text-2xl text-indigo-700">0.00 ج.م</span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="pos-title-group">
+                    <h1>
+                        <span>نقطة البيع وفاتورة الكاشير</span>
+                        <span id="storeNamePreview"
+                            class="text-xs font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-full border border-purple-200"></span>
+                    </h1>
+                    <p>إصدار الفواتير الفورية وسرعة الإدخال بالباركود والدفع الذكي</p>
                 </div>
             </div>
 
-            <div class="p-6 border-t border-gray-200 bg-gray-50">
-                <h3 class="text-lg font-semibold text-gray-700 mb-4 flex items-center">
-                    <i class="fas fa-pause-circle ml-2"></i>
-                    الفواتير المعلقة
-                </h3>
-                <div id="suspendedInvoicesContainer" class="space-y-2 max-h-64 overflow-y-auto">
-                    <!-- سيتم ملؤها ديناميكيًا -->
-                    <div class="text-center py-4 text-gray-500">
-                        <i class="fas fa-inbox text-2xl mb-2"></i>
-                        <p>لا توجد فواتير معلقة</p>
-                    </div>
+            <div class="pos-header-badges">
+                <button type="button" id="currentShiftBadge" class="pos-shift-badge shift-closed"
+                    onclick="handleShiftBadgeClick()" title="إدارة الوردية وجرد الدرج">
+                    <span class="badge-dot"></span>
+                    <span id="shiftStatusText">الوردية مغلقة</span>
+                </button>
+
+                <!-- Currency Selector Badge Pill (Next to Shift Badge) -->
+                <select id="invoiceCurrencySelect" class="pos-currency-select" onchange="setInvoiceCurrency(this.value)"
+                    title="تغيير عملة الفاتورة" data-no-custom-select>
+                    <option value="EGP">EGP (ج.م)</option>
+                </select>
+
+                <div class="pos-invoice-badge">
+                    <i class="fas fa-receipt"></i>
+                    <span id="invoiceNumber">INV - ...</span>
                 </div>
-            </div>
 
-            <div class="flex flex-wrap justify-center gap-4 mt-6 no-print">
-                <button onclick="saveInvoice()" class="btn btn-primary px-7 gap-2">
-                    <i class="fas fa-save"></i>
-                    <span>حفظ الفاتورة</span>
-                    <kbd class="kbd kbd-sm bg-white/20 text-white border-none text-xs">F1</kbd>
+                <div class="pos-time-badge">
+                    <i class="fas fa-clock"></i>
+                    <span id="invoiceDate">...</span>
+                </div>
+
+                <button type="button" id="btnHeldInvoicesModal" class="pos-held-btn"
+                    onclick="openSuspendedInvoicesModal()" title="الفواتير المعلقة (F3)">
+                    <i class="fas fa-pause-circle"></i>
+                    <span>الفواتير المعلقة</span>
+                    <span id="heldCountBadge" class="held-badge-count">0</span>
                 </button>
-                <button onclick="printInvoice()" class="btn btn-success px-7 gap-2 text-white">
-                    <i class="fas fa-print"></i>
-                    <span>طباعة الفاتورة</span>
-                    <kbd class="kbd kbd-sm bg-white/20 text-white border-none text-xs">F2</kbd>
-                </button>
-                <button onclick="suspendCurrentInvoice()" class="btn btn-warning px-7 gap-2 text-white">
-                    <i class="fas fa-pause"></i>
-                    <span>تعليق الفاتورة</span>
-                    <kbd class="kbd kbd-sm bg-white/20 text-white border-none text-xs">F4</kbd>
-                </button>
-                <button onclick="deleteInvoice()" class="btn btn-error px-7 gap-2 text-white">
-                    <i class="fas fa-trash-alt"></i>
-                    <span>تفريغ الفاتورة</span>
-                    <kbd class="kbd kbd-sm bg-white/20 text-white border-none text-xs">Esc</kbd>
+
+                <button type="button" class="pos-shortcut-badge" onclick="openShortcutsModal()"
+                    title="دليل الاختصارات (F1)">
+                    <i class="fas fa-keyboard"></i>
+                    <span>دليل الاختصارات</span>
                 </button>
             </div>
+        </header>
 
-            <div class="fixed bottom-4 left-4 z-50 hidden">
-                <div class="tooltip tooltip-right" data-tip="الماسح الضوئي نشط">
-                    <button class="btn btn-circle btn-success shadow-lg"
-                        onclick="document.getElementById('invoiceBarcodeScannerInput').focus()">
-                        <i class="fas fa-barcode"></i>
+        <!-- 2. Customer & Payment Methods Section -->
+        <section class="pos-card">
+            <div class="pos-card-header">
+                <h2 class="pos-card-title">
+                    <i class="fas fa-user-tag"></i>
+                    <span>بيانات العميل وطريقة الدفع</span>
+                </h2>
+                <div class="flex items-center gap-2">
+                    <span id="cashCustomerBadge"
+                        class="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                        <i class="fas fa-check-circle text-emerald-500"></i>
+                        <span style="margin: 0 3px;">البيع لعميل نقدي</span>
+                    </span>
+                    <button type="button" onclick="toggleExtraDetails()"
+                        class="text-xs font-bold text-gray-500 hover:text-purple-700 bg-gray-100 hover:bg-purple-50 px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5">
+                        <i class="fas fa-sliders-h"></i>
+                        <span>بيانات إضافية</span>
+                        <i id="extraDetailsIcon" class="fas fa-chevron-down text-[10px] transition-transform"></i>
                     </button>
                 </div>
-                <input type="text" id="invoiceBarcodeScannerInput" class="opacity-0 absolute"
-                    oninput="handleInvoiceBarcodeScan(this.value)" autofocus>
+            </div>
+
+            <!-- Customer Info Single Row -->
+            <div class="pos-customer-single-row">
+                <!-- Customer Name Autocomplete -->
+                <div class="form-group col-name">
+                    <label class="form-label" for="customerName">
+                        <i class="fas fa-user"></i>
+                        <span>اسم العميل</span>
+                    </label>
+                    <div class="relative">
+                        <input type="text" id="customerName" class="pos-input"
+                            placeholder="اكتب اسم العميل أو اختر من القائمة..." autocomplete="off"
+                            oninput="handleCustomerSearch(this.value)" onfocus="handleCustomerSearch(this.value)"
+                            onkeydown="handleCustomerSearchKeydown(event)">
+                        <div id="customerDropdown" class="pos-autocomplete-dropdown"></div>
+                    </div>
+                </div>
+
+                <!-- Customer Phone -->
+                <div class="form-group col-phone">
+                    <label class="form-label" for="customerPhone">
+                        <i class="fas fa-phone"></i>
+                        <span>رقم الهاتف</span>
+                    </label>
+                    <input type="tel" dir="rtl" id="customerPhone" class="pos-input" placeholder="رقم الهاتف (اختياري)">
+                </div>
+
+                <!-- Quick Add Customer Button -->
+                <div class="form-group col-btn">
+                    <button type="button" onclick="openQuickCustomerModal()"
+                        class="btn-pos-secondary h-[46px] px-6 whitespace-nowrap text-sm font-bold"
+                        title="إضافة عميل جديد لقاعدة البيانات">
+                        <i class="fas fa-user-plus"></i>
+                        <span>عميل جديد</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Customer Loyalty Points Banner -->
+            <div id="customerLoyaltyBanner" class="pos-loyalty-badge hidden">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-crown text-amber-500 text-sm"></i>
+                    <span class="text-xs font-bold text-gray-700">رصيد نقاط الولاء:</span>
+                    <strong id="customerLoyaltyPointsText" class="text-xs font-black text-amber-800 font-mono">0 نقطة
+                        (0.00 ج.م)</strong>
+                </div>
+                <button type="button" id="btnRedeemPoints" onclick="redeemCustomerPoints()" class="btn-redeem-points"
+                    title="استبدال نقاط العميل بخصم فوري على الفاتورة">
+                    <i class="fas fa-gift"></i>
+                    <span>استبدال بخصم</span>
+                </button>
+            </div>
+
+            <!-- Payment Method Row -->
+            <div class="pos-payment-methods-bar">
+                <span class="pos-payment-methods-label">
+                    <i class="fas fa-wallet text-purple-600"></i>
+                    <span>طريقة الدفع:</span>
+                </span>
+                <div class="pos-payment-tabs">
+                    <button type="button" class="pos-payment-tab active" data-method="cash"
+                        onclick="setPaymentMethod('cash')">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>نقدي (كاش)</span>
+                    </button>
+                    <button type="button" class="pos-payment-tab" data-method="visaCard"
+                        onclick="setPaymentMethod('visaCard')">
+                        <i class="fas fa-credit-card"></i>
+                        <span>بطاقة / فيزا</span>
+                    </button>
+                    <button type="button" class="pos-payment-tab" data-method="vodafoneCash"
+                        onclick="setPaymentMethod('vodafoneCash')">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>محفظة إلكترونية</span>
+                    </button>
+                    <button type="button" class="pos-payment-tab" data-method="split"
+                        onclick="setPaymentMethod('split')">
+                        <i class="fas fa-columns"></i>
+                        <span>دفع مقسم (كاش + فيزا)</span>
+                    </button>
+                    <button type="button" class="pos-payment-tab" data-method="credit"
+                        onclick="setPaymentMethod('credit')">
+                        <i class="fas fa-clock"></i>
+                        <span>حساب آجل</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Split Payment Subfields (Visible when Split is active) -->
+            <div id="splitPaymentContainer" class="pos-split-box" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label text-emerald-800" for="splitCashAmount">
+                        <i class="fas fa-money-bill-wave text-emerald-600"></i>
+                        <span>المبلغ المدفوع كاش (نقدي)</span>
+                    </label>
+                    <div class="relative">
+                        <input type="number" id="splitCashAmount" class="pos-input text-lg font-bold text-emerald-700"
+                            placeholder="0.00" min="0" step="any" oninput="handleSplitAmountChange('cash')">
+                        <span
+                            class="pos-split-currency-symbol absolute left-3 top-3 text-gray-400 font-bold text-sm">ج.م</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label text-indigo-800" for="splitCardAmount">
+                        <i class="fas fa-credit-card text-indigo-600"></i>
+                        <span>المبلغ المدفوع إلكترونياً (فيزا / محفظة)</span>
+                    </label>
+                    <div class="relative">
+                        <input type="number" id="splitCardAmount" class="pos-input text-lg font-bold text-indigo-700"
+                            placeholder="0.00" min="0" step="any" oninput="handleSplitAmountChange('card')">
+                        <span
+                            class="pos-split-currency-symbol absolute left-3 top-3 text-gray-400 font-bold text-sm">ج.م</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Collapsible Optional Details -->
+            <div id="extraDetailsAccordion"
+                class="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-4 gap-4" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label" for="salesRepInput">
+                        <i class="fas fa-user-tie"></i>
+                        <span>مندوب / مسؤول البيع</span>
+                    </label>
+                    <input type="text" id="salesRepInput" class="pos-input" placeholder="اسم المندوب">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="creditDueDateInput">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>تاريخ الاستحقاق (للآجل)</span>
+                    </label>
+                    <input type="date" id="creditDueDateInput" class="pos-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="deliveryAddressInput">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>عنوان التوصيل</span>
+                    </label>
+                    <input type="text" id="deliveryAddressInput" class="pos-input" placeholder="العنوان بالتفصيل">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="invoiceNotesInput">
+                        <i class="fas fa-comment-alt"></i>
+                        <span>ملاحظات الفاتورة</span>
+                    </label>
+                    <input type="text" id="invoiceNotesInput" class="pos-input"
+                        placeholder="أية ملاحظات تظهر بالفاتورة">
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. Product Search & Barcode Scanning Section -->
+        <section class="pos-card">
+            <div class="pos-card-header">
+                <h2 class="pos-card-title">
+                    <i class="fas fa-barcode"></i>
+                    <span>إضافة المنتجات والمسح السريع</span>
+                </h2>
+                <div class="text-xs font-semibold text-gray-500 flex items-center gap-3">
+                    <span class="flex items-center gap-1"><kbd
+                            class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-[11px] font-mono border">F2</kbd>
+                        بحث</span>
+                    <span class="flex items-center gap-1"><kbd
+                            class="bg-gray-100 text-gray-700 px-1.5 py-0.5 rounded text-[11px] font-mono border">Enter</kbd>
+                        إضافة فورية</span>
+                </div>
+            </div>
+
+            <div class="pos-search-bar">
+                <!-- Category Filter -->
+                <div class="form-group">
+                    <label class="form-label" for="categorySelect">
+                        <i class="fas fa-tags"></i>
+                        <span>تصنيف المنتجات</span>
+                    </label>
+                    <select id="categorySelect" class="pos-input cursor-pointer" onchange="filterProductsByCategory()">
+                        <option value="">جميع التصنيفات</option>
+                    </select>
+                </div>
+
+                <!-- Search Input with Barcode & Autocomplete -->
+                <div class="form-group">
+                    <label class="form-label" for="productSearch">
+                        <i class="fas fa-search"></i>
+                        <span>بحث بالاسم أو مسح الباركود مباشرة</span>
+                    </label>
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="productSearch" class="pos-input"
+                            placeholder="امسح الباركود أو اكتب اسم المنتج..." autocomplete="off"
+                            oninput="searchProducts(this.value)" onkeydown="handleProductSearchKeydown(event)">
+                        <span class="barcode-indicator">
+                            <i class="fas fa-barcode"></i>
+                            <span>Scanner Ready</span>
+                        </span>
+                        <div id="productDropdown" class="pos-autocomplete-dropdown"></div>
+                    </div>
+                </div>
+
+                <!-- Add Button -->
+                <div class="form-group">
+                    <button type="button" id="addProductBtn" onclick="addProductToInvoice()"
+                        class="btn-pos-primary h-[50px] px-8 text-base">
+                        <i class="fas fa-plus"></i>
+                        <span>إضافة للفاتورة</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Items Table Container -->
+            <div class="pos-table-container">
+                <table class="pos-table">
+                    <thead>
+                        <tr>
+                            <th class="w-12 text-center">#</th>
+                            <th>المنتج / الصنف</th>
+                            <th class="text-center w-28">السعر (<span id="priceColumnCurrency">ج.م</span>)</th>
+                            <th class="text-center w-36">الكمية</th>
+                            <th class="text-center w-36">الخصم</th>
+                            <th class="text-center w-32">الإجمالي</th>
+                            <th class="text-center w-16">إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsTableBody">
+                        <!-- Populated dynamically via JS -->
+                    </tbody>
+                </table>
+
+                <div id="tableEmptyState" class="pos-table-empty">
+                    <i class="fas fa-shopping-basket"></i>
+                    <h3 class="text-lg font-bold text-gray-700 mb-1">الفاتورة فارغة حالياً</h3>
+                    <p class="text-sm text-gray-500">امسح باركود المنتج أو ابحث باسم الصنف للبدء في إضافة المبيعات</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Totals, Discounts & Payment Calculator -->
+        <section class="pos-card">
+            <div class="pos-card-header">
+                <h2 class="pos-card-title">
+                    <i class="fas fa-calculator"></i>
+                    <span>الحسابات والإجماليات وحاسبة النقدية</span>
+                </h2>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="openDefaultDiscountSettings()"
+                        class="text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg border border-purple-200 transition-all flex items-center gap-1">
+                        <i class="fas fa-percent"></i>
+                        <span>إعدادات الخصم الدائم</span>
+                    </button>
+                    <button type="button" onclick="openDefaultTaxSettings()"
+                        class="text-xs font-bold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-200 transition-all flex items-center gap-1">
+                        <i class="fas fa-receipt"></i>
+                        <span>إعدادات الضريبة الدائمة</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="pos-calc-grid">
+                <!-- Left Column: Cash Calculator & Change -->
+                <div class="pos-change-box space-y-4">
+                    <!-- Items & Pieces Counters -->
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="pos-dock-items-pill">
+                            <i class="fas fa-boxes-stacked"></i>
+                            <span>عدد الأصناف:</span>
+                            <span id="itemsCount" class="font-black text-purple-900">0</span>
+                        </div>
+                        <div class="pos-dock-items-pill !bg-emerald-50 !border-emerald-200 !text-emerald-800">
+                            <i class="fas fa-layer-group text-emerald-600"></i>
+                            <span>إجمالي القطع:</span>
+                            <span id="totalUnitsCount" class="font-black text-emerald-950">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Cash Input & Quick Change Display -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start pt-2">
+                        <div class="space-y-2">
+                            <label class="form-label" for="paidAmount">
+                                <i class="fas fa-hand-holding-usd text-amber-500"></i>
+                                <span>المبلغ المستلم من العميل</span>
+                            </label>
+                            <div class="relative">
+                                <input type="number" id="paidAmount"
+                                    class="pos-input font-black text-xl text-gray-900 pr-4 pl-12 h-[50px]"
+                                    placeholder="0.00" min="0" step="any" oninput="calculateChange()">
+                                <span class="absolute left-3 top-3.5 text-gray-400 font-bold text-sm">ج.م</span>
+                            </div>
+
+                            <!-- Quick Cash Buttons -->
+                            <div class="quick-cash-pills">
+                                <button type="button"
+                                    class="quick-cash-btn !bg-purple-600 !text-white !border-purple-600 font-bold"
+                                    onclick="setExactPaid()">المبلغ بالظبط</button>
+                                <button type="button" class="quick-cash-btn" onclick="addQuickCash(20)">+20</button>
+                                <button type="button" class="quick-cash-btn" onclick="addQuickCash(50)">+50</button>
+                                <button type="button" class="quick-cash-btn" onclick="addQuickCash(100)">+100</button>
+                                <button type="button" class="quick-cash-btn" onclick="addQuickCash(200)">+200</button>
+                            </div>
+                        </div>
+
+                        <!-- Change Due Big Display -->
+                        <div class="pos-change-display">
+                            <div class="pos-change-title">
+                                <span>الباقي للعميل (الفكة)</span>
+                                <span id="changeStatusBadge"
+                                    class="text-[11px] font-bold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">جاهز</span>
+                            </div>
+                            <div id="changeAmount" class="pos-change-number">0.00 ج.م</div>
+                            <p class="text-[11px] text-gray-400 m-2">يتم حسابه وطباعته آلياً لسرعة الإرجاع</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Financial Breakdown -->
+                <div class="pos-summary-card">
+                    <div class="pos-summary-row">
+                        <span class="text-gray-600 font-bold">الإجمالي الفرعي:</span>
+                        <span id="subtotal" class="font-black text-gray-800 text-base">0.00 ج.م</span>
+                    </div>
+
+                    <!-- Invoice Discount Inputs -->
+                    <div class="grid grid-cols-2 gap-2 my-2 py-2 border-y border-dashed border-gray-100">
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-500 block mb-1">خصم إضافي (مبلغ)</label>
+                            <input type="number" id="currentDiscountAmount"
+                                class="pos-input h-[36px] text-sm text-red-600 font-bold text-center" placeholder="0"
+                                min="0" step="any" oninput="updateInvoiceDiscount('amount')">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-500 block mb-1">خصم إضافي (%)</label>
+                            <input type="number" id="currentDiscountPercentage"
+                                class="pos-input h-[36px] text-sm text-red-600 font-bold text-center" placeholder="0"
+                                min="0" max="100" step="any" oninput="updateInvoiceDiscount('percentage')">
+                        </div>
+                    </div>
+
+                    <div class="pos-summary-row">
+                        <span class="text-gray-600 font-bold">إجمالي الخصومات:</span>
+                        <span id="totalDiscount" class="font-black text-red-500 text-base">0.00 ج.م</span>
+                    </div>
+
+                    <!-- Invoice Tax Inputs (Dual: Amount or Percentage) -->
+                    <div class="grid grid-cols-2 gap-2 my-2 py-2 border-y border-dashed border-gray-100">
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-500 block mb-1">ضريبة (مبلغ)</label>
+                            <input type="number" id="currentTaxAmount"
+                                class="pos-input h-[36px] text-sm text-indigo-600 font-bold text-center" placeholder="0"
+                                min="0" step="any" oninput="updateInvoiceTax('amount')">
+                        </div>
+                        <div>
+                            <label class="text-[11px] font-bold text-gray-500 block mb-1">ضريبة (%)</label>
+                            <input type="number" id="currentTaxPercentage"
+                                class="pos-input h-[36px] text-sm text-indigo-600 font-bold text-center" placeholder="0"
+                                min="0" max="100" step="any" oninput="updateInvoiceTax('percentage')">
+                        </div>
+                    </div>
+
+                    <div class="pos-summary-row">
+                        <span class="text-gray-600 font-bold">إجمالي الضريبة:</span>
+                        <span id="taxAmount" class="font-black text-indigo-700 text-base">0.00 ج.م</span>
+                    </div>
+
+                    <div class="pos-summary-row total-row">
+                        <span class="font-black text-gray-900 text-lg">الصافي النهائي:</span>
+                        <span id="grandTotal" class="pos-grand-total">0.00 ج.م</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 5. Sticky Bottom POS Action Dock (الشريط العائم الثابت) -->
+    <div id="posStickyDock" class="pos-sticky-dock">
+        <div class="pos-dock-summary">
+            <div class="pos-dock-items-pill">
+                <i class="fas fa-shopping-cart"></i>
+                <span id="dockItemsSummary">0 أصناف (0 قطع)</span>
+            </div>
+            <div class="pos-dock-total-pill">
+                <span class="pos-dock-total-label">الصافي:</span>
+                <span id="dockGrandTotal" class="pos-dock-total-val">0.00 ج.م</span>
+            </div>
+        </div>
+
+        <div class="pos-dock-actions">
+            <!-- Save & Print (Primary) -->
+            <button type="button" onclick="saveAndPrintInvoice()" class="btn-pos-primary"
+                title="حفظ الفاتورة والطباعة الفورية (F10 / Enter)">
+                <i class="fas fa-print"></i>
+                <span>حفظ وطباعة</span>
+                <kbd class="bg-white/20 text-white text-[11px] px-1.5 py-0.5 rounded font-mono">F10</kbd>
+            </button>
+
+            <!-- Save Only -->
+            <button type="button" onclick="saveInvoiceOnly()" class="btn-pos-secondary"
+                title="حفظ الفاتورة بدون طباعة (Ctrl+S)">
+                <i class="fas fa-save"></i>
+                <span>حفظ فقط</span>
+                <kbd class="bg-white/20 text-white text-[11px] px-1.5 py-0.5 rounded font-mono">Ctrl+S</kbd>
+            </button>
+
+            <!-- Hold Invoice -->
+            <button type="button" onclick="suspendCurrentInvoice()" class="btn-pos-hold"
+                title="تعليق الفاتورة والبدء في أخرى (F3)">
+                <i class="fas fa-pause"></i>
+                <span>تعليق</span>
+                <kbd class="bg-amber-200 text-amber-900 text-[11px] px-1.5 py-0.5 rounded font-mono">F3</kbd>
+            </button>
+
+            <!-- New Invoice -->
+            <button type="button" onclick="confirmResetInvoice()"
+                class="btn-pos-hold !bg-blue-50 !text-blue-700 !border-blue-200 hover:!bg-blue-100"
+                title="فاتورة جديدة فارغة (Ctrl+N)">
+                <i class="fas fa-file-invoice"></i>
+                <span>جديدة</span>
+                <kbd class="bg-blue-200 text-blue-900 text-[11px] px-1.5 py-0.5 rounded font-mono">Ctrl+N</kbd>
+            </button>
+
+            <!-- WhatsApp Share -->
+            <button type="button" onclick="shareCurrentInvoiceWhatsApp()" class="btn-pos-whatsapp"
+                title="إرسال الفاتورة عبر واتساب للعميل">
+                <i class="fab fa-whatsapp"></i>
+                <span>واتساب</span>
+            </button>
+
+            <!-- Clear / Cancel -->
+            <button type="button" onclick="confirmClearInvoice()" class="btn-pos-clear"
+                title="تفريغ وإلغاء الفاتورة الحالية (Esc)">
+                <i class="fas fa-trash-alt"></i>
+                <span>تفريغ</span>
+                <kbd class="bg-red-200 text-red-900 text-[11px] px-1.5 py-0.5 rounded font-mono">Esc</kbd>
+            </button>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODALS
+         ========================================================================== -->
+
+    <!-- 1. Suspended Invoices Modal -->
+    <div id="suspendedInvoicesModal" class="modal-overlay"
+        onclick="handleModalOverlayClick(event, 'suspendedInvoicesModal')">
+        <div class="modal-box modal-box-large">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-pause-circle"></i>
+                    <span>الفواتير المعلقة في الانتظار</span>
+                </h3>
+                <button type="button" class="modal-close" onclick="closeSuspendedInvoicesModal()" title="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div id="suspendedInvoicesList" class="space-y-3 max-h-[60vh] overflow-y-auto">
+                <!-- Rendered dynamically -->
             </div>
         </div>
     </div>
 
+    <!-- 2. Quick Customer Modal -->
+    <div id="quickCustomerModal" class="modal-overlay" onclick="handleModalOverlayClick(event, 'quickCustomerModal')">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-user-plus"></i>
+                    <span>إضافة عميل جديد سريعاً</span>
+                </h3>
+                <button type="button" class="modal-close" onclick="closeQuickCustomerModal()" title="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="quickCustomerForm" onsubmit="handleQuickCustomerSubmit(event)" class="space-y-4">
+                <div class="form-group">
+                    <label class="form-label" for="qcName">اسم العميل *</label>
+                    <input type="text" id="qcName" class="pos-input" placeholder="اكتب اسم العميل بالكامل" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="qcPhone">رقم الهاتف *</label>
+                    <input type="tel" id="qcPhone" class="pos-input" placeholder="01xxxxxxxxx" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="qcAddress">العنوان</label>
+                    <input type="text" id="qcAddress" class="pos-input" placeholder="عنوان العميل أو المنطقة">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="qcNotes">ملاحظات</label>
+                    <input type="text" id="qcNotes" class="pos-input" placeholder="أية ملاحظات إضافية عن العميل">
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeQuickCustomerModal()" class="btn-pos-clear">إلغاء</button>
+                    <button type="submit" class="btn-pos-primary">
+                        <i class="fas fa-check"></i>
+                        <span>حفظ واختيار العميل</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Shortcuts Guide Modal -->
+    <div id="shortcutsModal" class="modal-overlay" onclick="handleModalOverlayClick(event, 'shortcutsModal')">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-keyboard"></i>
+                    <span>دليل اختصارات كاشير المبيعات</span>
+                </h3>
+                <button type="button" class="modal-close" onclick="closeShortcutsModal()" title="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-center">
+                    <span class="font-bold text-gray-700">حفظ وطباعة الفاتورة</span>
+                    <span class="bg-emerald-100 text-emerald-800 font-mono font-bold px-2 py-0.5 rounded">F10 /
+                        Enter</span>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-center">
+                    <span class="font-bold text-gray-700">حفظ بدون طباعة</span>
+                    <span class="bg-purple-100 text-purple-800 font-mono font-bold px-2 py-0.5 rounded">Ctrl + S</span>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-center">
+                    <span class="font-bold text-gray-700">تعليق الفاتورة</span>
+                    <span class="bg-amber-100 text-amber-800 font-mono font-bold px-2 py-0.5 rounded">F3</span>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-center">
+                    <span class="font-bold text-gray-700">اختيار العميل</span>
+                    <span class="bg-blue-100 text-blue-800 font-mono font-bold px-2 py-0.5 rounded">F4</span>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-center">
+                    <span class="font-bold text-gray-700">البحث بالمنتجات / الباركود</span>
+                    <span class="bg-purple-100 text-purple-800 font-mono font-bold px-2 py-0.5 rounded">F2 أو /</span>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-center">
+                    <span class="font-bold text-gray-700">حقل الخصم</span>
+                    <span class="bg-red-100 text-red-800 font-mono font-bold px-2 py-0.5 rounded">F6</span>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-center">
+                    <span class="font-bold text-gray-700">حقل المبلغ المدفوع</span>
+                    <span class="bg-amber-100 text-amber-800 font-mono font-bold px-2 py-0.5 rounded">F8</span>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-center">
+                    <span class="font-bold text-gray-700">فاتورة جديدة</span>
+                    <span class="bg-blue-100 text-blue-800 font-mono font-bold px-2 py-0.5 rounded">Ctrl + N</span>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-center">
+                    <span class="font-bold text-gray-700">تفريغ / إغلاق المودال</span>
+                    <span class="bg-gray-200 text-gray-800 font-mono font-bold px-2 py-0.5 rounded">Esc</span>
+                </div>
+                <div class="p-3 bg-gray-50 rounded-xl border border-gray-200 flex justify-between items-center">
+                    <span class="font-bold text-gray-700">دليل الاختصارات</span>
+                    <span class="bg-purple-100 text-purple-800 font-mono font-bold px-2 py-0.5 rounded">F1</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Default Discount Modal -->
+    <div id="defaultDiscountModal" class="modal-overlay"
+        onclick="handleModalOverlayClick(event, 'defaultDiscountModal')">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-percent"></i>
+                    <span>إعدادات الخصم الدائم للفواتير</span>
+                </h3>
+                <button type="button" class="modal-close" onclick="closeDefaultDiscountModal()" title="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="form-group">
+                    <label class="form-label" for="defaultDiscountTypeSelect">نوع الخصم الدائم</label>
+                    <select id="defaultDiscountTypeSelect" class="pos-input">
+                        <option value="fixed">مبلغ ثابت (ج.م)</option>
+                        <option value="percentage">نسبة مئوية (%)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="defaultDiscountValueInput">قيمة الخصم الافتراضي</label>
+                    <input type="number" id="defaultDiscountValueInput" class="pos-input" min="0" step="any"
+                        placeholder="0">
+                </div>
+                <div class="flex items-center justify-between gap-3 pt-2">
+                    <button type="button" onclick="deleteDefaultDiscountSettings()"
+                        class="btn-pos-clear !text-red-600 hover:!bg-red-50" title="حذف وإلغاء الخصم الدائم">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>حذف الخصم</span>
+                    </button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="closeDefaultDiscountModal()" class="btn-pos-clear">إلغاء</button>
+                        <button type="button" onclick="saveDefaultDiscountSettings()" class="btn-pos-primary">
+                            <i class="fas fa-save"></i>
+                            <span>حفظ الإعدادات</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Default Tax Modal -->
+    <div id="defaultTaxModal" class="modal-overlay" onclick="handleModalOverlayClick(event, 'defaultTaxModal')">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fas fa-receipt"></i>
+                    <span>إعدادات الضريبة الدائمة للفواتير</span>
+                </h3>
+                <button type="button" class="modal-close" onclick="closeDefaultTaxModal()" title="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <div class="p-3 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-between">
+                    <div>
+                        <h4 class="font-bold text-sm text-indigo-950">تفعيل الضريبة التلقائية</h4>
+                        <p class="text-xs text-indigo-700 mt-0.5">تطبيق هذه الضريبة تلقائياً على كل فاتورة جديدة</p>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="defaultTaxEnabledToggle" class="sr-only peer" checked>
+                        <div
+                            class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600">
+                        </div>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="defaultTaxTypeSelect">نوع الضريبة الدائمة</label>
+                    <select id="defaultTaxTypeSelect" class="pos-input">
+                        <option value="percentage">نسبة مئوية (%) - مثال: 14% ضريبة القيمة المضافة</option>
+                        <option value="fixed">مبلغ ثابت (ج.م)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="defaultTaxValueInput">قيمة الضريبة الافتراضية</label>
+                    <input type="number" id="defaultTaxValueInput" class="pos-input" min="0" step="any" placeholder="0">
+                </div>
+                <div class="flex items-center justify-between gap-3 pt-2">
+                    <button type="button" onclick="deleteDefaultTaxSettings()"
+                        class="btn-pos-clear !text-red-600 hover:!bg-red-50" title="حذف وإلغاء الضريبة الدائمة">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>حذف الضريبة</span>
+                    </button>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="closeDefaultTaxModal()" class="btn-pos-clear">إلغاء</button>
+                        <button type="button" onclick="saveDefaultTaxSettings()"
+                            class="btn-pos-primary !bg-indigo-600 hover:!bg-indigo-700">
+                            <i class="fas fa-save"></i>
+                            <span>حفظ الإعدادات</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Barcode Scan Listener -->
+    <div class="hidden" aria-hidden="true">
+        <input type="text" id="invoiceBarcodeScannerInput" class="opacity-0 absolute">
+    </div>
+
+    <!-- Global Footer -->
     <div id="footer-container" class="z-10"></div>
+
+    <!-- Script modules -->
     <script type="module" src="../js/calculator.js"></script>
+    <script type="module" src="../js/shift-manager.js"></script>
     <script type="module" src="../js/shared.js"></script>
     <script type="module" src="../js/sales-invoice.js"></script>
-
 </body>
 
 </html>

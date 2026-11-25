@@ -6,7 +6,7 @@
     <title>Managely Cashier - شاشة التحميل</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * {
@@ -17,40 +17,66 @@
         }
 
         body {
-            font-family: 'Cairo', sans-serif;
-            background: radial-gradient(circle at center, #1e1b4b 0%, #0f172a 60%, #020617 100%);
+            font-family: 'Tajawal', sans-serif;
+            background: #f1f5f9;
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
-            color: #f8fafc;
+            color: #1e293b;
         }
 
-        /* Ambient Glow Background */
-        .ambient-glow {
-            position: absolute;
-            width: 500px;
-            height: 500px;
+        /* Soft background shapes */
+        .bg-shape {
+            position: fixed;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.18) 0%, rgba(168, 85, 247, 0.08) 50%, transparent 70%);
-            filter: blur(50px);
-            animation: floatGlow 6s ease-in-out infinite alternate;
             pointer-events: none;
+            z-index: 0;
+        }
+        .bg-shape-1 {
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle, rgba(109, 40, 217, 0.08) 0%, transparent 70%);
+            top: -100px;
+            right: -100px;
+            animation: floatGlow 8s ease-in-out infinite alternate;
+        }
+        .bg-shape-2 {
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.07) 0%, transparent 70%);
+            bottom: -80px;
+            left: -80px;
+            animation: floatGlow 10s ease-in-out infinite alternate-reverse;
         }
 
         .splash-card {
             position: relative;
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6), 0 0 30px rgba(99, 102, 241, 0.2);
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow:
+                0 4px 6px -1px rgba(0, 0, 0, 0.07),
+                0 20px 50px -10px rgba(109, 40, 217, 0.12),
+                0 0 0 1px rgba(109, 40, 217, 0.04);
             border-radius: 28px;
-            padding: 48px 40px;
+            padding: 44px 40px 36px;
             width: 440px;
             text-align: center;
             animation: cardEntrance 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
             z-index: 10;
+        }
+
+        /* Colored top accent line */
+        .splash-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 10%;
+            width: 80%;
+            height: 3px;
+            background: linear-gradient(90deg, #7c3aed, #a855f7, #6d28d9);
+            border-radius: 0 0 4px 4px;
         }
 
         /* Logo Container */
@@ -64,78 +90,74 @@
             justify-content: center;
         }
 
-        .logo-ring {
+        /* Solid gradient ring */
+        .logo-ring-outer {
             position: absolute;
-            inset: -8px;
+            inset: -5px;
             border-radius: 50%;
-            border: 2px dashed rgba(99, 102, 241, 0.4);
-            animation: rotateRing 15s linear infinite;
+            background: conic-gradient(from 0deg, #7c3aed, #a855f7, #c084fc, #7c3aed);
+            animation: rotateRing 5s linear infinite;
+            padding: 3px;
         }
-
-        .logo-glow {
-            position: absolute;
-            inset: 0;
+        .logo-ring-inner {
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.4) 0%, transparent 70%);
-            filter: blur(12px);
-            animation: pulseGlow 2.5s ease-in-out infinite;
+            background: #ffffff;
         }
 
         .logo-img {
             width: 90px;
             height: 90px;
             object-fit: contain;
-            position: relative;
+            position: absolute;
             z-index: 2;
-            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.4));
-            animation: logoBounce 2.5s ease-in-out infinite;
+            border-radius: 50%;
+            filter: drop-shadow(0 4px 12px rgba(109, 40, 217, 0.2));
+            animation: logoBounce 3s ease-in-out infinite;
         }
 
         /* Title & Tagline */
         .brand-title {
             font-size: 1.85rem;
             font-weight: 900;
-            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #818cf8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            color: #1e293b;
             letter-spacing: -0.5px;
             margin-bottom: 6px;
         }
 
         .brand-subtitle {
             font-size: 0.95rem;
-            color: #94a3b8;
-            font-weight: 600;
+            color: #64748b;
+            font-weight: 500;
             margin-bottom: 28px;
         }
 
         /* Progress Bar */
         .progress-wrapper {
             width: 100%;
-            height: 8px;
-            background: rgba(15, 23, 42, 0.8);
+            height: 6px;
+            background: #f1f5f9;
             border-radius: 100px;
-            padding: 2px;
             margin-bottom: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
             overflow: hidden;
-            position: relative;
+            border: 1px solid #e2e8f0;
         }
 
         .progress-bar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, #38bdf8 0%, #6366f1 50%, #ec4899 100%);
+            background: linear-gradient(90deg, #6d28d9 0%, #8b5cf6 50%, #a855f7 100%);
             border-radius: 100px;
-            box-shadow: 0 0 16px rgba(99, 102, 241, 0.8);
+            box-shadow: 0 0 10px rgba(109, 40, 217, 0.4);
             transition: width 0.4s ease-out;
         }
 
         .status-text {
-            font-size: 0.85rem;
-            color: #cbd5e1;
+            font-size: 0.88rem;
+            color: #64748b;
             font-weight: 600;
-            min-height: 22px;
+            min-height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -143,61 +165,44 @@
         }
 
         .status-text i {
-            color: #38bdf8;
+            color: #7c3aed;
             font-size: 0.8rem;
             animation: spin 1.2s linear infinite;
         }
 
-        /* Badges */
+        /* Version Badge */
         .badge-version {
             position: absolute;
             top: 16px;
             left: 20px;
             font-size: 0.72rem;
             font-weight: 700;
-            color: #a5b4fc;
-            background: rgba(99, 102, 241, 0.15);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            padding: 2px 10px;
+            color: #7c3aed;
+            background: rgba(109, 40, 217, 0.08);
+            border: 1px solid rgba(109, 40, 217, 0.2);
+            padding: 3px 10px;
             border-radius: 20px;
-        }
-
-        .badge-status {
-            position: absolute;
-            top: 16px;
-            right: 20px;
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: #4ade80;
-            background: rgba(34, 197, 94, 0.12);
-            border: 1px solid rgba(34, 197, 94, 0.25);
-            padding: 2px 10px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .badge-status::before {
-            content: '';
-            width: 6px;
-            height: 6px;
-            background: #4ade80;
-            border-radius: 50%;
-            box-shadow: 0 0 6px #4ade80;
         }
 
         .footer-copyright {
-            margin-top: 24px;
+            margin-top: 22px;
             font-size: 0.75rem;
-            color: #64748b;
+            color: #94a3b8;
+        }
+
+        /* Divider */
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+            margin: 24px 0 20px;
         }
 
         /* Keyframes */
         @keyframes cardEntrance {
             from {
                 opacity: 0;
-                transform: scale(0.92) translateY(20px);
+                transform: scale(0.93) translateY(18px);
             }
             to {
                 opacity: 1;
@@ -206,50 +211,23 @@
         }
 
         @keyframes floatGlow {
-            from {
-                transform: translate(-30px, -20px) scale(0.9);
-            }
-            to {
-                transform: translate(30px, 20px) scale(1.1);
-            }
-        }
-
-        @keyframes pulseGlow {
-            0%, 100% {
-                transform: scale(0.95);
-                opacity: 0.5;
-            }
-            50% {
-                transform: scale(1.15);
-                opacity: 0.9;
-            }
+            from { transform: scale(0.9) translate(-20px, -10px); }
+            to   { transform: scale(1.1) translate(20px, 10px); }
         }
 
         @keyframes rotateRing {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
         }
 
         @keyframes logoBounce {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-6px);
-            }
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-5px); }
         }
 
         @keyframes spin {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
         }
 
         .fade-out {
@@ -260,15 +238,16 @@
     </style>
 </head>
 <body>
-    <div class="ambient-glow"></div>
+    <div class="bg-shape bg-shape-1"></div>
+    <div class="bg-shape bg-shape-2"></div>
 
     <div class="splash-card" id="splashCard">
-        <div class="badge-version" id="versionBadge">v1.0.5</div>
-        <div class="badge-status">نظام جاهز</div>
+        <div class="badge-version" id="versionBadge"></div>
 
         <div class="logo-wrapper">
-            <div class="logo-ring"></div>
-            <div class="logo-glow"></div>
+            <div class="logo-ring-outer">
+                <div class="logo-ring-inner"></div>
+            </div>
             <img src="../assets/images/Logo.png" alt="Managely Logo" class="logo-img" onerror="this.src='../assets/images/pay.png'">
         </div>
 
@@ -284,6 +263,8 @@
             <span id="statusLabel">جاري تهيئة النظام...</span>
         </div>
 
+        <div class="divider"></div>
+
         <div class="footer-copyright">
             حقوق النشر © 2026 Abdelaziz Sleem | جميع الحقوق محفوظة
         </div>
@@ -293,14 +274,37 @@
         const progressBar = document.getElementById('progressBar');
         const statusLabel = document.getElementById('statusLabel');
         const splashCard = document.getElementById('splashCard');
+        const versionBadge = document.getElementById('versionBadge');
 
-        try {
-            if (window.electronAPI && window.electronAPI.getAppVersion) {
-                window.electronAPI.getAppVersion().then(v => {
-                    if (v) document.getElementById('versionBadge').textContent = 'v' + v;
-                });
+        // Dynamically load real app version
+        async function loadDynamicAppVersion() {
+            try {
+                if (window.electronAPI?.getAppVersion) {
+                    const v = await window.electronAPI.getAppVersion();
+                    if (v && versionBadge) {
+                        versionBadge.textContent = 'v' + v;
+                        localStorage.setItem('managely_app_version', v);
+                        return;
+                    }
+                }
+                if (window.electronAPI?.updater?.getVersion) {
+                    const v = await window.electronAPI.updater.getVersion();
+                    if (v && versionBadge) {
+                        versionBadge.textContent = 'v' + v;
+                        localStorage.setItem('managely_app_version', v);
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to retrieve dynamic app version:', e);
             }
-        } catch (e) {}
+
+            const cached = localStorage.getItem('managely_app_version');
+            if (cached && versionBadge) {
+                versionBadge.textContent = 'v' + cached;
+            }
+        }
+        loadDynamicAppVersion();
 
         const steps = [
             { progress: 20, text: 'جاري تهيئة قاعدة البيانات المحلية...', delay: 400 },
@@ -316,13 +320,82 @@
             }, step.delay);
         });
 
-        // Smooth transition to login
-        setTimeout(() => {
-            splashCard.classList.add('fade-out');
+        function determineUserTargetPage(user) {
+            if (!user) return 'index.html';
+            const userPages = user?.permissions?.pages || {};
+            if (userPages.home) return 'index.html';
+            if (userPages.salesInvoice) return 'sales-invoice.html';
+            const PAGE_MAP = {
+                sales: 'sales.html',
+                products: 'products.html',
+                categories: 'categories.html',
+                customers: 'customers.html',
+                suppliers: 'suppliers.html',
+                purchaseInvoices: 'purchase-invoices.html',
+                productsPurchaseInvoices: 'ProductsPurchaseInvoices.html',
+                returns: 'returns.html',
+                treasury: 'treasury.html',
+                statistics: 'statistics.html',
+                employees: 'employees.html',
+                printerSettings: 'printer-settings.html',
+                settings: 'settings.html',
+                users: 'users.html'
+            };
+            for (const [key, url] of Object.entries(PAGE_MAP)) {
+                if (userPages[key]) return url;
+            }
+            return 'index.html';
+        }
+
+        async function checkAutoLoginAndProceed() {
+            let targetDestination = 'login.html';
+            const justLoggedOut = sessionStorage.getItem('justLoggedOut') === 'true';
+
+            if (!justLoggedOut) {
+                try {
+                    let validUser = null;
+                    const sessionRaw = localStorage.getItem('managely_auth_session');
+                    if (sessionRaw) {
+                        const session = JSON.parse(sessionRaw);
+                        const isExpired = session.expiresAt && Date.now() > session.expiresAt;
+                        if (session && session.user && (!session.expiresAt || !isExpired)) {
+                            validUser = session.user;
+                        }
+                    }
+
+                    // Fallback check from persistent backend settingsDB
+                    if (!validUser && window.electronAPI && window.electronAPI.getRememberedSession) {
+                        const backendSession = await window.electronAPI.getRememberedSession();
+                        if (backendSession && backendSession.user) {
+                            const isExpired = backendSession.expiresAt && Date.now() > backendSession.expiresAt;
+                            if (!backendSession.expiresAt || !isExpired) {
+                                validUser = backendSession.user;
+                                // Sync back to localStorage
+                                localStorage.setItem('managely_auth_session', JSON.stringify(backendSession));
+                            }
+                        }
+                    }
+
+                    if (validUser) {
+                        localStorage.setItem('currentUser', JSON.stringify(validUser));
+                        localStorage.setItem('isLoggedIn', 'true');
+                        targetDestination = determineUserTargetPage(validUser);
+                        statusLabel.textContent = `مرحباً بك، ${validUser.name || 'بك'}! جاري فتح البرنامج...`;
+                    }
+                } catch (err) {
+                    console.warn('Auto-login check error in splash:', err);
+                }
+            }
+
             setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 400);
-        }, 2500);
+                splashCard.classList.add('fade-out');
+                setTimeout(() => {
+                    window.location.href = targetDestination;
+                }, 350);
+            }, 2200);
+        }
+
+        checkAutoLoginAndProceed();
     </script>
 </body>
 </html>

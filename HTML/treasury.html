@@ -70,6 +70,45 @@
                 </div>
             </div>
 
+            <!-- Payment Methods Breakdown Pills -->
+            <div class="treasury-payment-breakdown-grid">
+                <div class="pay-stat-pill cash">
+                    <div class="pay-stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+                    <div class="pay-stat-info">
+                        <span class="pay-stat-title">كاش (نقدي)</span>
+                        <span id="statCashAmount" class="pay-stat-val">0.00 جنيه</span>
+                    </div>
+                </div>
+                <div class="pay-stat-pill card">
+                    <div class="pay-stat-icon"><i class="fas fa-credit-card"></i></div>
+                    <div class="pay-stat-info">
+                        <span class="pay-stat-title">فيزا وبطاقات</span>
+                        <span id="statCardAmount" class="pay-stat-val">0.00 جنيه</span>
+                    </div>
+                </div>
+                <div class="pay-stat-pill wallet">
+                    <div class="pay-stat-icon"><i class="fas fa-mobile-alt"></i></div>
+                    <div class="pay-stat-info">
+                        <span class="pay-stat-title">فودافون كاش ومحافظ</span>
+                        <span id="statWalletAmount" class="pay-stat-val">0.00 جنيه</span>
+                    </div>
+                </div>
+                <div class="pay-stat-pill split">
+                    <div class="pay-stat-icon"><i class="fas fa-arrows-split-up-and-left"></i></div>
+                    <div class="pay-stat-info">
+                        <span class="pay-stat-title">دفع مقسم</span>
+                        <span id="statSplitAmount" class="pay-stat-val">0.00 جنيه</span>
+                    </div>
+                </div>
+                <div class="pay-stat-pill credit">
+                    <div class="pay-stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="pay-stat-info">
+                        <span class="pay-stat-title">مبيعات آجلة</span>
+                        <span id="statCreditAmount" class="pay-stat-val">0.00 جنيه</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Warnings Container -->
             <div id="warnings" class="space-y-2"></div>
 
@@ -121,6 +160,18 @@
                         </select>
                     </div>
                     <div class="filter-input-wrap">
+                        <label for="filterPaymentMethod">طريقة الدفع</label>
+                        <select id="filterPaymentMethod">
+                            <option value="">كل طرق الدفع</option>
+                            <option value="cash">نقدي (كاش)</option>
+                            <option value="visaCard">فيزا / بطاقة</option>
+                            <option value="vodafoneCash">فودافون كاش / محفظة</option>
+                            <option value="split">دفع مقسم</option>
+                            <option value="credit">آجل</option>
+                            <option value="manual">يدوي / أخرى</option>
+                        </select>
+                    </div>
+                    <div class="filter-input-wrap">
                         <label for="filterUser">اسم المستخدم</label>
                         <input type="text" id="filterUser" placeholder="ابحث باسم المستخدم..." />
                     </div>
@@ -151,6 +202,7 @@
                             <tr>
                                 <th class="text-right">التاريخ والوقت</th>
                                 <th class="text-right">نوع الحركة</th>
+                                <th class="text-right">طريقة الدفع</th>
                                 <th class="text-right">المبلغ</th>
                                 <th class="text-right">الوصف والبيان</th>
                                 <th class="text-right">المستخدم</th>
@@ -217,6 +269,18 @@
                             min="0.01" required>
                         <span class="currency-badge">جنيه</span>
                     </div>
+                </div>
+
+                <div class="field-group">
+                    <label>
+                        <i class="fas fa-credit-card"></i>
+                        <span>طريقة الدفع والمعاملة</span>
+                    </label>
+                    <select id="transactionPaymentMethod" class="modal-input">
+                        <option value="cash">نقدي (كاش)</option>
+                        <option value="visaCard">فيزا / بطاقة</option>
+                        <option value="vodafoneCash">فودافون كاش / محفظة</option>
+                    </select>
                 </div>
 
                 <div class="field-group">

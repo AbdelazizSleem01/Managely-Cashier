@@ -71,7 +71,7 @@ export function formatUserFriendlyMessage(args) {
 export function initSweetAlertWrapper() {
     if (typeof window !== "undefined" && typeof window.Swal !== "undefined" && window.Swal.fire && !window.Swal._isCustomWrapped) {
         const originalFire = window.Swal.fire.bind(window.Swal);
-        window.Swal.fire = function(...args) {
+        window.Swal.fire = function (...args) {
             try {
                 const formatted = formatUserFriendlyMessage(args);
                 return originalFire(formatted);
@@ -86,7 +86,7 @@ export function initSweetAlertWrapper() {
 export function markFieldInvalid(el, msg = "هذا الحقل مطلوب، يرجى إدخال البيانات.") {
     if (!el) return;
     el.classList.add("field-invalid");
-    
+
     // Also mark custom-select-trigger if exists
     if (el.dataset.customSelectInitialized === "true" && el.parentElement) {
         const trigger = el.parentElement.querySelector(".custom-select-trigger");
@@ -116,10 +116,14 @@ export function markFieldInvalid(el, msg = "هذا الحقل مطلوب، ير�
         }
         el.removeEventListener("input", clearHandler);
         el.removeEventListener("change", clearHandler);
+        el.removeEventListener("focus", clearHandler);
+        el.removeEventListener("keydown", clearHandler);
     };
 
     el.addEventListener("input", clearHandler);
     el.addEventListener("change", clearHandler);
+    el.addEventListener("focus", clearHandler);
+    el.addEventListener("keydown", clearHandler);
 }
 
 export function clearFieldInvalid(el) {
@@ -159,7 +163,7 @@ export function initCustomSelect(selectEl) {
     // Create wrapper
     const wrapper = document.createElement("div");
     wrapper.className = "custom-select-wrapper";
-    
+
     // Mirror dimensions and flex styles
     if (selectEl.classList.contains("w-full")) wrapper.classList.add("w-full");
     if (selectEl.classList.contains("field-invalid")) wrapper.classList.add("field-invalid");
@@ -296,7 +300,7 @@ export function initCustomSelect(selectEl) {
 
     observer.observe(selectEl, { childList: true, attributes: true, subtree: true });
 
-    selectEl._syncCustomSelect = function() {
+    selectEl._syncCustomSelect = function () {
         buildOptions();
     };
 }
@@ -383,7 +387,7 @@ if (typeof document !== "undefined") {
                     if (
                         node.classList &&
                         (node.classList.contains("swal2-container") ||
-                         node.classList.contains("swal2-popup"))
+                            node.classList.contains("swal2-popup"))
                     ) {
                         continue;
                     }
@@ -409,4 +413,564 @@ if (typeof document !== "undefined") {
     }
 }
 
-let categories=[],products=[],cart=[];export function saveData(){}export async function loadCategories(n){try{categories=await window.electronAPI.getCategories(),"function"==typeof n&&n()}catch(n){}}export async function loadProducts(n){try{products=await window.electronAPI.getProducts(),"function"==typeof n&&n()}catch(n){}}export async function loadCart(n){try{cart=await window.electronAPI.getCart(),"function"==typeof n&&n()}catch(n){}}async function loadSidebar(){try{const e=document.getElementById("sidebar-container");if(!e)return;if(e.querySelector("#sidebar-toggle")&&e.querySelector("#sidebar")){setupSidebarToggle();highlightActivePage();return;}const n=await fetch("../HTML/sidebar.html"),t=await n.text();e&&(e.innerHTML=t,setupSidebarToggle(),highlightActivePage())}catch(n){}}function highlightActivePage(){const n=document.body.dataset.page;document.querySelectorAll("#sidebar a[data-page]").forEach((t=>{t.dataset.page===n?t.classList.add("text-blue-200","font-bold"):t.classList.remove("text-blue-200","font-bold")}))}function setupSidebarToggle(){const n=document.getElementById("sidebar"),t=document.getElementById("sidebar-toggle"),e=document.querySelector(".main-content");t&&n&&e&&(t.addEventListener("click",(()=>{n.classList.toggle("active"),e.classList.toggle("shifted"),e.classList.toggle("sidebar-open");const a=t.querySelector("i");n.classList.contains("active")?(a.classList.remove("fa-bars"),a.classList.add("fa-times")):(a.classList.remove("fa-times"),a.classList.add("fa-bars"))})),document.addEventListener("click",(a=>{if(!n.contains(a.target)&&a.target!==t&&!t.contains(a.target)){n.classList.remove("active"),e.classList.remove("shifted"),e.classList.remove("sidebar-open");const a=t.querySelector("i");a.classList.remove("fa-times"),a.classList.add("fa-bars")}})))}async function loadFooter(){try{const n=document.getElementById("footer-container");if(!n)return;if(n.querySelector("#globalFooter")){setupFooter();return;}const t=await fetch("../HTML/footer.html");if(!t.ok)return;const e=await t.text();n.innerHTML=e,document.dispatchEvent(new Event("footerLoaded"))}catch(n){}}function setupFooter(){const n=document.getElementById("appName"),t=document.getElementById("currentDateTime"),e=document.getElementById("footerLogo");function a(){const n=(new Date).toLocaleString("ar-EG",{weekday:"long",year:"numeric",month:"long",day:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit"});if(t)t.textContent=n}const cachedSettings=localStorage.getItem("managely_store_settings");if(cachedSettings){try{const s=JSON.parse(cachedSettings);if(s.storeName&&n)n.textContent=s.storeName;if(s.logo&&e){e.src=s.logo;e.classList.remove("hidden");}}catch(err){}}n&&t&&e&&(window.electronAPI.getSettings().then((t=>{if(t){try{localStorage.setItem("managely_store_settings",JSON.stringify(t));}catch(e){}if(t.storeName&&n)n.textContent=t.storeName;if(t.logo&&e){e.src=t.logo;e.classList.remove("hidden");}else if(e){e.classList.add("hidden");}}})).catch((n=>{})),a(),setInterval(a,1e3))}function initializeCalculatorButton(){if(document.getElementById("floatingCalcButton"))return;const n=document.createElement("button");n.id="floatingCalcButton",n.className="btn btn-circle btn-primary shadow-lg calc-button  ",n.innerHTML='\n        <div class="tooltip " data-tip="آلة حاسبة">\n        <i class="fas fa-calculator text-xl"></i>\n        </div>\n    ',n.onclick=()=>{if(typeof window.openCalculatorPopup==="function"){window.openCalculatorPopup();}else{openCalculatorPopup();}},document.body.appendChild(n)}function openCalculatorPopup(){if(typeof window.openCalculatorPopup==="function"&&window.openCalculatorPopup!==openCalculatorPopup){window.openCalculatorPopup();return;}Swal.fire({html:`<div class="modern-calc-wrap"><div class="calc-header-bar"><div class="calc-header-title"><i class="fas fa-calculator"></i><span>آلة حاسبة ذكية</span></div><span style="font-size:0.72rem;font-weight:700;color:#a78bfa;background:#0f172a;padding:2px 8px;border-radius:6px;border:1px solid #334155;">تدعم الكيبورد</span></div><div class="calc-display-area"><div id="calcHistory" class="calc-history-line"></div><input type="text" id="calcDisplay" class="calc-main-input" placeholder="0" readonly /></div><div class="calc-keypad"><button type="button" onclick="clearCalc()" class="calc-btn-key calc-btn-clear" title="مسح (C / Delete)">C</button><button type="button" onclick="backspaceCalc()" class="calc-btn-key calc-btn-backspace" title="مسح خانة (Backspace)">⌫</button><button type="button" onclick="appendToCalc('%')" class="calc-btn-key calc-btn-util">%</button><button type="button" onclick="appendToCalc('/')" class="calc-btn-key calc-btn-op" title="قسمة (/)">÷</button><button type="button" onclick="appendToCalc('7')" class="calc-btn-key calc-btn-num">7</button><button type="button" onclick="appendToCalc('8')" class="calc-btn-key calc-btn-num">8</button><button type="button" onclick="appendToCalc('9')" class="calc-btn-key calc-btn-num">9</button><button type="button" onclick="appendToCalc('*')" class="calc-btn-key calc-btn-op" title="ضرب (*)">×</button><button type="button" onclick="appendToCalc('4')" class="calc-btn-key calc-btn-num">4</button><button type="button" onclick="appendToCalc('5')" class="calc-btn-key calc-btn-num">5</button><button type="button" onclick="appendToCalc('6')" class="calc-btn-key calc-btn-num">6</button><button type="button" onclick="appendToCalc('-')" class="calc-btn-key calc-btn-op" title="طرح (-)">-</button><button type="button" onclick="appendToCalc('1')" class="calc-btn-key calc-btn-num">1</button><button type="button" onclick="appendToCalc('2')" class="calc-btn-key calc-btn-num">2</button><button type="button" onclick="appendToCalc('3')" class="calc-btn-key calc-btn-num">3</button><button type="button" onclick="appendToCalc('+')" class="calc-btn-key calc-btn-op" title="جمع (+)">+</button><button type="button" onclick="appendToCalc('(')" class="calc-btn-key calc-btn-util">(</button><button type="button" onclick="appendToCalc('0')" class="calc-btn-key calc-btn-num">0</button><button type="button" onclick="appendToCalc('.')" class="calc-btn-key calc-btn-num">.</button><button type="button" onclick="calculate()" class="calc-btn-key calc-btn-eq" title="حساب (Enter / =)">=</button></div></div>`,showConfirmButton:false,showCloseButton:true,customClass:{popup:"calculator-swal-popup"},didOpen:()=>{if(typeof window.attachCalculatorKeyboard==="function"){window.attachCalculatorKeyboard();}},willClose:()=>{if(typeof window.detachCalculatorKeyboard==="function"){window.detachCalculatorKeyboard();}}})}document.addEventListener("DOMContentLoaded",(async()=>{initSweetAlertWrapper(),initAllCustomSelects(),await loadSidebar(),loadCategories((()=>{loadProducts((()=>{loadCart((()=>{"function"==typeof renderHomeProducts&&renderHomeProducts(),"function"==typeof renderCart&&renderCart(),"function"==typeof renderCategoryFilter&&renderCategoryFilter()}))}))})),document.addEventListener("footerLoaded",(()=>{setupFooter()})),await loadFooter(),initializeCalculatorButton()})),window.addEventListener("load",(()=>{initSweetAlertWrapper(),initAllCustomSelects(),document.getElementById("floatingCalcButton")||initializeCalculatorButton()}));
+let categories = [];
+let products = [];
+let cart = [];
+
+export function saveData() {}
+
+export async function loadCategories(callback) {
+    try {
+        categories = await window.electronAPI.getCategories();
+        if (typeof callback === "function") callback();
+    } catch (err) {
+        console.error("Error loading categories:", err);
+    }
+}
+
+export async function loadProducts(callback) {
+    try {
+        products = await window.electronAPI.getProducts();
+        if (typeof callback === "function") callback();
+    } catch (err) {
+        console.error("Error loading products:", err);
+    }
+}
+
+export async function loadCart(callback) {
+    try {
+        cart = await window.electronAPI.getCart();
+        if (typeof callback === "function") callback();
+    } catch (err) {
+        console.error("Error loading cart:", err);
+    }
+}
+
+// ==========================================================================
+// Session & Granular Permission Management System
+// ==========================================================================
+export const PAGE_URL_TO_KEY = {
+    "index.html": "home",
+    "home": "home",
+    "index": "home",
+    "sales-invoice.html": "salesInvoice",
+    "sales-invoice": "salesInvoice",
+    "invoice-page": "salesInvoice",
+    "salesInvoice": "salesInvoice",
+    "sales.html": "sales",
+    "sales": "sales",
+    "products.html": "products",
+    "products": "products",
+    "categories.html": "categories",
+    "categories": "categories",
+    "customers.html": "customers",
+    "customers": "customers",
+    "suppliers.html": "suppliers",
+    "suppliers": "suppliers",
+    "purchase-invoices.html": "purchaseInvoices",
+    "purchase-invoices": "purchaseInvoices",
+    "purchaseInvoices": "purchaseInvoices",
+    "ProductsPurchaseInvoices.html": "productsPurchaseInvoices",
+    "products-purchase-invoices.html": "productsPurchaseInvoices",
+    "ProductsPurchaseInvoices": "productsPurchaseInvoices",
+    "productsPurchaseInvoices": "productsPurchaseInvoices",
+    "returns.html": "returns",
+    "returns": "returns",
+    "treasury.html": "treasury",
+    "treasury": "treasury",
+    "statistics.html": "statistics",
+    "statistics": "statistics",
+    "employees.html": "employees",
+    "employees": "employees",
+    "printer-settings.html": "printerSettings",
+    "printer-settings": "printerSettings",
+    "printerSettings": "printerSettings",
+    "settings.html": "settings",
+    "settings": "settings",
+    "users.html": "users",
+    "users": "users"
+};
+
+export const PAGE_KEY_TO_URL = {
+    home: "index.html",
+    salesInvoice: "sales-invoice.html",
+    sales: "sales.html",
+    products: "products.html",
+    categories: "categories.html",
+    customers: "customers.html",
+    suppliers: "suppliers.html",
+    purchaseInvoices: "purchase-invoices.html",
+    productsPurchaseInvoices: "ProductsPurchaseInvoices.html",
+    returns: "returns.html",
+    treasury: "treasury.html",
+    statistics: "statistics.html",
+    employees: "employees.html",
+    printerSettings: "printer-settings.html",
+    settings: "settings.html",
+    users: "users.html"
+};
+
+export function getCurrentUser() {
+    try {
+        const stored = localStorage.getItem("currentUser");
+        if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed && typeof parsed === "object") return parsed;
+        }
+    } catch (e) {
+        console.error("Error parsing currentUser from localStorage:", e);
+    }
+    return {
+        _id: "default_super_admin",
+        name: "المدير العام",
+        username: "admin",
+        role: "admin",
+        roleName: "مدير عام",
+        isSuperAdmin: true,
+        permissions: {
+            pages: {
+                home: true,
+                salesInvoice: true,
+                sales: true,
+                products: true,
+                categories: true,
+                customers: true,
+                suppliers: true,
+                purchaseInvoices: true,
+                productsPurchaseInvoices: true,
+                returns: true,
+                treasury: true,
+                statistics: true,
+                employees: true,
+                printerSettings: true,
+                settings: true,
+                users: true
+            },
+            actions: {
+                canApplyDiscount: true,
+                canChangePrice: true,
+                canDeleteCartItem: true,
+                canSuspendInvoice: true,
+                canDeleteSale: true,
+                canExportSales: true,
+                canAddProduct: true,
+                canEditProduct: true,
+                canDeleteProduct: true,
+                canImportProducts: true,
+                canExportProducts: true,
+                canAddTreasuryIncome: true,
+                canAddTreasuryExpense: true,
+                canDeleteTreasuryTransaction: true,
+                canCreateBackup: true,
+                canRestoreBackup: true,
+                canManageUsers: true
+            }
+        }
+    };
+}
+
+export function hasPermission(key, type = "action") {
+    const user = getCurrentUser();
+    if (!user) return true;
+    if (user.isSuperAdmin || user.role === "admin") return true;
+
+    if (type === "page") {
+        const pages = user.permissions?.pages || {};
+        return pages[key] === true;
+    } else {
+        const actions = user.permissions?.actions || {};
+        return actions[key] === true;
+    }
+}
+
+export function updateSidebarUserInfo() {
+    const user = getCurrentUser();
+    const nameEl = document.getElementById("sbUserName");
+    const roleEl = document.getElementById("sbUserRole");
+    const avatarEl = document.getElementById("sbUserAvatar");
+    const shiftTextEl = document.getElementById("sbShiftText");
+
+    if (nameEl) nameEl.textContent = user.name || user.username || "المستخدم";
+    if (roleEl) {
+        const roleIcons = {
+            admin: '<i class="fas fa-crown text-amber-400"></i> مدير عام',
+            cashier: '<i class="fas fa-cash-register text-sky-300"></i> كاشير',
+            inventory: '<i class="fas fa-boxes-stacked text-amber-300"></i> مسؤول مخزن',
+            accountant: '<i class="fas fa-briefcase text-emerald-300"></i> محاسب مالي',
+            custom: '<i class="fas fa-sliders text-slate-300"></i> مخصص'
+        };
+        roleEl.innerHTML = roleIcons[user.role] || user.roleName || "مستخدم";
+    }
+    if (avatarEl) {
+        const initial = (user.name || user.username || "م").trim().charAt(0);
+        avatarEl.innerHTML = `<span>${initial}</span>`;
+    }
+    if (shiftTextEl && typeof window.getActiveShift === "function") {
+        try {
+            const activeShift = window.getActiveShift();
+            if (activeShift) {
+                shiftTextEl.textContent = `الوردية: #${activeShift.shiftNumber || 1} نشطة`;
+            }
+        } catch (e) {}
+    }
+
+    const verEl = document.getElementById("sbAppVersion");
+    if (verEl) {
+        if (window.electronAPI?.getAppVersion) {
+            window.electronAPI.getAppVersion().then(v => {
+                if (v) verEl.textContent = `v${v}`;
+            }).catch(() => {});
+        } else if (window.electronAPI?.updater?.getVersion) {
+            window.electronAPI.updater.getVersion().then(v => {
+                if (v) verEl.textContent = `v${v}`;
+            }).catch(() => {});
+        }
+    }
+}
+
+export function filterSidebarLinks() {
+    const user = getCurrentUser();
+    if (user.isSuperAdmin || user.role === "admin") return;
+
+    const links = document.querySelectorAll("#sidebar a[data-page]");
+    links.forEach(a => {
+        const dataPage = a.getAttribute("data-page");
+        const href = (a.getAttribute("href") || "").replace(".html", "").replace("./", "");
+        const pageKey = PAGE_URL_TO_KEY[dataPage] || PAGE_URL_TO_KEY[href] || dataPage;
+
+        if (pageKey && !hasPermission(pageKey, "page")) {
+            const li = a.closest("li");
+            if (li) li.style.display = "none";
+        }
+    });
+
+    // Auto-hide empty section groups
+    document.querySelectorAll("#sidebar .sidebar-group").forEach(group => {
+        const visibleLinks = group.querySelectorAll("li:not([style*='display: none'])");
+        if (visibleLinks.length === 0) {
+            group.style.display = "none";
+        } else {
+            group.style.display = "";
+        }
+    });
+}
+
+export function applyPagePermissionGuard() {
+    const rawPath = window.location.pathname.split("/").pop() || "index.html";
+    const currentPageFile = rawPath.replace(/^\/+/, "");
+    
+    // Ignore non-guarded pages
+    if (currentPageFile === "login.html" || currentPageFile === "splash.html" || currentPageFile === "license.html" || currentPageFile === "") {
+        return;
+    }
+
+    const pageKey = PAGE_URL_TO_KEY[currentPageFile] || PAGE_URL_TO_KEY[currentPageFile.replace(".html", "")];
+    if (!pageKey) return;
+
+    const user = getCurrentUser();
+    if (!hasPermission(pageKey, "page")) {
+        console.warn(`[Permission Guard] User '${user.name}' is blocked from '${pageKey}'`);
+
+        // Find first allowed page
+        let firstAllowedUrl = "index.html";
+        const userPages = user.permissions?.pages || {};
+        for (const [k, allowed] of Object.entries(userPages)) {
+            if (allowed && PAGE_KEY_TO_URL[k]) {
+                firstAllowedUrl = PAGE_KEY_TO_URL[k];
+                break;
+            }
+        }
+
+        Swal.fire({
+            title: "عذراً، غير مسموح بالدخول",
+            text: `ليس لديك صلاحية للوصول إلى شاشة (${pageKey}). سيتم تحويلك إلى الشاشة المتاحة لك.`,
+            icon: "warning",
+            confirmButtonText: "موافق",
+            confirmButtonColor: "#6366f1",
+            allowOutsideClick: false
+        }).then(() => {
+            window.location.href = `./${firstAllowedUrl}`;
+        });
+    }
+}
+
+export function logoutUser() {
+    Swal.fire({
+        title: "تسجيل الخروج؟",
+        text: "هل أنت متأكد من رغبتك في تسجيل الخروج والعودة لشاشة الدخول؟",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#ef4444",
+        cancelButtonColor: "#64748b",
+        confirmButtonText: "نعم، تسجيل الخروج",
+        cancelButtonText: "إلغاء"
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                sessionStorage.setItem("justLoggedOut", "true");
+                localStorage.removeItem("currentUser");
+                localStorage.removeItem("isLoggedIn");
+                localStorage.removeItem("managely_auth_session");
+                if (window.electronAPI && window.electronAPI.clearRememberedSession) {
+                    await window.electronAPI.clearRememberedSession();
+                }
+            } catch (e) {}
+            window.location.href = "./login.html";
+        }
+    });
+}
+
+async function loadSidebar() {
+    try {
+        const e = document.getElementById("sidebar-container");
+        if (!e) return;
+
+        if (e.querySelector("#sidebar-toggle") && e.querySelector("#sidebar")) {
+            setupSidebarToggle();
+            highlightActivePage();
+            updateSidebarUserInfo();
+            filterSidebarLinks();
+            applyPagePermissionGuard();
+            return;
+        }
+
+        const n = await fetch("../HTML/sidebar.html");
+        const t = await n.text();
+        if (e) {
+            e.innerHTML = t;
+            setupSidebarToggle();
+            highlightActivePage();
+            updateSidebarUserInfo();
+            filterSidebarLinks();
+            applyPagePermissionGuard();
+        }
+    } catch (err) {
+        console.error("Error loading sidebar:", err);
+    }
+}
+
+function highlightActivePage() {
+    const n = document.body?.dataset?.page || document.documentElement?.dataset?.page || (window.location.pathname.split("/").pop() || "").replace(".html", "") || "home";
+    let normalized = n;
+    if (n === "index" || n === "") normalized = "home";
+    if (n === "sales-invoice") normalized = "invoice-page";
+
+    document.querySelectorAll("#sidebar a[data-page]").forEach((t => {
+        const linkPage = t.dataset.page;
+        const href = (t.getAttribute("href") || "").replace(".html", "").replace("./", "");
+        if (linkPage === normalized || linkPage === n || href === n || (normalized === "home" && href === "index")) {
+            t.classList.add("active");
+        } else {
+            t.classList.remove("active");
+        }
+    }));
+}
+
+function setupSidebarToggle() {
+    const n = document.getElementById("sidebar");
+    const t = document.getElementById("sidebar-toggle");
+    const closeBtn = document.getElementById("sidebar-close-btn");
+    const e = document.querySelector(".main-content");
+
+    const closeSidebar = () => {
+        if (!n) return;
+        n.classList.remove("active");
+        if (e) {
+            e.classList.remove("shifted");
+            e.classList.remove("sidebar-open");
+        }
+        if (t) {
+            const icon = t.querySelector("i");
+            if (icon) {
+                icon.classList.remove("fa-times");
+                icon.classList.add("fa-bars");
+            }
+        }
+    };
+
+    const toggleSidebar = () => {
+        if (!n) return;
+        n.classList.toggle("active");
+        if (e) {
+            e.classList.toggle("shifted");
+            e.classList.toggle("sidebar-open");
+        }
+        if (t) {
+            const a = t.querySelector("i");
+            if (n.classList.contains("active")) {
+                if (a) {
+                    a.classList.remove("fa-bars");
+                    a.classList.add("fa-times");
+                }
+            } else {
+                if (a) {
+                    a.classList.remove("fa-times");
+                    a.classList.add("fa-bars");
+                }
+            }
+        }
+    };
+
+    if (t) {
+        t.onclick = (ev) => {
+            ev.stopPropagation();
+            toggleSidebar();
+        };
+    }
+
+    if (closeBtn) {
+        closeBtn.onclick = (ev) => {
+            ev.stopPropagation();
+            closeSidebar();
+        };
+    }
+
+    document.addEventListener("click", (a => {
+        if (n && n.classList.contains("active")) {
+            if (!n.contains(a.target) && a.target !== t && !t?.contains(a.target) && a.target !== closeBtn && !closeBtn?.contains(a.target)) {
+                closeSidebar();
+            }
+        }
+    }));
+}
+
+async function loadFooter() {
+    try {
+        const n = document.getElementById("footer-container");
+        if (!n) return;
+        if (n.querySelector("#globalFooter")) {
+            setupFooter();
+            return;
+        }
+        const t = await fetch("../HTML/footer.html");
+        if (!t.ok) return;
+        const e = await t.text();
+        n.innerHTML = e;
+        document.dispatchEvent(new Event("footerLoaded"));
+    } catch (err) {
+        console.error("Error loading footer:", err);
+    }
+}
+
+function setupFooter() {
+    const n = document.getElementById("appName");
+    const t = document.getElementById("currentDateTime");
+    const e = document.getElementById("footerLogo");
+
+    function a() {
+        const dateStr = (new Date()).toLocaleString("ar-EG", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
+        });
+        if (t) t.textContent = dateStr;
+    }
+
+    const cachedSettings = localStorage.getItem("managely_store_settings");
+    if (cachedSettings) {
+        try {
+            const s = JSON.parse(cachedSettings);
+            if (s.storeName && n) n.textContent = s.storeName;
+            if (s.logo && e) {
+                e.src = s.logo;
+                e.classList.remove("hidden");
+            }
+        } catch (err) {}
+    }
+
+    if (n && t && e) {
+        window.electronAPI.getSettings().then((set => {
+            if (set) {
+                try {
+                    localStorage.setItem("managely_store_settings", JSON.stringify(set));
+                } catch (err) {}
+                if (set.storeName && n) n.textContent = set.storeName;
+                if (set.logo && e) {
+                    e.src = set.logo;
+                    e.classList.remove("hidden");
+                } else if (e) {
+                    e.classList.add("hidden");
+                }
+            }
+        })).catch(() => {});
+
+        a();
+        setInterval(a, 1000);
+    }
+}
+
+function initializeCalculatorButton() {
+    if (document.getElementById("floatingCalcButton")) return;
+    const currentPage = (window.location.pathname.split("/").pop() || "").replace(".html", "");
+    if (currentPage === "login" || currentPage === "splash" || currentPage === "license") return;
+
+    const n = document.createElement("button");
+    n.id = "floatingCalcButton";
+    n.className = "btn btn-circle btn-primary shadow-lg calc-button";
+    n.innerHTML = `
+        <div class="tooltip" data-tip="آلة حاسبة">
+            <i class="fas fa-calculator text-xl"></i>
+        </div>
+    `;
+    n.onclick = () => {
+        if (typeof window.openCalculatorPopup === "function") {
+            window.openCalculatorPopup();
+        } else {
+            openCalculatorPopup();
+        }
+    };
+    document.body.appendChild(n);
+}
+
+function openCalculatorPopup() {
+    if (typeof window.openCalculatorModal === "function") {
+        window.openCalculatorModal();
+        return;
+    }
+    if (typeof window.openCalculatorPopup === "function" && window.openCalculatorPopup !== openCalculatorPopup) {
+        window.openCalculatorPopup();
+        return;
+    }
+}
+
+// Window global bindings
+if (typeof window !== "undefined") {
+    window.getCurrentUser = getCurrentUser;
+    window.hasPermission = hasPermission;
+    window.logoutUser = logoutUser;
+    window.applyPagePermissionGuard = applyPagePermissionGuard;
+    window.filterSidebarLinks = filterSidebarLinks;
+    window.updateSidebarUserInfo = updateSidebarUserInfo;
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+    initSweetAlertWrapper();
+    initAllCustomSelects();
+    await loadSidebar();
+    loadCategories(() => {
+        loadProducts(() => {
+            loadCart(() => {
+                if (typeof renderHomeProducts === "function") renderHomeProducts();
+                if (typeof renderCart === "function") renderCart();
+                if (typeof renderCategoryFilter === "function") renderCategoryFilter();
+            });
+        });
+    });
+    document.addEventListener("footerLoaded", () => {
+        setupFooter();
+    });
+    await loadFooter();
+    initializeCalculatorButton();
+});
+
+window.addEventListener("load", () => {
+    initSweetAlertWrapper();
+    initAllCustomSelects();
+    if (!document.getElementById("floatingCalcButton")) {
+        initializeCalculatorButton();
+    }
+});

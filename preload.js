@@ -4,6 +4,7 @@ const { shell } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
     addProduct: (product) => ipcRenderer.invoke('add-product', product),
+    importProductsBatch: (payload) => ipcRenderer.invoke('import-products-batch', payload),
     getProducts: () => ipcRenderer.invoke('get-products'),
     deleteProduct: (productId) => ipcRenderer.invoke('delete-product', productId),
     updateProduct: (productId, updatedProduct) => ipcRenderer.invoke('update-product', productId, updatedProduct),
@@ -30,6 +31,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getOrders: () => ipcRenderer.invoke('get-orders'),
     // getUserDataPath
     getUserDataPath: () => ipcRenderer.invoke('getUserDataPath'),
+    getAppVersion: () => ipcRenderer.invoke('get-app-version'),
 
     getSalesData: async () => {
         const data = await ipcRenderer.invoke('get-sales-data');
@@ -57,9 +59,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
     printPurchaseInvoice: (invoiceHtml, invoiceNumber, type) => ipcRenderer.invoke('print-purchase-invoice', invoiceHtml, invoiceNumber, type),
     addEmployee: (employee) => ipcRenderer.invoke('add-employee', employee),
     getEmployees: () => ipcRenderer.invoke('get-employees'),
+    getCurrencies: () => ipcRenderer.invoke('get-currencies'),
+    addCurrency: (currency) => ipcRenderer.invoke('add-currency', currency),
+    updateCurrency: (currencyId, updatedCurrency) => ipcRenderer.invoke('update-currency', currencyId, updatedCurrency),
+    deleteCurrency: (currencyId) => ipcRenderer.invoke('delete-currency', currencyId),
     deleteEmployee: (employeeId) => ipcRenderer.invoke('delete-employee', employeeId),
     updateEmployee: (employeeId, updatedEmployee) => ipcRenderer.invoke('update-employee', employeeId, updatedEmployee),
     uploadFile: (fileData, destination) => ipcRenderer.invoke('uploadFile', fileData, destination),
+    saveExcelDialog: (data) => ipcRenderer.invoke('save-excel-dialog', data),
+    showItemInFolder: (fullPath) => ipcRenderer.invoke('show-item-in-folder', fullPath),
+    openPath: (fullPath) => ipcRenderer.invoke('open-path', fullPath),
+    openFileWithShell: (filePath) => ipcRenderer.invoke('open-file-with-shell', filePath),
     readFileAsDataURL: (filePath) => ipcRenderer.invoke('readFileAsDataURL', filePath),
     getDefaultPOSPrinter: () => ipcRenderer.invoke('getDefaultPOSPrinter'),
     printInvoiceToPOS: (invoiceHtml, invoiceNumber, type) => ipcRenderer.invoke('print-invoice-to-pos', invoiceHtml, invoiceNumber, type),
@@ -70,6 +80,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
     clearPasswordHash: () => ipcRenderer.invoke('clear-password-hash'),
     login: (email, password) => ipcRenderer.invoke('login', email, password),
     updateLoginCredentials: (email, password) => ipcRenderer.invoke('update-login-credentials', email, password),
+    getUsers: () => ipcRenderer.invoke('get-users'),
+    getUserById: (userId) => ipcRenderer.invoke('get-user-by-id', userId),
+    addUser: (userData) => ipcRenderer.invoke('add-user', userData),
+    updateUser: (userId, userData) => ipcRenderer.invoke('update-user', userId, userData),
+    deleteUser: (userId) => ipcRenderer.invoke('delete-user', userId),
+    changeUserPassword: (userId, newPassword) => ipcRenderer.invoke('change-user-password', userId, newPassword),
     exportSalesToExcel: (sales) => ipcRenderer.invoke('export-sales-to-excel', sales),
     addTreasuryTransaction: (transaction) => ipcRenderer.invoke('add-treasury-transaction', transaction),
     getTreasuryTransactions: () => ipcRenderer.invoke('get-treasury-transactions'),
@@ -95,7 +111,31 @@ contextBridge.exposeInMainWorld('electronAPI', {
     suspendInvoice: (invoiceData) => ipcRenderer.invoke('suspend-invoice', invoiceData),
     getSuspendedInvoices: () => ipcRenderer.invoke('get-suspended-invoices'),
     resumeInvoice: (invoiceId) => ipcRenderer.invoke('resume-invoice', invoiceId),
-    deleteSuspendedInvoice: (invoiceId) => ipcRenderer.invoke('delete-suspended-invoice'),
+    deleteSuspendedInvoice: (invoiceId) => ipcRenderer.invoke('delete-suspended-invoice', invoiceId),
+
+    // Backup & Restore System
+    createBackup: (options) => ipcRenderer.invoke('create-backup', options),
+    restoreBackup: () => ipcRenderer.invoke('restore-backup'),
+    autoBackup: () => ipcRenderer.invoke('auto-backup'),
+    getBackups: () => ipcRenderer.invoke('get-backups'),
+
+    // Network & Multi-Device Sync API
+    network: {
+        getConfig: () => ipcRenderer.invoke('network:get-config'),
+        saveConfig: (config) => ipcRenderer.invoke('network:save-config', config),
+        testConnection: (host, port) => ipcRenderer.invoke('network:test-connection', host, port),
+        testCloudKey: (cloudSyncKey, cloudBranchName) => ipcRenderer.invoke('network:test-cloud-key', cloudSyncKey, cloudBranchName),
+        testCustomCloud: (customUrl, apiKey, securityPin) => ipcRenderer.invoke('network:test-custom-cloud', customUrl, apiKey, securityPin),
+        syncUploadAll: () => ipcRenderer.invoke('network:sync-upload-all'),
+        syncDownloadAll: () => ipcRenderer.invoke('network:sync-download-all'),
+        getServerIPs: () => ipcRenderer.invoke('network:get-ips'),
+        onSyncUpdated: (callback) => {
+            const handler = (_event, data) => callback(data);
+            ipcRenderer.on('data:sync-updated', handler);
+            return () => ipcRenderer.removeListener('data:sync-updated', handler);
+        }
+    },
+
 
     // Auto Updater API
     updater: {
@@ -192,7 +232,8 @@ if (process.env.NODE_ENV !== 'production') {
                 });
             }
         });
-    } catch (err) {
-        console.warn('Live reload init warning:', err);
+    } catch {
+        // Ignored in packaged/sandboxed builds
     }
 }
+

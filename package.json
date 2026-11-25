@@ -1,12 +1,14 @@
 {
   "name": "managely-cashier-system",
   "productName": "Managely Cashier",
-  "version": "1.0.5",
+  "version": "1.1.1",
   "description": "Desktop Cashier & POS Management System",
   "main": "src/main.js",
   "type": "module",
   "scripts": {
     "start": "electron .",
+    "start:branch2": "electron . --instance=branch2",
+    "start:device2": "electron . --instance=device2",
     "dev": "nodemon --watch src/main.js --watch preload.js --ignore HTML/** --ignore js/** --ignore styles/** --exec electron .",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
@@ -30,6 +32,7 @@
     "accounting"
   ],
   "dependencies": {
+    "@supabase/supabase-js": "^2.109.0",
     "axios": "^1.9.0",
     "call-bind-apply-helpers": "^1.0.2",
     "dunder-proto": "^1.0.1",

@@ -71,78 +71,86 @@ label i,
 .page-header {
     background: #ffffff;
     border-radius: 20px;
-    padding: 24px 28px;
-    margin-bottom: 24px;
+    padding: 16px 24px;
+    margin-bottom: 20px;
     box-shadow: 0 4px 20px rgba(109, 40, 217, 0.05);
     border: 1.5px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 16px;
+    width: 100%;
 }
 
 .page-title-group {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
+    flex-shrink: 0;
 }
 
 .page-icon-badge {
-    width: 52px;
-    height: 52px;
-    border-radius: 16px;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
     background: linear-gradient(135deg, #ede9fe, #ddd6fe);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    font-size: 1.35rem;
     color: var(--primary-color);
     box-shadow: 0 4px 12px rgba(109, 40, 217, 0.12);
     flex-shrink: 0;
+    transition: all 0.2s ease;
 }
 
 .page-title-group h1 {
     color: var(--primary-color);
-    font-size: 1.7rem;
+    font-size: 1.45rem;
     font-weight: 800;
     margin: 0;
     line-height: 1.2;
+    white-space: nowrap;
 }
 
 .page-title-group p {
     color: var(--text-muted);
-    font-size: 0.9rem;
-    margin: 4px 0 0;
+    font-size: 0.8rem;
+    margin: 2px 0 0;
     font-weight: 500;
+    white-space: nowrap;
 }
 
 /* Header Stats Chips */
 .header-stats {
     display: flex;
     align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
+    gap: 8px;
+    flex-wrap: nowrap;
+    flex-shrink: 1;
+    justify-content: flex-end;
 }
 
 .stat-pill {
     background: #f8fafc;
     border: 1.5px solid #e2e8f0;
-    border-radius: 16px;
-    padding: 10px 16px;
+    border-radius: 12px;
+    padding: 7px 12px;
     display: flex;
     align-items: center;
-    gap: 12px;
-    transition: all 0.2s ease;
-    min-width: 140px;
+    gap: 8px;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     box-sizing: border-box;
-    flex-shrink: 0;
+    flex-shrink: 1;
+    min-width: 0;
 }
 
 .stat-pill:hover {
@@ -153,7 +161,10 @@ label i,
 }
 
 .stat-pill i {
-    font-size: 1.35rem;
+    font-size: 1.15rem;
+    margin-left: 6px !important;
+    margin-right: 0 !important;
+    flex-shrink: 0;
 }
 
 .stat-pill-sales i {
@@ -172,22 +183,76 @@ label i,
     display: flex;
     flex-direction: column;
     min-width: 0;
+    justify-content: center;
 }
 
 .stat-label {
-    font-size: 0.78rem;
+    font-size: 0.7rem;
     color: var(--text-muted);
     font-weight: 700;
-    margin-bottom: 2px;
+    margin-bottom: 1px;
     white-space: nowrap;
 }
 
 .stat-value {
-    font-size: clamp(0.95rem, 1.1vw, 1.15rem);
+    font-size: 0.98rem;
     font-weight: 800;
     color: var(--text-main);
     white-space: nowrap;
     line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ===== Responsive adjustments when Sidebar is Open ===== */
+.main-content.sidebar-open .page-header {
+    padding: 12px 18px;
+    gap: 12px;
+}
+
+.main-content.sidebar-open .header-top {
+    gap: 10px;
+}
+
+.main-content.sidebar-open .page-icon-badge {
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+    border-radius: 11px;
+}
+
+.main-content.sidebar-open .page-title-group {
+    gap: 8px;
+}
+
+.main-content.sidebar-open .page-title-group h1 {
+    font-size: 1.25rem;
+}
+
+.main-content.sidebar-open .page-title-group p {
+    font-size: 0.72rem;
+}
+
+.main-content.sidebar-open .header-stats {
+    gap: 6px;
+}
+
+.main-content.sidebar-open .stat-pill {
+    padding: 5px 9px;
+    gap: 6px;
+    border-radius: 10px;
+}
+
+.main-content.sidebar-open .stat-pill i {
+    font-size: 0.98rem;
+    margin-left: 4px !important;
+}
+
+.main-content.sidebar-open .stat-label {
+    font-size: 0.62rem;
+}
+
+.main-content.sidebar-open .stat-value {
+    font-size: 0.88rem;
 }
 
 /* Header Controls Bar (Single Line Layout) */
@@ -490,12 +555,29 @@ label i,
     box-shadow: 0 4px 14px rgba(109, 40, 217, 0.2);
 }
 
+@media (max-width: 1024px) {
+    .header-top {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .header-stats {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+    }
+}
+
 @media (max-width: 768px) {
     .header-controls {
         flex-direction: column;
         align-items: stretch;
     }
-    .header-search-wrap, .btn-export-excel {
+
+    .header-search-wrap,
+    .btn-export-excel {
         width: 100%;
         max-width: 100%;
     }

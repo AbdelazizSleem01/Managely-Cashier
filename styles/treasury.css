@@ -505,6 +505,210 @@ label i,
     border: 1px solid #fef3c7;
 }
 
+/* ===== Payment Methods Breakdown Pills ===== */
+.treasury-payment-breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.pay-stat-pill {
+    background: #ffffff;
+    border: 1.5px solid var(--border-color);
+    border-radius: 14px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 10px rgba(109, 40, 217, 0.03);
+    transition: all 0.2s ease;
+}
+
+.pay-stat-pill:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(109, 40, 217, 0.08);
+}
+
+.pay-stat-pill.cash {
+    border-color: #a7f3d0;
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+}
+
+.pay-stat-pill.card {
+    border-color: #bfdbfe;
+    background: linear-gradient(135deg, #ffffff 0%, #eff6ff 100%);
+}
+
+.pay-stat-pill.wallet {
+    border-color: #fecdd3;
+    background: linear-gradient(135deg, #ffffff 0%, #fff1f2 100%);
+}
+
+.pay-stat-pill.split {
+    border-color: #ddd6fe;
+    background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%);
+}
+
+.pay-stat-pill.credit {
+    border-color: #fde68a;
+    background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%);
+}
+
+.pay-stat-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.pay-stat-pill.cash .pay-stat-icon {
+    background: #dcfce7;
+    color: #059669;
+}
+
+.pay-stat-pill.card .pay-stat-icon {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.pay-stat-pill.wallet .pay-stat-icon {
+    background: #ffe4e6;
+    color: #e11d48;
+}
+
+.pay-stat-pill.split .pay-stat-icon {
+    background: #ede9fe;
+    color: #7c3aed;
+}
+
+.pay-stat-pill.credit .pay-stat-icon {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.pay-stat-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.pay-stat-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.pay-stat-val {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-main);
+    line-height: 1.3;
+}
+
+.pay-stat-pill.cash .pay-stat-val {
+    color: #059669;
+}
+
+.pay-stat-pill.card .pay-stat-val {
+    color: #2563eb;
+}
+
+.pay-stat-pill.wallet .pay-stat-val {
+    color: #e11d48;
+}
+
+.pay-stat-pill.split .pay-stat-val {
+    color: #7c3aed;
+}
+
+.pay-stat-pill.credit .pay-stat-val {
+    color: #d97706;
+}
+
+/* ===== Badges for Payment Method ===== */
+.badge-pay {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.badge-pay.pay-cash {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.badge-pay.pay-card {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+.badge-pay.pay-wallet {
+    background: #fff1f2;
+    color: #be123c;
+    border: 1px solid #fecdd3;
+}
+
+.badge-pay.pay-split {
+    background: #f5f3ff;
+    color: #6d28d9;
+    border: 1px solid #ddd6fe;
+}
+
+.badge-pay.pay-credit {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid #fde68a;
+}
+
+.badge-pay.pay-manual {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #e2e8f0;
+}
+
+/* Split Payment Sub-Details */
+.split-details-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+
+.split-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.split-pill.cash {
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid #d1fae5;
+}
+
+.split-pill.card {
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1px solid #dbeafe;
+}
+
 /* Table Action Buttons */
 .table-actions {
     display: flex;

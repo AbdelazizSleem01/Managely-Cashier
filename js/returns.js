@@ -9,12 +9,12 @@ async function loadInvoices(searchQuery = "") {
         sales = await window.electronAPI.getSales();
         const invoiceList = document.getElementById("invoiceList");
         const invoiceInput = document.getElementById("invoiceSearch");
-        
+
         if (invoiceList && invoiceInput) {
             let filteredSales = sales;
             if (searchQuery) {
                 const query = searchQuery.toLowerCase();
-                filteredSales = sales.filter(sale => 
+                filteredSales = sales.filter(sale =>
                     sale.invoiceNumber?.toLowerCase().includes(query) ||
                     new Date(sale.date).toLocaleDateString('ar-EG').includes(query)
                 );
@@ -27,27 +27,25 @@ async function loadInvoices(searchQuery = "") {
             }
 
             invoiceList.innerHTML = filteredSales
-              .map(
-                (sale) => `
-                <div class="p-2 hover:bg-gray-100 invoice-item ${
-                  sale.hasReturn ? "text-gray-400 cursor-not-allowed" : "cursor-pointer"
-                }" 
+                .map(
+                    (sale) => `
+                <div class="p-2 hover:bg-gray-100 invoice-item ${sale.hasReturn ? "text-gray-400 cursor-not-allowed" : "cursor-pointer"
+                        }" 
                      data-sale-id="${sale._id}">
                     ${sale.invoiceNumber} - ${new Date(
-                  sale.date
-                ).toLocaleDateString("ar-EG")}
-                    ${
-                      sale.hasReturn
-                        ? '<span class="text-error font-bold mr-2">(تـم الإسترجاع)</span>'
-                        : ""
-                    }
+                            sale.date
+                        ).toLocaleDateString("ar-EG")}
+                    ${sale.hasReturn
+                            ? '<span class="text-error font-bold mr-2">(تـم الإسترجاع)</span>'
+                            : ""
+                        }
                     <div class="text-xs text-gray-500 mt-1">
-                        إجمالي الفاتورة: ${sale.total?.toFixed(2) || '0'} جنيه
+                        إجمالي الفاتورة: ${sale.total?.toFixed(2) || '0'} ${sale.currencySymbol || (sale.currency && sale.currency.symbol) || 'ج.م'}
                     </div>
                 </div>
             `
-              )
-              .join("");
+                )
+                .join("");
 
             document.querySelectorAll('.invoice-item').forEach(item => {
                 const saleId = item.getAttribute('data-sale-id');
@@ -68,7 +66,7 @@ async function loadInvoices(searchQuery = "") {
 function selectInvoice(saleId) {
     selectedSaleId = saleId;
     selectedProducts.clear(); // مسح المنتجات المحددة سابقاً
-    
+
     const invoiceInput = document.getElementById("invoiceSearch");
     const invoiceList = document.getElementById("invoiceList");
     const invoiceDetails = document.getElementById("invoiceDetails");
@@ -76,8 +74,9 @@ function selectInvoice(saleId) {
     const productsContainer = document.getElementById("productsContainer");
     const returnSummary = document.getElementById("returnSummary");
     const submitReturn = document.getElementById("submitReturn");
-    
+
     const sale = sales.find(s => s._id === saleId);
+    const currSym = sale ? (sale.currencySymbol || (sale.currency && sale.currency.symbol) || "ج.م") : "ج.م";
 
     if (invoiceInput && invoiceList && invoiceDetails && invoiceInfo && productsContainer && returnSummary && submitReturn) {
         invoiceInput.value = `${sale.invoiceNumber} - ${new Date(sale.date).toLocaleDateString('ar-EG')}`;
@@ -99,7 +98,7 @@ function selectInvoice(saleId) {
             </div>
             <div class="invoice-info-item">
                 <span class="invoice-info-label"><i class="fas fa-coins"></i> إجمالي الفاتورة</span>
-                <span class="invoice-info-val" style="color: var(--primary-color);">${sale.total?.toFixed(2) || '0'} ج.م</span>
+                <span class="invoice-info-val" style="color: var(--primary-color);">${sale.total?.toFixed(2) || '0'} ${currSym}</span>
             </div>
         `;
 
@@ -118,9 +117,9 @@ function selectInvoice(saleId) {
                         <div class="product-info">
                             <div class="product-name">${item.name}</div>
                             <div class="product-details">
-                                <span>السعر: <strong>${item.price?.toFixed(2) || '0'} ج.م</strong></span> | 
+                                <span>السعر: <strong>${item.price?.toFixed(2) || '0'} ${currSym}</strong></span> | 
                                 <span>الكمية بالفاتورة: <strong>${item.quantity}</strong></span> | 
-                                <span>الإجمالي: <strong>${(item.price * item.quantity)?.toFixed(2) || '0'} ج.م</strong></span>
+                                <span>الإجمالي: <strong>${(item.price * item.quantity)?.toFixed(2) || '0'} ${currSym}</strong></span>
                             </div>
                         </div>
                     </div>
@@ -168,7 +167,7 @@ function handleProductSelection(event) {
     const checkbox = event.target;
     const productId = checkbox.getAttribute('data-product-id');
     const quantityInput = document.querySelector(`input[data-product-id="${productId}"][type="number"]`);
-    
+
     if (checkbox.checked) {
         quantityInput.disabled = false;
         quantityInput.value = "1"; // تعيين قيمة افتراضية
@@ -183,7 +182,7 @@ function handleProductSelection(event) {
         quantityInput.value = "0";
         selectedProducts.delete(productId);
     }
-    
+
     updateReturnSummary();
 }
 
@@ -191,7 +190,7 @@ function updateReturnSummary() {
     const returnSummary = document.getElementById("returnSummary");
     const summaryContent = document.getElementById("summaryContent");
     const submitReturn = document.getElementById("submitReturn");
-    
+
     if (selectedProducts.size === 0) {
         returnSummary.classList.add("hidden");
         submitReturn.disabled = true;
@@ -201,43 +200,44 @@ function updateReturnSummary() {
     let totalReturnAmount = 0;
     let summaryHTML = '';
     const sale = sales.find(s => s._id === selectedSaleId);
+    const currSym = sale ? (sale.currencySymbol || (sale.currency && sale.currency.symbol) || "ج.م") : "ج.م";
     const originalTotal = sale?.total || 0;
 
     selectedProducts.forEach((product, productId) => {
         const quantityInput = document.querySelector(`input[data-product-id="${productId}"][type="number"]`);
         const quantity = parseInt(quantityInput.value) || 0;
-        
+
         if (quantity > 0) {
             const itemTotal = product.price * quantity;
             totalReturnAmount += itemTotal;
-            
+
             summaryHTML += `
                 <div class="summary-item">
-                    <span>${product.name} (${quantity} × ${product.price.toFixed(2)})</span>
-                    <span>${itemTotal.toFixed(2)} جنيه</span>
+                    <span>${product.name} (${quantity} × ${product.price.toFixed(2)} ${currSym})</span>
+                    <span>${itemTotal.toFixed(2)} ${currSym}</span>
                 </div>
             `;
         }
     });
 
     if (totalReturnAmount > 0) {
-        const percentage = ((totalReturnAmount / originalTotal) * 100).toFixed(1);
-        
+        const percentage = originalTotal > 0 ? ((totalReturnAmount / originalTotal) * 100).toFixed(1) : 0;
+
         summaryHTML += `
             <div class="summary-item border-t-2 border-blue-200 pt-2">
                 <span>إجمالي المرتجع</span>
-                <span>${totalReturnAmount.toFixed(2)} جنيه</span>
+                <span>${totalReturnAmount.toFixed(2)} ${currSym}</span>
             </div>
             <div class="summary-item text-sm text-gray-600">
                 <span>إجمالي الفاتورة الأصلي</span>
-                <span>${originalTotal.toFixed(2)} جنيه</span>
+                <span>${originalTotal.toFixed(2)} ${currSym}</span>
             </div>
             <div class="summary-item text-sm text-blue-600">
                 <span>نسبة المرتجع</span>
                 <span>${percentage}%</span>
             </div>
         `;
-        
+
         returnSummary.classList.remove("hidden");
         summaryContent.innerHTML = summaryHTML;
         submitReturn.disabled = false;
@@ -259,12 +259,12 @@ async function processReturn() {
     for (const [productId, product] of selectedProducts) {
         const quantityInput = document.querySelector(`input[data-product-id="${productId}"][type="number"]`);
         const quantity = parseInt(quantityInput.value) || 0;
-        
+
         if (quantity <= 0) {
             Swal.fire({ title: "تنبيه", text: "يرجى تحديد كمية صحيحة للمنتجات المحددة.", icon: "warning", confirmButtonColor: "#3085d6" });
             return;
         }
-        
+
         if (quantity > product.maxQuantity) {
             Swal.fire({ title: "تنبيه", text: `كمية المرتجع للمنتج (${product.name}) أكبر من الكمية المسجلة بالفاتورة.`, icon: "warning", confirmButtonColor: "#3085d6" });
             return;
@@ -273,6 +273,7 @@ async function processReturn() {
 
     // عرض تأكيد المرتجع
     const sale = sales.find(s => s._id === selectedSaleId);
+    const currSym = sale ? (sale.currencySymbol || (sale.currency && sale.currency.symbol) || "ج.م") : "ج.م";
     let confirmationMessage = `هل أنت متأكد من إتمام المرتجع؟\n\nالمنتجات المرتجعة:\n`;
     let totalReturnAmount = 0;
     let returnedProducts = [];
@@ -283,12 +284,12 @@ async function processReturn() {
         if (quantity > 0) {
             const itemTotal = product.price * quantity;
             totalReturnAmount += itemTotal;
-            confirmationMessage += `• ${product.name}: ${quantity} قطعة (${itemTotal.toFixed(2)} جنيه)\n`;
+            confirmationMessage += `• ${product.name}: ${quantity} قطعة (${itemTotal.toFixed(2)} ${currSym})\n`;
             returnedProducts.push({ name: product.name, quantity, amount: itemTotal });
         }
     }
 
-    confirmationMessage += `\nإجمالي المرتجع: ${totalReturnAmount.toFixed(2)} جنيه`;
+    confirmationMessage += `\nإجمالي المرتجع: ${totalReturnAmount.toFixed(2)} ${currSym}`;
 
     const result = await Swal.fire({
         title: "تأكيد المرتجع",
@@ -308,13 +309,14 @@ async function processReturn() {
     submitReturn.disabled = true;
 
     try {
-        const user = (await window.electronAPI.getSettings())?.currentUser || 'غير معروف';
+        const activeUser = typeof window.getCurrentUser === "function" ? window.getCurrentUser() : null;
+        const user = activeUser ? (activeUser.name || activeUser.username) : "المدير العام";
 
         // معالجة كل منتج محدد
         for (const [productId, product] of selectedProducts) {
             const quantityInput = document.querySelector(`input[data-product-id="${productId}"][type="number"]`);
             const returnQuantity = parseInt(quantityInput.value) || 0;
-            
+
             if (returnQuantity > 0) {
                 const saleItem = sale.items.find(i => i._id === productId);
                 const productInDB = (await window.electronAPI.getProducts()).find(p => p._id === saleItem.productId || p._id === saleItem._id);
@@ -347,7 +349,7 @@ async function processReturn() {
         await window.electronAPI.updateSale(sale._id, { hasReturn: true, returnAmount: totalReturnAmount });
 
         // رسالة النجاح
-        const successMessage = `تمت عملية المرتجع بنجاح!\n\nالمنتجات المرتجعة:\n${returnedProducts.map(p => `• ${p.name}: ${p.quantity} قطعة (${p.amount.toFixed(2)} جنيه)`).join('\n')}\n\nإجمالي المرتجع: ${totalReturnAmount.toFixed(2)} جنيه`;
+        const successMessage = `تمت عملية المرتجع بنجاح!\n\nالمنتجات المرتجعة:\n${returnedProducts.map(p => `• ${p.name}: ${p.quantity} قطعة (${p.amount.toFixed(2)} ${currSym})`).join('\n')}\n\nإجمالي المرتجع: ${totalReturnAmount.toFixed(2)} ${currSym}`;
 
         Swal.fire({
             title: "تم!",
@@ -371,12 +373,12 @@ async function processReturn() {
 function resetForm() {
     selectedSaleId = null;
     selectedProducts.clear();
-    
+
     const invoiceInput = document.getElementById("invoiceSearch");
     const invoiceDetails = document.getElementById("invoiceDetails");
     const returnSummary = document.getElementById("returnSummary");
     const submitReturn = document.getElementById("submitReturn");
-    
+
     if (invoiceInput) invoiceInput.value = "";
     if (invoiceDetails) invoiceDetails.classList.add("hidden");
     if (returnSummary) returnSummary.classList.add("hidden");
@@ -386,17 +388,17 @@ function resetForm() {
 function selectAllProducts() {
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
     const quantityInputs = document.querySelectorAll('.quantity-input');
-    
+
     checkboxes.forEach((checkbox, index) => {
         if (!checkbox.checked) {
             checkbox.checked = true;
             const productId = checkbox.getAttribute('data-product-id');
             const quantityInput = document.querySelector(`input[data-product-id="${productId}"][type="number"]`);
-            
+
             if (quantityInput) {
                 quantityInput.disabled = false;
                 quantityInput.value = quantityInput.getAttribute('max'); // تحديد الكمية الكاملة
-                
+
                 selectedProducts.set(productId, {
                     name: checkbox.getAttribute('data-name'),
                     price: parseFloat(checkbox.getAttribute('data-price')),
@@ -406,23 +408,23 @@ function selectAllProducts() {
             }
         }
     });
-    
+
     updateReturnSummary();
 }
 
 function deselectAllProducts() {
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
     const quantityInputs = document.querySelectorAll('.quantity-input');
-    
+
     checkboxes.forEach(checkbox => {
         checkbox.checked = false;
     });
-    
+
     quantityInputs.forEach(input => {
         input.disabled = true;
         input.value = "0";
     });
-    
+
     selectedProducts.clear();
     updateReturnSummary();
 }
@@ -430,19 +432,19 @@ function deselectAllProducts() {
 function setMaxQuantity(productId, maxQuantity) {
     const checkbox = document.querySelector(`input[data-product-id="${productId}"][type="checkbox"]`);
     const quantityInput = document.querySelector(`input[data-product-id="${productId}"][type="number"]`);
-    
+
     if (checkbox && quantityInput) {
         checkbox.checked = true;
         quantityInput.disabled = false;
         quantityInput.value = maxQuantity;
-        
+
         selectedProducts.set(productId, {
             name: checkbox.getAttribute('data-name'),
             price: parseFloat(checkbox.getAttribute('data-price')),
             maxQuantity: parseInt(checkbox.getAttribute('data-max-quantity')),
             quantity: maxQuantity
         });
-        
+
         updateReturnSummary();
     }
 }

@@ -206,7 +206,12 @@ function renderCustomersList(listToRender) {
                                         <span>${formatCurrency(stats.total)}</span>
                                     </span>
                                 ` : ''}
+                                <span class="badge-pill" style="background: #fffbeb; color: #b45309; border: 1px solid #fde68a; font-weight: 800;">
+                                    <i class="fas fa-crown text-amber-500"></i>
+                                    <span>${Number(c.points || 0)} نقطة</span>
+                                </span>
                             </div>
+
                         </div>
                     </div>
 
